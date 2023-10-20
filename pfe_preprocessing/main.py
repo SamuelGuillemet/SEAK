@@ -6,6 +6,7 @@ import logging
 from typing import Dict, cast
 
 import pandas as pd
+
 from pfe_preprocessing.constant import DATA_PATH, StockChartType
 from pfe_preprocessing.data_agregation.helpers import save_date_data
 from pfe_preprocessing.data_agregation.reader import gather_data
@@ -68,7 +69,7 @@ def main() -> None:
     setup_logs("pfe_preprocessing")
     DAY = "2022-04-05"
     SKIP_DAY_EXTRACTION = True
-    SKIP_TOPIC_CREATION = True
+    SKIP_TOPIC_CREATION = False
 
     if not SKIP_DAY_EXTRACTION:
         extract_day(day=DAY)

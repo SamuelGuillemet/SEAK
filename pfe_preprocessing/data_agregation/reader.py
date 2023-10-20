@@ -4,6 +4,7 @@ import zipfile
 from typing import IO, Iterator, List, Tuple
 
 import pandas as pd
+
 from pfe_preprocessing.constant import DATA_PATH, TARGET_DATE_REGEX
 from pfe_preprocessing.data_agregation.find_date import extract_full_day_from_file
 from pfe_preprocessing.data_agregation.helpers import generate_dataframe
@@ -53,7 +54,7 @@ def gather_data(
 
     dataframes: List[pd.DataFrame] = []
     for file, ticker_name in zipfile_reader(zip_filename, exclude_list):
-        day_lines = extract_full_day_from_file(file, target_date)
+        day_lines = extract_full_day_from_file(file, target_date=target_date)
         dataframes.append(generate_dataframe(day_lines, ticker_name))
 
     return dataframes

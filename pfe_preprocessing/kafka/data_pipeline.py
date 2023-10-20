@@ -8,6 +8,7 @@ from multiprocessing.synchronize import Event
 from typing import Dict, Generator, List, cast
 
 import pandas as pd
+
 from pfe_preprocessing.dataframe_extraction.hour import complete_a_day_hour_by_hour
 from pfe_preprocessing.decorators import performance_timer_decorator
 from pfe_preprocessing.kafka.producer import AIOProducer
@@ -19,6 +20,8 @@ class DataPipeline:
     producer_processes: List[multiprocessing.Process]
     consumer_processes: List[multiprocessing.Process]
     consumer_events: List[Event]
+
+    number_of_tickers = 0
 
     # Boolean variables to check if the data and processes are ready
     prepared: bool = False
@@ -182,7 +185,7 @@ class DataPipeline:
 
             # Check if the execution time is greater than the interval time
             if execution_time > self.interval_seconds:
-                logging.warning(
+                logger.warning(
                     f"Execution time is greater than interval time: {execution_time} > {self.interval_seconds}"
                 )
 
@@ -214,7 +217,7 @@ class DataPipeline:
             )
             generators = {
                 ticker: complete_a_day_hour_by_hour(
-                    data[ticker], interval_seconds=60  # self.interval_seconds
+                    data[ticker], interval_seconds=self.interval_seconds
                 )
                 for ticker in ticker_concerned
             }
