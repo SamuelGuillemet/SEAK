@@ -1,4 +1,5 @@
 import pandas as pd
+
 from pfe_preprocessing.constant import CSV_COLUMNS, DATA_PATH
 from pfe_preprocessing.data_completion.helpers import (
     add_ticker,
@@ -33,7 +34,7 @@ def generate_dataframe(lines: list[str], ticker_name: str) -> pd.DataFrame:
     """
     data = [parse_csv_line(line) for line in lines]
     df = pd.DataFrame(data, columns=CSV_COLUMNS)
-    df = preprocess_data(df)
+    df = preprocess_data(df, parse_dates=True)
     df = bound_dataframe(df)
     df = add_ticker(df, ticker_name)
     return df
