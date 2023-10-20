@@ -1,6 +1,7 @@
 from typing import Generator
 
 import pandas as pd
+
 from pfe_preprocessing.data_completion.generation import complete_data
 
 
@@ -32,11 +33,12 @@ def complete_a_day_hour_by_hour(
     for index in range(len(day_splited) - 1):
         full_data = day_splited[index]
         if index != len(day_splited) - 1:
-            first_data_of_next_segment = day_splited[index + 1].iloc[0]
-            full_data += first_data_of_next_segment
+            first_data_of_next_segment = day_splited[index + 1].iloc[[0]]
+            full_data = pd.concat([full_data, first_data_of_next_segment])
 
         completed_df = complete_data(full_data, interval_seconds=interval_seconds)
         # Remove last row of the completed_df, because it is the first row of the next segment
         # only used to generate interpolated data
-        completed_df = completed_df.iloc[:-1]
+        if index != len(day_splited) - 1:
+            completed_df = completed_df.iloc[:-1]
         yield completed_df
