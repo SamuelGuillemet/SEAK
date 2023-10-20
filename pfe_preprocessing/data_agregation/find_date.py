@@ -1,6 +1,8 @@
 import io
 from typing import IO
 
+from pfe_preprocessing.decorators import performance_timer_decorator
+
 
 def extract_date(line: str) -> str:
     """
@@ -42,6 +44,7 @@ def find_first_date_occurence(lines: list[str], target_date: str) -> int:
     return -1
 
 
+@performance_timer_decorator(["target_date"])
 def extract_full_day_from_file(file: IO[bytes], target_date: str) -> list[str]:
     """
     Extract the data for a specific date from a file
