@@ -8,7 +8,6 @@ from multiprocessing.synchronize import Event
 from typing import Dict, Generator, List, cast
 
 import pandas as pd
-
 from pfe_preprocessing.dataframe_extraction.hour import complete_a_day_hour_by_hour
 from pfe_preprocessing.decorators import performance_timer_decorator
 from pfe_preprocessing.kafka.producer import AIOProducer
@@ -120,7 +119,7 @@ class DataPipeline:
         if entry_name in self.data_dict.keys():
             hour_df = self.data_dict[f"{ticker}-{segment}"]
 
-            value = hour_df.iloc[iteration].to_json()
+            value = hour_df.iloc[iteration].to_dict()
             key = cast(pd.Timestamp, hour_df.iloc[iteration].name).strftime(
                 "%Y-%m-%d %H:%M:%S"
             )
@@ -173,7 +172,7 @@ class DataPipeline:
                     key, value = data
                     if index == 0:
                         last_key = key
-                    kafka_producer.produce(ticker_name, value, key)
+                    kafka_producer.produce(f"market-data.{ticker_name}", value, key)
                 else:
                     logger.warning(f"Data is None for {ticker_name}")
 

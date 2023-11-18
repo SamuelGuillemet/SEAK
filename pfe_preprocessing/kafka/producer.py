@@ -1,14 +1,27 @@
 import logging
 from typing import Any
 
-from confluent_kafka import Producer as ConfluentProducer
+from confluent_kafka import SerializingProducer
+from confluent_kafka.schema_registry.avro import AvroSerializer
+
+from pfe_preprocessing.kafka.avro import AvroService
 
 logger = logging.getLogger("pfe_preprocessing.kafka.producer")
 
 
 class AIOProducer:
     def __init__(self, configs: dict[str, str]):
-        self._producer = ConfluentProducer(configs)
+        sr, schema_str = AvroService.get_schema_from_file(
+            AvroService.SCHEMA_URL, AvroService.SCHEMA_FILE
+        )
+        value_avro_serializer = AvroSerializer(
+            schema_registry_client=sr,
+            schema_str=schema_str,
+            conf={"auto.register.schemas": False},
+        )
+        self._producer = SerializingProducer(
+            {**configs, "value.serializer": value_avro_serializer}
+        )
 
     def on_delivery(self, err, msg):
         if err:
