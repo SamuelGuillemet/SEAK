@@ -29,7 +29,13 @@
     "sharedGlobals": []
   },
   "plugins": [
-    "@nxlv/python"
+    "@nxlv/python",
+    {
+      "plugin": "@jnxplus/nx-gradle",
+      "options": {
+        "gradleRootDirectory": ""
+      }
+    }
   ],
   "generators": {
     "@nxlv/python:poetry-project": {
