@@ -27,5 +27,13 @@
       "default"
     ],
     "sharedGlobals": []
+  },
+  "plugins": [
+    "@nxlv/python"
+  ],
+  "generators": {
+    "@nxlv/python:poetry-project": {
+      "projectNameAndRootFormat": "as-provided"
+    }
   }
 }
