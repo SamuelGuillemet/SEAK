@@ -16,6 +16,12 @@
       "options": {
         "task": "test"
       }
+    },
+    "generate": {
+      "executor": "@jnxplus/nx-gradle:run-task",
+      "options": {
+        "task": "generateAvro"
+      }
     }
   },
   "tags": ["scope:avro", "type:lib", "lang:java"]
