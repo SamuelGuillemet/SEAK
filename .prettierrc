@@ -1,5 +1,3 @@
 {
-  "plugins": [
-    "prettier-plugin-java"
-  ]
+  "plugins": ["prettier-plugin-java"]
 }
