@@ -10,3 +10,4 @@ pluginManagement {
 
 rootProject.name = 'pfe-broker'
 include('libs:log')
+include('libs:avro')
