@@ -1,0 +1,22 @@
+{
+  "name": "avro",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "library",
+  "sourceRoot": "./libs/avro/src",
+  "targets": {
+    "build": {
+      "executor": "@jnxplus/nx-gradle:run-task",
+      "options": {
+        "task": "build"
+      },
+      "outputs": ["{projectRoot}/build"]
+    },
+    "test": {
+      "executor": "@jnxplus/nx-gradle:run-task",
+      "options": {
+        "task": "test"
+      }
+    }
+  },
+  "tags": ["scope:avro", "type:lib", "lang:java"]
+}
