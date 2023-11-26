@@ -1,0 +1,16 @@
+{
+    "namespace": "pfe_broker.avro",
+    "type": "enum",
+    "name": "OrderRejectReason",
+    "symbols": [
+        "BROKER_OPTION",
+        "UNKNOWN_SYMBOL",
+        "EXCHANGE_CLOSED",
+        "ORDER_EXCEEDS_LIMIT",
+        "TO_LATE_TO_ENTER",
+        "UNKNOWN_ORDER",
+        "DUPLICATE_ORDER",
+        "DUPLICATE_VERBALYES",
+        "STALE_ORDER"
+    ]
+}
