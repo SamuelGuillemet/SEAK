@@ -1,0 +1,27 @@
+{
+    "namespace": "pfe_broker.avro",
+    "type": "record",
+    "name": "MarketData",
+    "fields": [
+        {
+            "name": "open",
+            "type": "float"
+        },
+        {
+            "name": "high",
+            "type": "float"
+        },
+        {
+            "name": "low",
+            "type": "float"
+        },
+        {
+            "name": "close",
+            "type": "float"
+        },
+        {
+            "name": "volume",
+            "type": "int"
+        }
+    ]
+}

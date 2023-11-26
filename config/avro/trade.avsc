@@ -1,0 +1,23 @@
+{
+    "namespace": "pfe_broker.avro",
+    "type": "record",
+    "name": "Trade",
+    "fields": [
+        {
+            "name": "order",
+            "type": "Order" // Reference to the Order schema
+        },
+        {
+            "name": "symbol",
+            "type": "string"
+        },
+        {
+            "name": "price",
+            "type": "double"
+        },
+        {
+            "name": "quantity",
+            "type": "int"
+        }
+    ]
+}

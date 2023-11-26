@@ -1,0 +1,9 @@
+{
+    "namespace": "pfe_broker.avro",
+    "type": "enum",
+    "name": "Side",
+    "symbols": [
+        "BUY",
+        "SELL"
+    ]
+}

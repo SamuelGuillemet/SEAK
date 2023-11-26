@@ -1,0 +1,23 @@
+{
+    "namespace": "pfe_broker.avro",
+    "type": "record",
+    "name": "Order",
+    "fields": [
+        {
+            "name": "username",
+            "type": "string"
+        },
+        {
+            "name": "symbol",
+            "type": "string"
+        },
+        {
+            "name": "quantity",
+            "type": "int"
+        },
+        {
+            "name": "side",
+            "type": "Side" // Reference to the Side schema
+        }
+    ]
+}
