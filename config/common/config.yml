@@ -1,0 +1,3 @@
+Kafka:
+  bootstrap_servers: localhost:9092
+  registry_url: "http://localhost:8081"
