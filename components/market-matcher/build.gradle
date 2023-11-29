@@ -1,0 +1,61 @@
+plugins {
+    id "com.github.johnrengelman.shadow"
+    id "io.micronaut.application"
+    id "io.micronaut.aot"
+}
+
+version = "0.1.0"
+group = "pfe_broker"
+
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":libs:log")
+    implementation project(":libs:avro")
+
+    annotationProcessor "io.micronaut.serde:micronaut-serde-processor"
+    implementation "io.micronaut.serde:micronaut-serde-jackson"
+    runtimeOnly "ch.qos.logback:logback-classic"
+    testImplementation "io.micronaut:micronaut-http-client"
+    runtimeOnly "org.yaml:snakeyaml"
+
+    // Log4J
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.21.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+    // Avro
+    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.1'
+}
+
+application {
+    mainClass.set("pfe_broker.market_matcher.Application")
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("${javaVersion}")
+    targetCompatibility = JavaVersion.toVersion("${javaVersion}")
+}
+
+graalvmNative.toolchainDetection = false
+
+micronaut {
+    runtime("netty")
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("pfe_broker.market_matcher.*")
+    }
+    aot {
+    // Please review carefully the optimizations enabled below
+    // Check https://micronaut-projects.github.io/micronaut-aot/latest/guide/ for more details
+        optimizeServiceLoading = false
+        convertYamlToJava = false
+        precomputeOperations = true
+        cacheEnvironment = true
+        optimizeClassLoading = true
+        deduceEnvironment = true
+        optimizeNetty = true
+    }
+}
