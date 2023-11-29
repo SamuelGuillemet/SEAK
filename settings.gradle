@@ -1,6 +1,6 @@
 pluginManagement {
   plugins {
-    id 'io.micronaut.application' version "${micronautVersion}"
+    id 'io.micronaut.minimal.application' version "${micronautVersion}"
     id 'io.micronaut.library' version "${micronautVersion}"
     id 'io.micronaut.aot' version "${micronautVersion}"
     id 'com.github.johnrengelman.shadow' version "${shadowVersion}"
@@ -12,3 +12,4 @@ rootProject.name = 'pfe-broker'
 include('libs:log')
 include('libs:common')
 include('libs:avro')
+include('components:market-matcher')
