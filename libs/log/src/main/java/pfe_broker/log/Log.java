@@ -4,6 +4,7 @@ import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 
 public class Log {
+
   /**
    * Logger attached to the `pfe_broker` logger.
    */

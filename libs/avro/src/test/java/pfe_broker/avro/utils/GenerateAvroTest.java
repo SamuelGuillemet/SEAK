@@ -1,9 +1,9 @@
 package pfe_broker.avro.utils;
 
 import static org.junit.jupiter.api.Assertions.*;
-import org.junit.jupiter.api.Test;
 
 import java.io.File;
+import org.junit.jupiter.api.Test;
 
 class GenerateAvroTest {
 
@@ -13,5 +13,4 @@ class GenerateAvroTest {
       assertTrue(file.exists());
     }
   }
-
 }

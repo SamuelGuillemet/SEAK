@@ -1,15 +1,15 @@
 {
-    "namespace": "pfe_broker.avro",
-    "type": "record",
-    "name": "RejectedOrder",
-    "fields": [
-        {
-            "name": "order",
-            "type": "Order"
-        },
-        {
-            "name": "reason",
-            "type": "OrderRejectReason"
-        }
-    ]
+  "namespace": "pfe_broker.avro",
+  "type": "record",
+  "name": "RejectedOrder",
+  "fields": [
+    {
+      "name": "order",
+      "type": "Order"
+    },
+    {
+      "name": "reason",
+      "type": "OrderRejectReason"
+    }
+  ]
 }

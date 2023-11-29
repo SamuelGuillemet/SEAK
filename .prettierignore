@@ -4,3 +4,4 @@ build/
 package-lock.json
 package.json
 **/README.md
+libs/avro/src/main/java/pfe_broker/avro/*

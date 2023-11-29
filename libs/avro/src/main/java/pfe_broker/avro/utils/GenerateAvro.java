@@ -2,19 +2,19 @@ package pfe_broker.avro.utils;
 
 import java.io.File;
 import java.io.IOException;
-
 import org.apache.avro.Schema;
 import org.apache.avro.compiler.specific.SpecificCompiler;
 
 public class GenerateAvro {
+
   // The order of the files is important
   public static File[] files = new File[] {
-      getFileFromRessource("order-rejected-reason.avsc"),
-      getFileFromRessource("side.avsc"),
-      getFileFromRessource("order.avsc"),
-      getFileFromRessource("trade.avsc"),
-      getFileFromRessource("rejected-order.avsc"),
-      getFileFromRessource("market-data.avsc"),
+    getFileFromRessource("order-rejected-reason.avsc"),
+    getFileFromRessource("side.avsc"),
+    getFileFromRessource("order.avsc"),
+    getFileFromRessource("trade.avsc"),
+    getFileFromRessource("rejected-order.avsc"),
+    getFileFromRessource("market-data.avsc"),
   };
 
   public static void main(String[] args) {
@@ -26,10 +26,10 @@ public class GenerateAvro {
       System.err.println("Error generating Avro schema");
       e.printStackTrace();
     }
-
   }
 
-  public static void compileSchema(File[] srcFiles, File dest) throws IOException {
+  public static void compileSchema(File[] srcFiles, File dest)
+    throws IOException {
     Schema.Parser parser = new Schema.Parser();
 
     for (File src : srcFiles) {
@@ -44,5 +44,4 @@ public class GenerateAvro {
     ClassLoader classLoader = GenerateAvro.class.getClassLoader();
     return new File(classLoader.getResource(filename).getFile());
   }
-
 }
