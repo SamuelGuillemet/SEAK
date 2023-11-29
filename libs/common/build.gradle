@@ -1,0 +1,39 @@
+plugins {
+    id "io.micronaut.library"
+}
+
+version = "0.1.0"
+group = "pfe_broker"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+
+    implementation("io.micronaut.kafka:micronaut-kafka")
+    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+    runtimeOnly "org.yaml:snakeyaml"
+
+    // Test dependencies
+    implementation group: 'org.testcontainers', name: 'kafka', version: '1.19.3'
+    implementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
+    implementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+}
+
+graalvmNative.toolchainDetection = false
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("${javaVersion}")
+    targetCompatibility = JavaVersion.toVersion("${javaVersion}")
+}
+
+micronaut {
+  testRuntime("junit5")
+  processing {
+    incremental(true)
+    annotations("pfe_broker.common.*")
+  }
+}
