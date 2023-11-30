@@ -11,12 +11,12 @@ Configuration:
   Loggers:
     Logger:
       - name: pfe_broker
-        level: info
+        level: debug
         additivity: false
         AppenderRef:
           - ref: LogToConsole
 
     Root:
-      - level: error
+      - level: info
         AppenderRef:
           - ref: LogToConsole

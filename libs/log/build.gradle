@@ -23,7 +23,7 @@ dependencies {
 sourceSets {
     main {
         resources {
-            srcDirs = ["src/main/resources", project(":").file("config").path]
+            srcDirs = ["src/main/resources", project(":").file("config/log").path]
         }
     }
 }
