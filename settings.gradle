@@ -1,7 +1,7 @@
 pluginManagement {
   plugins {
     id 'io.micronaut.minimal.application' version "${micronautVersion}"
-    id 'io.micronaut.library' version "${micronautVersion}"
+    id 'io.micronaut.minimal.library' version "${micronautVersion}"
     id 'io.micronaut.aot' version "${micronautVersion}"
     id 'com.github.johnrengelman.shadow' version "${shadowVersion}"
     id 'io.github.khalilou88.jnxplus' version "${jnxplusGradlePluginVersion}"

@@ -1,5 +1,5 @@
 plugins {
-    id "io.micronaut.library"
+    id "io.micronaut.minimal.library"
 }
 
 version = "0.1.0"
@@ -22,8 +22,6 @@ dependencies {
     implementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
     implementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
 }
-
-graalvmNative.toolchainDetection = false
 
 java {
     sourceCompatibility = JavaVersion.toVersion("${javaVersion}")
