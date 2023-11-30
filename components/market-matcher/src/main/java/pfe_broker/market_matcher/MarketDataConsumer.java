@@ -53,7 +53,7 @@ public class MarketDataConsumer {
   public MarketDataConsumer(Environment environment) {
     this.environment = environment;
     this.consumer = new KafkaConsumer<>(this.buildProperties());
-    LOG.info("MarketDataConsumer created");
+    LOG.debug("MarketDataConsumer created");
   }
 
   public MarketData readLastStockData(String symbol) {

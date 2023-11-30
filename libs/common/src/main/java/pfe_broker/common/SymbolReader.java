@@ -2,6 +2,7 @@ package pfe_broker.common;
 
 import io.micronaut.context.annotation.Property;
 import jakarta.inject.Singleton;
+import java.net.Socket;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -14,20 +15,10 @@ public class SymbolReader {
   @Property(name = "kafka.bootstrap.servers")
   private String bootstrapServers;
 
-  public String getBootstrapServers() {
-    return bootstrapServers;
-  }
-
   @Property(name = "kafka.common.symbol-topic-prefix")
   private String symbolTopicPrefix;
 
-  public String getSymbolTopicPrefix() {
-    return symbolTopicPrefix;
-  }
-
   public List<String> getSymbols() {
-    System.out.println("Bootstrap servers: " + bootstrapServers);
-    System.out.println("Symbol topic prefix: " + symbolTopicPrefix);
     Properties props = new Properties();
     props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
     try (Admin admin = Admin.create(props)) {
@@ -42,5 +33,23 @@ public class SymbolReader {
     } catch (InterruptedException | ExecutionException e) {
       throw new RuntimeException(e);
     }
+  }
+
+  public boolean isKafkaRunning() {
+    String[] hostAndPort = bootstrapServers.split(":");
+    try (
+      Socket socket = new Socket(
+        hostAndPort[0],
+        Integer.parseInt(hostAndPort[1])
+      )
+    ) {
+      return socket.isConnected();
+    } catch (Exception e) {
+      return false;
+    }
+  }
+
+  public String getBootstrapServers() {
+    return bootstrapServers;
   }
 }

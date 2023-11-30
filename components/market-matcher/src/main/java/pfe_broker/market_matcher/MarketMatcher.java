@@ -8,6 +8,7 @@ import io.micronaut.configuration.kafka.annotation.OffsetReset;
 import io.micronaut.configuration.kafka.annotation.OffsetStrategy;
 import io.micronaut.configuration.kafka.annotation.Topic;
 import io.micronaut.messaging.annotation.SendTo;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
@@ -30,8 +31,16 @@ public class MarketMatcher {
   ) {
     this.marketDataProducer = marketDataProducer;
     this.symbolReader = symbolReader;
-    this.retreiveSymbols();
-    LOG.info("OrderConsumer created");
+    LOG.debug("OrderConsumer created");
+  }
+
+  @PostConstruct
+  void init() {
+    if (this.symbolReader.isKafkaRunning()) {
+      this.retreiveSymbols();
+    } else {
+      LOG.error("Kafka is not running");
+    }
   }
 
   @KafkaListener(
