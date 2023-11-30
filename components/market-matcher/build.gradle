@@ -47,6 +47,20 @@ java {
     targetCompatibility = JavaVersion.toVersion("${javaVersion}")
 }
 
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/resources", project(":").file("config/common").path]
+        }
+    }
+    test {
+        resources {
+            srcDirs = ["src/test/resources", project(":").file("config/common").path]
+        }
+    }
+}
+
+
 micronaut {
     testRuntime("junit5")
     processing {

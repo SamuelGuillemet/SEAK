@@ -8,6 +8,7 @@ public class Application {
 
   public static void main(String[] args) {
     LOG.info("Starting Market Matcher");
+    System.setProperty("micronaut.application.name", "MarketMatcher");
     Micronaut.run(Application.class, args);
   }
 }
