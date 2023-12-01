@@ -68,3 +68,9 @@ micronaut {
         annotations("pfe_broker.market_matcher.*")
     }
 }
+
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+}
