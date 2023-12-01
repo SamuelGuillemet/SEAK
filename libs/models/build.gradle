@@ -1,0 +1,45 @@
+plugins {
+  id "io.micronaut.minimal.library"
+  id 'io.freefair.lombok'
+}
+
+group = 'pfe_broker'
+version = '0.1.0'
+sourceCompatibility = "${javaVersion}"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":libs:log")
+
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+
+    annotationProcessor("io.micronaut.data:micronaut-data-processor")
+    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
+
+    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
+    implementation("io.micronaut.serde:micronaut-serde-jackson")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+
+    runtimeOnly "org.yaml:snakeyaml"
+    runtimeOnly("org.postgresql:postgresql")
+
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("${javaVersion}")
+    targetCompatibility = JavaVersion.toVersion("${javaVersion}")
+}
+
+micronaut {
+  testRuntime("junit5")
+  processing {
+    incremental(true)
+    annotations("pfe_broker.models.*")
+  }
+}
