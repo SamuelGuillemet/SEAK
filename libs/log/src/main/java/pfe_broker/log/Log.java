@@ -10,7 +10,10 @@ public class Log {
    */
   public static final Logger LOG;
 
+  public static final Logger DB;
+
   static {
     LOG = LogManager.getLogger("pfe_broker");
+    DB = LogManager.getLogger("pfe_broker.db");
   }
 }
