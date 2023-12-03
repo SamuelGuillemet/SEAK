@@ -29,11 +29,24 @@ dependencies {
 
     compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
+
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
+    testImplementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
+    testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
+    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
 }
 
 java {
     sourceCompatibility = JavaVersion.toVersion("${javaVersion}")
     targetCompatibility = JavaVersion.toVersion("${javaVersion}")
+}
+
+sourceSets {
+    test {
+        resources {
+            srcDirs = ["src/test/resources", project(":").file("config/common").path]
+        }
+    }
 }
 
 micronaut {
