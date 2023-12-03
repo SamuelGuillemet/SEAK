@@ -16,14 +16,3 @@ kafka:
       metadata.max.age.ms: 30000 # 30 seconds
       value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
       key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
-# ---
-# datasources:
-#   default:
-#     db-type: postgresql
-#     dialect: POSTGRES
-#     driver-class-name: org.postgresql.Driver
-# ---
-# jpa:
-#   default:
-#     properties.hibernate.hbm2ddl.auto: update
-#     entity-scan.packages: pfe_broker.models.domains

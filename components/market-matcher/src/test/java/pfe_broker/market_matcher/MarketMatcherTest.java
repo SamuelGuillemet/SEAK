@@ -28,6 +28,9 @@ import pfe_broker.market_matcher.mocks.MockTradeListener;
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MarketMatcherTest implements TestPropertyProvider {
+  static {
+    Application.setProperties();
+  }
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();

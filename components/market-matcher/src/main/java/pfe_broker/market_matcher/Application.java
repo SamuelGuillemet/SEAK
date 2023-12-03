@@ -8,7 +8,14 @@ public class Application {
 
   public static void main(String[] args) {
     LOG.info("Starting Market Matcher");
-    System.setProperty("micronaut.application.name", "MarketMatcher");
+    setProperties();
     Micronaut.run(Application.class, args);
+  }
+
+  public static void setProperties() {
+    System.setProperty(
+      "micronaut.config.files",
+      "classpath:application.yml,classpath:kafka.yml"
+    );
   }
 }
