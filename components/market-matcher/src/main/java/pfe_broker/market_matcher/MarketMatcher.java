@@ -56,14 +56,14 @@ public class MarketMatcher {
     String symbol = order.getSymbol().toString();
 
     if (!symbols.contains(symbol)) {
-      LOG.error("Ignoring order " + order + " for unknown symbol " + symbol);
+      LOG.warn("Ignoring order " + order + " for unknown symbol " + symbol);
       return null;
     }
 
     MarketData marketData = marketDataProducer.readLastStockData(symbol);
 
     if (marketData == null) {
-      LOG.error("Ignoring order " + order + " for unknown symbol " + symbol);
+      LOG.warn("Ignoring order " + order + " for unknown symbol " + symbol);
       return null;
     }
 

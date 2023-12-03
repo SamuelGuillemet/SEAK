@@ -10,9 +10,12 @@ import org.testcontainers.containers.GenericContainer;
 import org.testcontainers.containers.KafkaContainer;
 import org.testcontainers.containers.Network;
 import org.testcontainers.containers.wait.strategy.Wait;
+import org.testcontainers.shaded.com.trilead.ssh2.log.Logger;
 import org.testcontainers.utility.DockerImageName;
 
 public class KafkaTestContainer extends GenericContainer<KafkaTestContainer> {
+
+  Logger LOG = Logger.getLogger(KafkaTestContainer.class);
 
   private final Network KAFKA_NETWORK = Network.newNetwork();
   private final String CONFLUENT_PLATFORM_VERSION = "7.4.1";
@@ -37,9 +40,9 @@ public class KafkaTestContainer extends GenericContainer<KafkaTestContainer> {
   @Override
   public void start() {
     KAFKA.start();
-    System.out.println("Kafka started");
+    LOG.log(3, "Kafka started");
     SCHEMA_REGISTRY.withKafka(KAFKA).start();
-    System.out.println("Schema registry started");
+    LOG.log(3, "Schema registry started");
     // Should be set after container is started
     SCHEMA_REGISTRY.withEnv(
       "SCHEMA_REGISTRY_LISTENERS",
