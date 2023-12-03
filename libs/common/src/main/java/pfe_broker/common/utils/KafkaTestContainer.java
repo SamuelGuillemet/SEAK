@@ -1,6 +1,5 @@
 package pfe_broker.common.utils;
 
-import io.micronaut.logging.LogLevel;
 import java.time.Duration;
 import java.util.Properties;
 import java.util.stream.Stream;

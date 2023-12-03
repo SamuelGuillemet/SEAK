@@ -5,6 +5,7 @@ datasources:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
+    database-name: ${DB_NAME:postgres}
 ---
 jpa:
   default:
