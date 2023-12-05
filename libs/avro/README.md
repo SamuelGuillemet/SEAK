@@ -23,6 +23,10 @@ import pfe_broker.avro.Order;
 Bes sure to add avro and lib dependencies inside the `build.gradle` file as following:
 
 ```groovy
+repositories {
+    // Rest of repositories
+    maven { url confluentUrl }
+}
 dependencies {
     implementation project(":libs:avro")
     // Avro
