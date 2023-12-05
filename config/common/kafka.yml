@@ -5,9 +5,10 @@ kafka:
     symbol-topic-prefix: market-data.
   topics:
     trades: trades
+    accepted-trades: accepted-trades
+    orders: orders
     accepted-orders: accepted-orders
     rejected-orders: rejected-orders
-    orders: orders
   producers:
     default:
       value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
