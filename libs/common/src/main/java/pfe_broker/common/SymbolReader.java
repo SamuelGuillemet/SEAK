@@ -2,7 +2,6 @@ package pfe_broker.common;
 
 import io.micronaut.context.annotation.Property;
 import jakarta.inject.Singleton;
-import java.net.Socket;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -36,17 +35,7 @@ public class SymbolReader {
   }
 
   public boolean isKafkaRunning() {
-    String[] hostAndPort = bootstrapServers.split(":");
-    try (
-      Socket socket = new Socket(
-        hostAndPort[0],
-        Integer.parseInt(hostAndPort[1])
-      )
-    ) {
-      return socket.isConnected();
-    } catch (Exception e) {
-      return false;
-    }
+    return UtilsRunning.isKafkaRunning(bootstrapServers);
   }
 
   public String getBootstrapServers() {
