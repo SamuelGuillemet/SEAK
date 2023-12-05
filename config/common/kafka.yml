@@ -6,6 +6,8 @@ kafka:
   topics:
     trades: trades
     accepted-orders: accepted-orders
+    rejected-orders: rejected-orders
+    orders: orders
   producers:
     default:
       value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
@@ -16,3 +18,6 @@ kafka:
       metadata.max.age.ms: 30000 # 30 seconds
       value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
       key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  streams:
+    default:
+      auto.offset.reset: "earliest"

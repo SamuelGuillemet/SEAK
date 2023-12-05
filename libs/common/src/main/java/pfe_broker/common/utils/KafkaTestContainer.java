@@ -98,11 +98,7 @@ public class KafkaTestContainer extends GenericContainer<KafkaTestContainer> {
     }
 
     public SchemaRegistryContainer(String version) {
-      super(
-        DockerImageName
-          .parse(SCHEMA_REGISTRY_IMAGE)
-          .withTag(CONFLUENT_PLATFORM_VERSION)
-      );
+      super(DockerImageName.parse(SCHEMA_REGISTRY_IMAGE).withTag(version));
       waitingFor(Wait.forHttp("/subjects").forStatusCode(200));
       withExposedPorts(SCHEMA_REGISTRY_PORT);
     }
