@@ -4,8 +4,7 @@ plugins {
 }
 
 group = 'pfe_broker'
-version = '0.1.0'
-sourceCompatibility = "${javaVersion}"
+version = "${version}"
 
 repositories {
     mavenCentral()
