@@ -17,7 +17,7 @@ jobs:
       - name: Get the current version from gradle.properties
         id: version
         run: |
-          echo "version=$(cat gradle.properties | grep version | cut -d= -f2)" >> $GITHUB_ENV
+          echo "version=$(cat gradle.properties | grep version | cut -d= -f2)" >> $GITHUB_OUTPUT
 
       - name: Get the label to add
         id: get_label
