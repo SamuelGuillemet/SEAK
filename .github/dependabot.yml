@@ -6,6 +6,7 @@
 version: 2
 updates:
   - package-ecosystem: "github-actions"
+    target-branch: "develop"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -17,6 +18,7 @@ updates:
           - "*"
 
   - package-ecosystem: "gradle"
+    target-branch: "develop"
     directory: "/"
     schedule:
       interval: "weekly"
@@ -28,6 +30,7 @@ updates:
           - "*"
 
   # - package-ecosystem: "pip"
+  #   target-branch: "develop"
   #   directory: "/components/pre-processing"
   #   schedule:
   #     interval: "weekly"
