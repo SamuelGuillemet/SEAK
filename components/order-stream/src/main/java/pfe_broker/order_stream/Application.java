@@ -5,6 +5,9 @@ import static pfe_broker.log.Log.LOG;
 import io.micronaut.runtime.Micronaut;
 
 public class Application {
+  static {
+    setProperties();
+  }
 
   public static void main(String[] args) {
     LOG.info("Starting Order Stream");
