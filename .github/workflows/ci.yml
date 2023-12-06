@@ -17,6 +17,7 @@ jobs:
         with:
           java-version: "17"
           distribution: "temurin"
+          cache: "gradle"
       # Cache node_modules
       - uses: actions/setup-node@v4
         with:
