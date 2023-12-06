@@ -25,7 +25,7 @@ jobs:
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const labels = ["release:patch", "release:minor", "release:major"];
+            const labels = ["release:patch", "release:minor", "release:major", "norelease"];
             let last_release = {
                 data: {
                     tag_name: "v0.0.0",
@@ -42,7 +42,7 @@ jobs:
             const last_release_tag = last_release.data.tag_name;
             const last_release_version = last_release_tag.replace("v", "");
             if (last_release_version === process.env.VERSION) {
-                core.setFailed("The version has not been bumped");
+                core.setOutput("label", labels[3]);
             } else {
                 const last_release_version_split = last_release_version.split(".");
                 const current_version_split = process.env.VERSION.split(".");
