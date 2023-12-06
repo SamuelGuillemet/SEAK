@@ -15,24 +15,24 @@ jobs:
           fetch-depth: 0
 
       - name: Get the current version from gradle.properties
-        id: version
+        id: get_current_version
         run: |
           echo "version=$(cat gradle.properties | grep version | cut -d= -f2)" >> $GITHUB_OUTPUT
 
       - name: Get the label to add
         id: get_label
-        uses: actions/github-script@v6
+        uses: actions/github-script@v7
         with:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
-            const labels = ["release:patch", "release:minor", "release:major"];
+            const labels = ["release:patch", "release:minor", "release:major", "norelease"];
             let last_release = {
                 data: {
                     tag_name: "v0.0.0",
                 },
             }
             try {
-                last_release = await github.repos.getLatestRelease({
+                last_release = await github.rest.repos.getLatestRelease({
                     owner: context.repo.owner,
                     repo: context.repo.repo,
                 });
@@ -42,7 +42,7 @@ jobs:
             const last_release_tag = last_release.data.tag_name;
             const last_release_version = last_release_tag.replace("v", "");
             if (last_release_version === process.env.VERSION) {
-                core.setFailed("The version has not been bumped");
+                core.setOutput("label", labels[3]);
             } else {
                 const last_release_version_split = last_release_version.split(".");
                 const current_version_split = process.env.VERSION.split(".");
@@ -55,7 +55,7 @@ jobs:
                 }
             }
         env:
-          VERSION: ${{ steps.version.outputs.version }}
+          VERSION: ${{ steps.get_current_version.outputs.version }}
 
       - name: Add labels
         uses: actions-ecosystem/action-add-labels@v1
