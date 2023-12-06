@@ -26,10 +26,19 @@ jobs:
           github-token: ${{ secrets.GITHUB_TOKEN }}
           script: |
             const labels = ["release:patch", "release:minor", "release:major"];
-            const last_release = await github.repos.getLatestRelease({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-            });
+            let last_release = {
+                data: {
+                    tag_name: "v0.0.0",
+                },
+            }
+            try {
+                last_release = await github.repos.getLatestRelease({
+                    owner: context.repo.owner,
+                    repo: context.repo.repo,
+                });
+            } catch (error) {
+                console.log("No release found");
+            }
             const last_release_tag = last_release.data.tag_name;
             const last_release_version = last_release_tag.replace("v", "");
             if (last_release_version === process.env.VERSION) {
