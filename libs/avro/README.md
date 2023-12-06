@@ -30,7 +30,7 @@ repositories {
 dependencies {
     implementation project(":libs:avro")
     // Avro
-    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.1'
+    implementation group: 'io.confluent', name: 'kafka-avro-serializer', version: '7.5.1'
 
     // Rest of dependencies
 }
@@ -40,6 +40,7 @@ If you want to use avro inside kafka stream you will need the following:
 
 ```groovy
 dependencies {
+    implementation project(":libs:avro")
     // Avro serde
     implementation group: 'io.confluent', name: 'kafka-streams-avro-serde', version: '7.5.1'
 
