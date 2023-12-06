@@ -18,6 +18,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.RejectedOrder;
+import pfe_broker.common.KafkaStreamUncaughtExceptionHandler;
 
 @Factory
 public class OrderStream {
@@ -68,6 +69,11 @@ public class OrderStream {
     processAcceptedAndRejectedOrders(integrityCheckedOrderStream);
 
     return orderStream;
+  }
+
+  @Singleton
+  KafkaStreamUncaughtExceptionHandler uncaughtExceptionHandler() {
+    return new KafkaStreamUncaughtExceptionHandler();
   }
 
   private void processAcceptedAndRejectedOrders(
