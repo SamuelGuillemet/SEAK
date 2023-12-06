@@ -2,6 +2,7 @@ name: CI
 on:
   push:
     branches:
+      - develop
       - main
   pull_request:
 
@@ -22,16 +23,27 @@ jobs:
         with:
           node-version: 20
           cache: "npm"
-      - run: npm ci
-      - uses: nrwl/nx-set-shas@v4
-      # This line is needed for nx affected to work when CI is running on a PR
-      - run: git branch --track main origin/main
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Set shas
+        uses: nrwl/nx-set-shas@v4
+
+      - name: Get main branch
+        # Verify the event is a pull request and the base branch is not main
+        if: github.event_name == 'pull_request' && github.event.pull_request.base.ref != 'main'
+        # This line is needed for nx affected to work when CI is running on a PR
+        run: git branch --track main origin/main
 
       - name: Clean gradle cache
         run: ./gradlew clean --no-daemon
 
-      - run: npx nx format:check
-      # Run build only for nx tag 'lang:java'
-      - run: npx nx affected -t build --parallel=3 --exclude='*,!tag:lang:java'
-      # Run lint, test and build only for nx tag 'lang:python'
-      - run: npx nx affected -t lint,test,build --parallel=3 --exclude='*,!tag:lang:python'
+      - name: Verify formatting
+        run: npx nx format:check
+
+      - name: Test Java projects
+        run: npx nx affected -t build --parallel=3 --exclude='*,!tag:lang:java'
+
+      - name: Test Python projects
+        run: npx nx affected -t lint,test,build --parallel=3 --exclude='*,!tag:lang:python'
