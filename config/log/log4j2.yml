@@ -1,0 +1,28 @@
+Configuration:
+  status: INFO
+
+  Appenders:
+    Console:
+      - name: LogToConsole
+        target: SYSTEM_OUT
+        PatternLayout:
+          pattern: "%cyan{%d{HH:mm:ss.SSS}} %style{[%t]}{bright black} %highlight{%-5level} %magenta{(%logger{36})} - %msg%n"
+
+  Loggers:
+    Logger:
+      - name: pfe_broker
+        level: debug
+        additivity: false
+        AppenderRef:
+          - ref: LogToConsole
+
+      - name: pfe_broker.db
+        level: debug
+        additivity: false
+        AppenderRef:
+          - ref: LogToConsole
+
+    Root:
+      - level: info
+        AppenderRef:
+          - ref: LogToConsole

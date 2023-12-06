@@ -24,5 +24,11 @@
   "python.analysis.autoImportCompletions": true,
   "python.analysis.typeCheckingMode": "basic",
   "java.configuration.updateBuildConfiguration": "automatic",
-  "java.debug.settings.onBuildFailureProceed": true
+  "java.completion.importOrder": [
+    "#"
+  ],
+  "[java]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode",
+  },
+  "java.compile.nullAnalysis.mode": "automatic"
 }

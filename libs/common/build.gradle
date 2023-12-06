@@ -1,0 +1,42 @@
+plugins {
+    id "io.micronaut.minimal.library"
+}
+
+version = "${version}"
+group = "pfe_broker"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":libs:log")
+
+    runtimeOnly "org.yaml:snakeyaml"
+    implementation("io.micronaut.kafka:micronaut-kafka")
+    // implementation("io.micronaut.kafka:micronaut-kafka-streams")
+
+    implementation group: 'org.testcontainers', name: 'kafka', version: '1.19.3'
+    implementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
+    implementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+
+    // Test dependencies
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+
+    // Log4J
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("${javaVersion}")
+    targetCompatibility = JavaVersion.toVersion("${javaVersion}")
+}
+
+micronaut {
+  testRuntime("junit5")
+  processing {
+    incremental(true)
+    annotations("pfe_broker.common.*")
+  }
+}

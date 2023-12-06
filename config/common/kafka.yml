@@ -1,0 +1,24 @@
+kafka:
+  bootstrap.servers: localhost:9092
+  schema.registry.url: http://localhost:8081
+  common:
+    symbol-topic-prefix: market-data.
+  topics:
+    trades: trades
+    accepted-trades: accepted-trades
+    orders: orders
+    accepted-orders: accepted-orders
+    rejected-orders: rejected-orders
+  producers:
+    default:
+      value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
+      key.serializer: org.apache.kafka.common.serialization.StringSerializer
+  consumers:
+    default:
+      specific.avro.reader: true
+      metadata.max.age.ms: 30000 # 30 seconds
+      value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
+      key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+  streams:
+    default:
+      auto.offset.reset: "earliest"

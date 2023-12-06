@@ -1,0 +1,54 @@
+plugins {
+  id "io.micronaut.minimal.library"
+  id 'io.freefair.lombok'
+}
+
+group = 'pfe_broker'
+version = "${version}"
+
+repositories {
+    mavenCentral()
+}
+
+dependencies {
+    implementation project(":libs:log")
+
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+
+    annotationProcessor("io.micronaut.data:micronaut-data-processor")
+
+    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
+    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
+
+    runtimeOnly "org.yaml:snakeyaml"
+    runtimeOnly("org.postgresql:postgresql")
+
+    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
+    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
+
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
+    testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
+    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("${javaVersion}")
+    targetCompatibility = JavaVersion.toVersion("${javaVersion}")
+}
+
+sourceSets {
+    test {
+        resources {
+            srcDirs = ["src/test/resources", project(":").file("config/common").path]
+        }
+    }
+}
+
+micronaut {
+  testRuntime("junit5")
+  processing {
+    incremental(true)
+    annotations("pfe_broker.models.*")
+  }
+}

@@ -1,0 +1,70 @@
+plugins {
+    id "com.github.johnrengelman.shadow"
+    id "io.micronaut.application"
+}
+
+version = "${version}"
+group = "pfe_broker"
+
+repositories {
+    mavenCentral()
+    maven { url confluentUrl }
+}
+
+dependencies {
+    implementation project(":libs:log")
+    implementation project(":libs:avro")
+    implementation project(":libs:common")
+
+    runtimeOnly "org.yaml:snakeyaml"
+    implementation("io.micronaut.kafka:micronaut-kafka-streams")
+    implementation("io.micronaut.redis:micronaut-redis-lettuce")
+
+    // Test dependencies
+    testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
+    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+
+    // Log4J
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+
+    // Avro
+    implementation group: 'io.confluent', name: 'kafka-streams-avro-serde', version: '7.5.1'
+}
+
+application {
+    mainClass.set("pfe_broker.trade_stream.Application")
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("${javaVersion}")
+    targetCompatibility = JavaVersion.toVersion("${javaVersion}")
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = ["src/main/resources", project(":").file("config/common").path]
+        }
+    }
+    test {
+        resources {
+            srcDirs = ["src/test/resources", project(":").file("config/common").path]
+        }
+    }
+}
+
+graalvmNative.toolchainDetection = false
+
+micronaut {
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("pfe_broker.trade_stream.*")
+    }
+}
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+}

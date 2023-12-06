@@ -1,0 +1,37 @@
+name: CI
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - uses: actions/setup-java@v4
+        with:
+          java-version: "17"
+          distribution: "temurin"
+          cache: "gradle"
+      # Cache node_modules
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: "npm"
+      - run: npm ci
+      - uses: nrwl/nx-set-shas@v4
+      # This line is needed for nx affected to work when CI is running on a PR
+      - run: git branch --track main origin/main
+
+      - name: Clean gradle cache
+        run: ./gradlew clean --no-daemon
+
+      - run: npx nx format:check
+      # Run build only for nx tag 'lang:java'
+      - run: npx nx affected -t build --parallel=3 --exclude='*,!tag:lang:java'
+      # Run lint, test and build only for nx tag 'lang:python'
+      - run: npx nx affected -t lint,test,build --parallel=3 --exclude='*,!tag:lang:python'
