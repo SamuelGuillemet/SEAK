@@ -1,3 +1,6 @@
+[![CodeQL](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/codeql.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/codeql.yml)
+[![CI](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci.yml)
+
 # PFE Asr Broker
 
 This is a monorepo for the PFE Asr Broker project.
