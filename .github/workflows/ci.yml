@@ -27,5 +27,11 @@ jobs:
       # This line is needed for nx affected to work when CI is running on a PR
       - run: git branch --track main origin/main
 
+      - name: Clean gradle cache
+        run: ./gradlew clean --no-daemon
+
       - run: npx nx format:check
-      - run: npx nx affected -t lint,test,build --parallel=3
+      # Run build only for nx tag 'lang:java'
+      - run: npx nx affected -t build --parallel=3 --exclude='*,!tag:lang:java'
+      # Run lint, test and build only for nx tag 'lang:python'
+      - run: npx nx affected -t lint,test,build --parallel=3 --exclude='*,!tag:lang:python'
