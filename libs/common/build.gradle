@@ -10,17 +10,22 @@ repositories {
 }
 
 dependencies {
-    testImplementation "io.micronaut.test:micronaut-test-junit5"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+    implementation project(":libs:log")
 
-    implementation("io.micronaut.kafka:micronaut-kafka")
-    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
     runtimeOnly "org.yaml:snakeyaml"
+    implementation("io.micronaut.kafka:micronaut-kafka")
+    implementation("io.micronaut.kafka:micronaut-kafka-streams")
 
-    // Test dependencies
     implementation group: 'org.testcontainers', name: 'kafka', version: '1.19.3'
     implementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
     implementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+
+    // Test dependencies
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
+    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+
+    // Log4J
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
 }
 
 java {

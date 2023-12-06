@@ -1,4 +1,4 @@
-package pfe_broker.order_stream;
+package pfe_broker.trade_stream;
 
 import static pfe_broker.log.Log.LOG;
 
@@ -10,7 +10,7 @@ public class Application {
   }
 
   public static void main(String[] args) {
-    LOG.info("Starting Order Stream");
+    LOG.info("Starting Trade Stream");
     Micronaut.run(Application.class, args);
   }
 

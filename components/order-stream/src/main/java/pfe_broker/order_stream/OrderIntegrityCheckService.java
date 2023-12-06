@@ -2,8 +2,10 @@ package pfe_broker.order_stream;
 
 import static pfe_broker.log.Log.LOG;
 
+import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
+import io.micronaut.context.annotation.Property;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -13,6 +15,7 @@ import pfe_broker.avro.Order;
 import pfe_broker.avro.OrderRejectReason;
 import pfe_broker.avro.Side;
 import pfe_broker.common.SymbolReader;
+import pfe_broker.common.UtilsRunning;
 
 @Singleton
 public class OrderIntegrityCheckService {
@@ -21,20 +24,26 @@ public class OrderIntegrityCheckService {
   private SymbolReader symbolReader;
 
   @Inject
+  private RedisClient redisClient;
+
+  @Property(name = "redis.uri")
+  private String redisUri;
+
   private StatefulRedisConnection<String, String> redisConnection;
 
-  private List<String> symbols;
-
-  public OrderIntegrityCheckService() {
-    this.symbols = new ArrayList<>();
-  }
+  private List<String> symbols = new ArrayList<>();
 
   @PostConstruct
   void init() {
     if (this.symbolReader.isKafkaRunning()) {
       this.retreiveSymbols();
     } else {
-      LOG.error("Kafka is not running");
+      LOG.fatal("Kafka is not running");
+    }
+    if (this.isRedisRunning()) {
+      this.redisConnection = redisClient.connect();
+    } else {
+      LOG.fatal("Redis is not running");
     }
   }
 
@@ -57,7 +66,8 @@ public class OrderIntegrityCheckService {
     }
 
     syncCommands.watch(stockKey);
-    while (true) {
+    int countdown = 10;
+    while (countdown-- > 0) {
       String stockQuantityString = syncCommands.get(stockKey);
       if (stockQuantityString == null) {
         LOG.debug(
@@ -86,6 +96,9 @@ public class OrderIntegrityCheckService {
         LOG.debug("Retrying order " + order);
       }
     }
+    LOG.debug("Order " + order + " rejected because of insufficient stocks");
+    syncCommands.unwatch();
+    return OrderRejectReason.ORDER_EXCEEDS_LIMIT;
   }
 
   public OrderRejectReason checkIntegrity(Order order) {
@@ -137,6 +150,6 @@ public class OrderIntegrityCheckService {
   }
 
   public boolean isRedisRunning() {
-    return redisConnection.sync().ping().equals("PONG");
+    return UtilsRunning.isRedisRunning(redisUri);
   }
 }

@@ -1,14 +1,12 @@
-package pfe_broker.order_stream;
+package pfe_broker.common;
 
 import static pfe_broker.log.Log.LOG;
 
 import io.micronaut.configuration.kafka.streams.event.BeforeKafkaStreamStart;
 import io.micronaut.context.event.ApplicationEventListener;
-import jakarta.inject.Singleton;
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler;
 
-@Singleton
-public class UncaughtExceptionHandler
+public class KafkaStreamUncaughtExceptionHandler
   implements
     ApplicationEventListener<BeforeKafkaStreamStart>,
     StreamsUncaughtExceptionHandler {

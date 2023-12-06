@@ -18,10 +18,8 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
 
     annotationProcessor("io.micronaut.data:micronaut-data-processor")
-    annotationProcessor("io.micronaut.serde:micronaut-serde-processor")
 
     implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
-    implementation("io.micronaut.serde:micronaut-serde-jackson")
     implementation("io.micronaut.sql:micronaut-jdbc-hikari")
 
     runtimeOnly "org.yaml:snakeyaml"
@@ -31,7 +29,6 @@ dependencies {
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
 
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
-    testImplementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
 }

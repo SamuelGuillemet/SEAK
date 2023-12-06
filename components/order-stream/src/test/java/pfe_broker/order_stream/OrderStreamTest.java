@@ -65,7 +65,6 @@ public class OrderStreamTest implements TestPropertyProvider {
 
   @BeforeEach
   void setup(
-    MockOrderProducer mockOrderProducer,
     MockOrderListener mockOrderListener,
     StatefulRedisConnection<String, String> redisConnection
   ) {

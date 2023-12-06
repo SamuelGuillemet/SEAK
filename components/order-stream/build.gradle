@@ -18,22 +18,17 @@ dependencies {
 
     runtimeOnly "org.yaml:snakeyaml"
     implementation("io.micronaut.kafka:micronaut-kafka-streams")
-    implementation("io.micronaut.serde:micronaut-serde-jackson")
     implementation("io.micronaut.redis:micronaut-redis-lettuce")
-    implementation group: 'jakarta.transaction', name: 'jakarta.transaction-api', version: '2.0.1'
 
     // Test dependencies
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
-    testImplementation group: 'org.testcontainers', name: 'kafka', version: '1.19.3'
-    testImplementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
 
     // Log4J
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.21.1'
     implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+
     // Avro
-    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.1'
     implementation group: 'io.confluent', name: 'kafka-streams-avro-serde', version: '7.5.1'
 }
 

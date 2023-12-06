@@ -1,4 +1,4 @@
-package pfe_broker.order_stream;
+package pfe_broker.trade_stream;
 
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
@@ -16,33 +16,33 @@ import org.apache.kafka.streams.StreamsConfig;
 import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
-import pfe_broker.avro.Order;
 import pfe_broker.avro.RejectedOrder;
+import pfe_broker.avro.Trade;
 import pfe_broker.common.KafkaStreamUncaughtExceptionHandler;
 
 @Factory
-public class OrderStream {
-
-  @Inject
-  private OrderIntegrityCheckService integrityCheckService;
+public class TradeStream {
 
   @Property(name = "kafka.schema.registry.url")
   private String schemaRegistryUrl;
 
-  @Property(name = "kafka.topics.orders")
-  private String ordersTopic;
+  @Property(name = "kafka.topics.trades")
+  private String tradesTopic;
 
-  @Property(name = "kafka.topics.accepted-orders")
-  private String acceptedOrdersTopic;
+  @Property(name = "kafka.topics.accepted-trades")
+  private String acceptedTradesTopic;
 
   @Property(name = "kafka.topics.rejected-orders")
   private String rejectedOrdersTopic;
 
+  @Inject
+  private TradeIntegrityCheckService integrityCheckService;
+
   private final Serdes.StringSerde keySerde = new Serdes.StringSerde();
 
   @Singleton
-  @Named("order-stream-integrity")
-  KStream<String, Order> orderStreamIntegrity(ConfiguredStreamBuilder builder) {
+  @Named("trade-stream-integrity")
+  KStream<String, Trade> tradeStreamIntegrity(ConfiguredStreamBuilder builder) {
     Properties props = builder.getConfiguration();
     props.put(
       StreamsConfig.DEFAULT_KEY_SERDE_CLASS_CONFIG,
@@ -53,22 +53,22 @@ public class OrderStream {
       Serdes.String().getClass().getName()
     );
 
-    KStream<String, Order> orderStream = builder.stream(
-      ordersTopic,
-      Consumed.with(this.keySerde, this.orderAvroSerde())
+    KStream<String, Trade> tradeStream = builder.stream(
+      tradesTopic,
+      Consumed.with(this.keySerde, this.tradeAvroSerde())
     );
 
-    KStream<String, OrderIntegrityCheckRecord> integrityCheckedOrderStream =
-      orderStream.mapValues(order ->
-        new OrderIntegrityCheckRecord(
-          order,
-          integrityCheckService.checkIntegrity(order)
+    KStream<String, TradeIntegrityCheckRecord> integrityCheckedTradeStream =
+      tradeStream.mapValues(trade ->
+        new TradeIntegrityCheckRecord(
+          trade,
+          integrityCheckService.checkIntegrity(trade)
         )
       );
 
-    processAcceptedAndRejectedOrders(integrityCheckedOrderStream);
+    processAcceptedAndRejectedTrades(integrityCheckedTradeStream);
 
-    return orderStream;
+    return tradeStream;
   }
 
   @Singleton
@@ -76,39 +76,28 @@ public class OrderStream {
     return new KafkaStreamUncaughtExceptionHandler();
   }
 
-  private void processAcceptedAndRejectedOrders(
-    KStream<String, OrderIntegrityCheckRecord> integrityCheckedOrdersStream
+  private void processAcceptedAndRejectedTrades(
+    KStream<String, TradeIntegrityCheckRecord> integrityCheckedTradesStream
   ) {
-    KStream<String, Order> acceptedOrders = integrityCheckedOrdersStream
+    KStream<String, Trade> acceptedTrades = integrityCheckedTradesStream
       .filter((key, value) -> value.orderRejectReason() == null)
-      .mapValues(OrderIntegrityCheckRecord::order);
+      .mapValues(TradeIntegrityCheckRecord::trade);
 
-    KStream<String, RejectedOrder> rejectedOrders = integrityCheckedOrdersStream
+    KStream<String, RejectedOrder> rejectedOrders = integrityCheckedTradesStream
       .filter((key, value) -> value.orderRejectReason() != null)
       .mapValues(value ->
-        new RejectedOrder(value.order(), value.orderRejectReason())
+        new RejectedOrder(value.trade().getOrder(), value.orderRejectReason())
       );
 
-    acceptedOrders.to(
-      acceptedOrdersTopic,
-      Produced.with(keySerde, this.orderAvroSerde())
+    acceptedTrades.to(
+      acceptedTradesTopic,
+      Produced.with(keySerde, this.tradeAvroSerde())
     );
+
     rejectedOrders.to(
       rejectedOrdersTopic,
       Produced.with(keySerde, this.rejectedOrderAvroSerde())
     );
-  }
-
-  private SpecificAvroSerde<Order> orderAvroSerde() {
-    SpecificAvroSerde<Order> orderAvroSerde = new SpecificAvroSerde<>();
-
-    Map<String, String> serdeConfig = new HashMap<>();
-    serdeConfig.put(
-      AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
-      schemaRegistryUrl
-    );
-    orderAvroSerde.configure(serdeConfig, false);
-    return orderAvroSerde;
   }
 
   private SpecificAvroSerde<RejectedOrder> rejectedOrderAvroSerde() {
@@ -122,5 +111,17 @@ public class OrderStream {
     );
     rejectedOrderAvroSerde.configure(serdeConfig, false);
     return rejectedOrderAvroSerde;
+  }
+
+  private SpecificAvroSerde<Trade> tradeAvroSerde() {
+    SpecificAvroSerde<Trade> tradeAvroSerde = new SpecificAvroSerde<>();
+
+    Map<String, String> serdeConfig = new HashMap<>();
+    serdeConfig.put(
+      AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
+      schemaRegistryUrl
+    );
+    tradeAvroSerde.configure(serdeConfig, false);
+    return tradeAvroSerde;
   }
 }
