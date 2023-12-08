@@ -14,6 +14,8 @@ repositories {
 dependencies {
     implementation project(":libs:log")
     implementation project(":libs:avro")
+    implementation project(":libs:models")
+    implementation project(":libs:common")
 
     runtimeOnly "org.yaml:snakeyaml"
     implementation("io.micronaut.kafka:micronaut-kafka")
@@ -31,6 +33,10 @@ dependencies {
     implementation group: 'org.quickfixj', name: 'quickfixj-core', version: '2.3.1'
     implementation group: 'org.quickfixj', name: 'quickfixj-messages-all', version: '2.3.1'
 
+    // Test implementation
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
+    testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
+    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
 }
 
 application {

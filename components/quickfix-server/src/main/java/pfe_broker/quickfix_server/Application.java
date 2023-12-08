@@ -17,7 +17,7 @@ public class Application {
   public static void setProperties() {
     System.setProperty(
       "micronaut.config.files",
-      "classpath:application.yml,classpath:kafka.yml,classpath:quickfix.yml"
+      "classpath:application.yml,classpath:kafka.yml,classpath:quickfix.yml,classpath:data.yml"
     );
   }
 }
