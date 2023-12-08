@@ -1,0 +1,3 @@
+quickfix:
+  config:
+    executor_dynamic: executor_dynamic.cfg
