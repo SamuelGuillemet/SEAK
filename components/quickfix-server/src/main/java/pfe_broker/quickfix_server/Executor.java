@@ -3,9 +3,9 @@ package pfe_broker.quickfix_server;
 import static pfe_broker.log.Log.LOG;
 
 import io.micronaut.context.annotation.Property;
+import io.micronaut.context.event.ApplicationEventListener;
 import io.micronaut.context.event.StartupEvent;
 import io.micronaut.core.io.ResourceLoader;
-import io.micronaut.runtime.event.annotation.EventListener;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
@@ -24,7 +24,7 @@ import quickfix.SessionSettings;
 import quickfix.SocketAcceptor;
 
 @Singleton
-public class Executor {
+public class Executor implements ApplicationEventListener<StartupEvent> {
 
   @Property(name = "quickfix.config.executor_dynamic")
   private String config;
@@ -41,13 +41,10 @@ public class Executor {
   private MessageFactory messageFactory;
   private SocketAcceptor socketAcceptor;
 
-  @EventListener
-  public void onStartup(StartupEvent event) {
-    start();
-  }
+  private boolean postConstructFailed = true;
 
   @PostConstruct
-  private void postConstruct() throws ConfigError {
+  private void postConstruct() {
     Optional<InputStream> configStream = resourceLoader.getResourceAsStream(
       config
     );
@@ -55,20 +52,32 @@ public class Executor {
       LOG.error("Could not find config file: {}", config);
       return;
     }
-    sessionSettings = new SessionSettings(configStream.get());
+    try {
+      sessionSettings = new SessionSettings(configStream.get());
+    } catch (ConfigError e) {
+      LOG.error("Error loading config file: {}", config, e);
+      return;
+    }
 
     messageStoreFactory = new FileStoreFactory(sessionSettings);
     logFactory = new SLF4JLogFactory(sessionSettings);
     messageFactory = new DefaultMessageFactory();
 
-    socketAcceptor =
-      new SocketAcceptor(
-        applicationMessageCracker,
-        messageStoreFactory,
-        sessionSettings,
-        logFactory,
-        messageFactory
-      );
+    try {
+      socketAcceptor =
+        new SocketAcceptor(
+          applicationMessageCracker,
+          messageStoreFactory,
+          sessionSettings,
+          logFactory,
+          messageFactory
+        );
+    } catch (ConfigError e) {
+      LOG.error("Error creating socket acceptor", e);
+      return;
+    }
+
+    postConstructFailed = false;
   }
 
   public void start() {
@@ -87,5 +96,14 @@ public class Executor {
 
   private void configureDynamicSessions() {
     // TODO Configure dynamic sessions
+  }
+
+  @Override
+  public void onApplicationEvent(StartupEvent event) {
+    if (postConstructFailed) {
+      LOG.error("Post construct failed, exiting");
+      return;
+    }
+    start();
   }
 }
