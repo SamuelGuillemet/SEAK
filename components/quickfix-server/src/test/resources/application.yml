@@ -1,0 +1,3 @@
+quickfix:
+  config:
+    executor_dynamic: mock.cfg # Used for ComponentTest due to bean instantiation issues

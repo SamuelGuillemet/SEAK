@@ -50,12 +50,17 @@ sourceSets {
                 project(":").file("config/common").path,
                 project(":").file("config/quickfix").path,
                 project(":").file("config/log").path
-                ]
+            ]
         }
     }
     test {
         resources {
-            srcDirs = ["src/test/resources", project(":").file("config/common").path]
+            srcDirs = [
+                "src/test/resources",
+                project(":").file("config/common").path,
+                project(":").file("config/quickfix").path,
+                project(":").file("config/log").path
+            ]
         }
     }
 }
