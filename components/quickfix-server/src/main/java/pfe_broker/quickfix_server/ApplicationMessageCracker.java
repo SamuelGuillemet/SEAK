@@ -4,6 +4,8 @@ import static pfe_broker.log.Log.LOG;
 
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import pfe_broker.avro.RejectedOrder;
+import pfe_broker.avro.Trade;
 import quickfix.DoNotSend;
 import quickfix.FieldNotFound;
 import quickfix.IncorrectDataFormat;
@@ -45,5 +47,13 @@ public class ApplicationMessageCracker
     throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {
     LOG.debug("Received message: {}", message);
     crack(message, sessionId);
+  }
+
+  public void sendExecutionReport(String key, Trade trade) {
+    // TODO
+  }
+
+  public void sendOrderCancelReject(String key, RejectedOrder rejectedOrder) {
+    // TODO
   }
 }
