@@ -2,6 +2,7 @@ package pfe_broker.quickfix_server;
 
 import static pfe_broker.log.Log.LOG;
 
+import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import quickfix.DoNotSend;
 import quickfix.FieldNotFound;
@@ -16,6 +17,10 @@ import quickfix.UnsupportedMessageType;
 public class ApplicationMessageCracker
   extends MessageCracker
   implements quickfix.Application {
+
+  @SuppressWarnings("unused")
+  @Inject
+  private OrderProducer orderProducer;
 
   @Override
   public void onCreate(SessionID sessionId) {}
