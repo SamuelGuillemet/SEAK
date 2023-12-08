@@ -1,0 +1,82 @@
+plugins {
+    id "com.github.johnrengelman.shadow"
+    id "io.micronaut.application"
+}
+
+version = "${version}"
+group = "pfe_broker"
+
+repositories {
+    mavenCentral()
+    maven { url confluentUrl }
+}
+
+dependencies {
+    implementation project(":libs:log")
+    implementation project(":libs:avro")
+
+    runtimeOnly "org.yaml:snakeyaml"
+    implementation("io.micronaut.kafka:micronaut-kafka")
+    implementation("io.micronaut:micronaut-runtime")
+
+    // Log4J
+    implementation("org.apache.logging.log4j:log4j-core")
+    runtimeOnly("org.apache.logging.log4j:log4j-api")
+    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl")
+
+    // Avro
+    implementation group: 'io.confluent', name: 'kafka-avro-serializer', version: '7.5.1'
+
+    // QuickFixJ
+    implementation group: 'org.quickfixj', name: 'quickfixj-core', version: '2.3.1'
+    implementation group: 'org.quickfixj', name: 'quickfixj-messages-all', version: '2.3.1'
+
+}
+
+application {
+    mainClass.set("pfe_broker.quickfix_relay.Application")
+}
+
+java {
+    sourceCompatibility = JavaVersion.toVersion("${javaVersion}")
+    targetCompatibility = JavaVersion.toVersion("${javaVersion}")
+}
+
+sourceSets {
+    main {
+        resources {
+            srcDirs = [
+                "src/main/resources",
+                project(":").file("config/common").path,
+                project(":").file("config/quickfix").path,
+                project(":").file("config/log").path
+            ]
+        }
+    }
+    test {
+        resources {
+            srcDirs = [
+                "src/test/resources",
+                project(":").file("config/common").path,
+                project(":").file("config/quickfix").path,
+                project(":").file("config/log").path
+            ]
+        }
+    }
+}
+
+
+graalvmNative.toolchainDetection = false
+
+micronaut {
+    testRuntime("junit5")
+    processing {
+        incremental(true)
+        annotations("pfe_broker.quickfix_relay.*")
+    }
+}
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+}
