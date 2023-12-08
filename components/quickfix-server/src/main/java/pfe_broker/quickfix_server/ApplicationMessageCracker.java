@@ -6,6 +6,8 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
+import pfe_broker.models.repositories.UserRepository;
+import quickfix.Application;
 import quickfix.DoNotSend;
 import quickfix.FieldNotFound;
 import quickfix.IncorrectDataFormat;
@@ -18,11 +20,15 @@ import quickfix.UnsupportedMessageType;
 @Singleton
 public class ApplicationMessageCracker
   extends MessageCracker
-  implements quickfix.Application {
+  implements Application {
 
   @SuppressWarnings("unused")
   @Inject
   private OrderProducer orderProducer;
+
+  @SuppressWarnings("unused")
+  @Inject
+  private UserRepository userRepository;
 
   @Override
   public void onCreate(SessionID sessionId) {}
