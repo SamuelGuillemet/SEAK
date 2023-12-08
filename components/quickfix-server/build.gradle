@@ -30,11 +30,10 @@ dependencies {
     // QuickFixJ
     implementation group: 'org.quickfixj', name: 'quickfixj-core', version: '2.3.1'
     implementation group: 'org.quickfixj', name: 'quickfixj-messages-all', version: '2.3.1'
-
 }
 
 application {
-    mainClass.set("pfe_broker.quickfix_server.Application")
+    mainClass.set("pfe_broker.quickfix_server.MainApplication")
 }
 
 java {
