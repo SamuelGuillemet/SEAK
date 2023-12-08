@@ -4,14 +4,14 @@ import static pfe_broker.log.Log.LOG;
 
 import io.micronaut.runtime.Micronaut;
 
-public class Application {
+public class MainApplication {
   static {
     setProperties();
   }
 
   public static void main(String[] args) {
     LOG.info("Starting QuickFIX/J server");
-    Micronaut.run(Application.class, args);
+    Micronaut.run(MainApplication.class, args);
   }
 
   public static void setProperties() {
