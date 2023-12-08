@@ -4,15 +4,16 @@ pluginManagement {
     id 'io.micronaut.application' version "${micronautVersion}"
     id 'com.github.johnrengelman.shadow' version "${shadowVersion}"
     id 'io.github.khalilou88.jnxplus' version "${jnxplusGradlePluginVersion}"
-    id 'io.freefair.lombok' version '8.4'
+    id 'io.freefair.lombok' version "${lombokGradlePluginVersion}"
   }
 }
 
 rootProject.name = 'pfe-broker'
+include('components:quickfix-server')
 include('components:trade-stream')
 include('components:order-stream')
+include('components:market-matcher')
 include('libs:models')
 include('libs:log')
 include('libs:common')
 include('libs:avro')
-include('components:market-matcher')
