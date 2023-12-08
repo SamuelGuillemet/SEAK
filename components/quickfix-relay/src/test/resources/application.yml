@@ -1,0 +1,3 @@
+quickfix:
+  config:
+    relay: mock.cfg # Used for ComponentTest due to bean instantiation issues
