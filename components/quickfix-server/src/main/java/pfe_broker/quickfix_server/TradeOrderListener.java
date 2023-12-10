@@ -14,7 +14,7 @@ import pfe_broker.avro.Trade;
 public class TradeOrderListener {
 
   @Inject
-  private ApplicationMessageCracker applicationMessageCracker;
+  private ServerApplication serverApplication;
 
   @KafkaListener(
     groupId = "quickfix-accepted-trades-consumer",
@@ -24,16 +24,13 @@ public class TradeOrderListener {
   @Topic("${kafka.topics.accepted-trades}")
   void receiveAcceptedTrade(List<ConsumerRecord<String, Trade>> records) {
     records.forEach(record -> {
-      applicationMessageCracker.sendExecutionReport(
-        record.key(),
-        record.value()
-      );
+      serverApplication.sendExecutionReport(record.key(), record.value());
     });
   }
 
   @KafkaListener("quickfix-rejected-orders-consumer")
   @Topic("${kafka.topics.rejected-orders}")
   void receiveRejectedOrder(@KafkaKey String key, RejectedOrder rejectedOrder) {
-    applicationMessageCracker.sendOrderCancelReject(key, rejectedOrder);
+    serverApplication.sendOrderCancelReject(key, rejectedOrder);
   }
 }

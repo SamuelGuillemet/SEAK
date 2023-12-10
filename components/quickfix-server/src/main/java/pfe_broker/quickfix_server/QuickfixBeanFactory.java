@@ -68,10 +68,8 @@ public class QuickfixBeanFactory {
 
   @Bean
   @Singleton
-  public Application serverApplication(
-    ApplicationMessageCracker applicationMessageCracker
-  ) {
-    return applicationMessageCracker;
+  public Application serverApplication() {
+    return new ServerApplication();
   }
 
   @Bean

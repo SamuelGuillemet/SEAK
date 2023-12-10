@@ -39,6 +39,7 @@ dependencies {
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+    testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
 }
 
 application {
