@@ -12,17 +12,17 @@ import pfe_broker.avro.Trade;
 public class TradeOrderListener {
 
   @Inject
-  private ApplicationMessageCracker applicationMessageCracker;
+  private ServerApplication serverApplication;
 
   @KafkaListener("accepted-trades-consumer")
   @Topic("${kafka.topics.accepted-trades}")
   void receiveAcceptedTrade(@KafkaKey String key, Trade trade) {
-    applicationMessageCracker.sendExecutionReport(key, trade);
+    serverApplication.sendExecutionReport(key, trade);
   }
 
   @KafkaListener("rejected-orders-consumer")
   @Topic("${kafka.topics.rejected-orders}")
   void receiveRejectedOrder(@KafkaKey String key, RejectedOrder rejectedOrder) {
-    applicationMessageCracker.sendOrderCancelReject(key, rejectedOrder);
+    serverApplication.sendOrderCancelReject(key, rejectedOrder);
   }
 }

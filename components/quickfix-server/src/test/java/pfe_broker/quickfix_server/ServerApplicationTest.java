@@ -1,11 +1,16 @@
 package pfe_broker.quickfix_server;
 
+import static org.junit.Assert.assertThat;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.awaitility.Awaitility.await;
+
 import io.micronaut.context.annotation.Property;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.test.annotation.TransactionMode;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
 import jakarta.inject.Inject;
+import java.time.Duration;
 import java.util.Map;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
@@ -15,6 +20,10 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.models.domains.User;
 import pfe_broker.models.repositories.UserRepository;
+import pfe_broker.quickfix_server.mocks.MockOrderListener;
+import quickfix.SessionID;
+import quickfix.field.SenderCompID;
+import quickfix.fix42.NewOrderSingle;
 
 @MicronautTest(
   rollback = false,
@@ -31,7 +40,7 @@ import pfe_broker.models.repositories.UserRepository;
 )
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ApplicationMessageCrackerTest implements TestPropertyProvider {
+public class ServerApplicationTest implements TestPropertyProvider {
   static {
     MainApplication.setProperties();
   }
@@ -40,7 +49,7 @@ public class ApplicationMessageCrackerTest implements TestPropertyProvider {
   static final KafkaTestContainer kafka = new KafkaTestContainer();
 
   @Inject
-  private ApplicationMessageCracker applicationMessageCracker;
+  private ServerApplication serverApplication;
 
   @Inject
   private UserRepository userRepository;
@@ -68,7 +77,24 @@ public class ApplicationMessageCrackerTest implements TestPropertyProvider {
   }
 
   @Test
-  public void test() {
-    // TODO
+  public void testOnMessageNewOrderSingle(MockOrderListener mockOrderListener) {
+    NewOrderSingle newOrderSingle = new NewOrderSingle();
+    newOrderSingle.set(new quickfix.field.Symbol("AAPL"));
+    newOrderSingle.set(new quickfix.field.OrderQty(10));
+    newOrderSingle.set(new quickfix.field.Side(quickfix.field.Side.BUY));
+    newOrderSingle.getHeader().setString(SenderCompID.FIELD, "user1");
+    try {
+      serverApplication.onMessage(newOrderSingle, new SessionID("FIX.4.2", "user1", "SERVER"));
+
+      await()
+      .pollInterval(Duration.ofSeconds(1))
+      .atMost(Duration.ofSeconds(10))
+      .untilAsserted(() -> {
+        assertThat(mockOrderListener.receivedOrders).hasSize(1);
+      });
+
+    } catch (Exception e) {
+      e.printStackTrace();
+    }
   }
 }
