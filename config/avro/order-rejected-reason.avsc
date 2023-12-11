@@ -3,14 +3,17 @@
   "type": "enum",
   "name": "OrderRejectReason",
   "symbols": [
-    "BROKER_OPTION",
+    "BROKER_EXCHANGE_OPTION",
     "UNKNOWN_SYMBOL",
     "EXCHANGE_CLOSED",
     "ORDER_EXCEEDS_LIMIT",
-    "TO_LATE_TO_ENTER",
+    "TOO_LATE_TO_ENTER",
     "UNKNOWN_ORDER",
     "DUPLICATE_ORDER",
-    "DUPLICATE_VERBALYES",
-    "STALE_ORDER"
+    "STALE_ORDER",
+    "INCORRECT_QUANTITY",
+    "UNKNOWN_ACCOUNT",
+    "PRICE_EXCEEDS_CURRENT_PRICE_BAND",
+    "OTHER"
   ]
 }

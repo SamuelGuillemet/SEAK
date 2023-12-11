@@ -6,8 +6,8 @@
 package pfe_broker.avro;
 @org.apache.avro.specific.AvroGenerated
 public enum OrderRejectReason implements org.apache.avro.generic.GenericEnumSymbol<OrderRejectReason> {
-  BROKER_OPTION, UNKNOWN_SYMBOL, EXCHANGE_CLOSED, ORDER_EXCEEDS_LIMIT, TO_LATE_TO_ENTER, UNKNOWN_ORDER, DUPLICATE_ORDER, DUPLICATE_VERBALYES, STALE_ORDER  ;
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"enum\",\"name\":\"OrderRejectReason\",\"namespace\":\"pfe_broker.avro\",\"symbols\":[\"BROKER_OPTION\",\"UNKNOWN_SYMBOL\",\"EXCHANGE_CLOSED\",\"ORDER_EXCEEDS_LIMIT\",\"TO_LATE_TO_ENTER\",\"UNKNOWN_ORDER\",\"DUPLICATE_ORDER\",\"DUPLICATE_VERBALYES\",\"STALE_ORDER\"]}");
+  BROKER_EXCHANGE_OPTION, UNKNOWN_SYMBOL, EXCHANGE_CLOSED, ORDER_EXCEEDS_LIMIT, TOO_LATE_TO_ENTER, UNKNOWN_ORDER, DUPLICATE_ORDER, STALE_ORDER, INCORRECT_QUANTITY, UNKNOWN_ACCOUNT, PRICE_EXCEEDS_CURRENT_PRICE_BAND, OTHER  ;
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"enum\",\"name\":\"OrderRejectReason\",\"namespace\":\"pfe_broker.avro\",\"symbols\":[\"BROKER_EXCHANGE_OPTION\",\"UNKNOWN_SYMBOL\",\"EXCHANGE_CLOSED\",\"ORDER_EXCEEDS_LIMIT\",\"TOO_LATE_TO_ENTER\",\"UNKNOWN_ORDER\",\"DUPLICATE_ORDER\",\"STALE_ORDER\",\"INCORRECT_QUANTITY\",\"UNKNOWN_ACCOUNT\",\"PRICE_EXCEEDS_CURRENT_PRICE_BAND\",\"OTHER\"]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   @Override

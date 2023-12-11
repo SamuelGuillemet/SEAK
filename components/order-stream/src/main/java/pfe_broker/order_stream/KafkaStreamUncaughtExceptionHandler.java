@@ -1,17 +1,21 @@
 package pfe_broker.order_stream;
 
-import static pfe_broker.log.Log.LOG;
-
 import io.micronaut.configuration.kafka.streams.event.BeforeKafkaStreamStart;
 import io.micronaut.context.event.ApplicationEventListener;
 import jakarta.inject.Singleton;
 import org.apache.kafka.streams.errors.StreamsUncaughtExceptionHandler;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 @Singleton
 public class KafkaStreamUncaughtExceptionHandler
   implements
     ApplicationEventListener<BeforeKafkaStreamStart>,
     StreamsUncaughtExceptionHandler {
+
+  private static final Logger LOG = LoggerFactory.getLogger(
+    KafkaStreamUncaughtExceptionHandler.class
+  );
 
   @Override
   public void onApplicationEvent(BeforeKafkaStreamStart event) {
@@ -20,7 +24,7 @@ public class KafkaStreamUncaughtExceptionHandler
 
   @Override
   public StreamThreadExceptionResponse handle(Throwable exception) {
-    LOG.error("Uncaught exception in Kafka Streams", exception);
+    LOG.error("Uncaught exception in Kafka Streams: \n {}", exception);
     return StreamThreadExceptionResponse.REPLACE_THREAD;
   }
 }

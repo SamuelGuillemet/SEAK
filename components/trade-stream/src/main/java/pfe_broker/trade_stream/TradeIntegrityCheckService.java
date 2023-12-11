@@ -1,19 +1,23 @@
 package pfe_broker.trade_stream;
 
-import static pfe_broker.log.Log.LOG;
-
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
 import io.micronaut.context.annotation.Property;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pfe_broker.avro.OrderRejectReason;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Trade;
 import pfe_broker.common.UtilsRunning;
 
 public class TradeIntegrityCheckService {
+
+  private static final Logger LOG = LoggerFactory.getLogger(
+    TradeIntegrityCheckService.class
+  );
 
   @Inject
   private RedisClient redisClient;
@@ -28,7 +32,7 @@ public class TradeIntegrityCheckService {
     if (this.isRedisRunning()) {
       this.redisConnection = redisClient.connect();
     } else {
-      LOG.fatal("Redis is not running");
+      LOG.error("Redis is not running");
     }
   }
 
@@ -57,11 +61,10 @@ public class TradeIntegrityCheckService {
       if (balance < amount) {
         syncCommands.unwatch();
         LOG.debug(
-          "Order " +
-          trade.getOrder() +
-          " rejected because of insufficient funds"
+          "Order {} rejected because of insufficient funds",
+          trade.getOrder()
         );
-        return OrderRejectReason.ORDER_EXCEEDS_LIMIT;
+        return OrderRejectReason.INCORRECT_QUANTITY;
       }
       syncCommands.multi();
       syncCommands.incrbyfloat(balanceKey, -amount);
@@ -71,24 +74,25 @@ public class TradeIntegrityCheckService {
         syncCommands.exec();
         return null;
       } catch (Exception e) {
-        LOG.debug("Retrying trade " + trade);
+        LOG.debug("Retrying trade {}", trade);
       }
     }
     LOG.debug(
-      "Order " + trade.getOrder() + " rejected because of insufficient funds"
+      "Order {} rejected because of insufficient funds",
+      trade.getOrder()
     );
     syncCommands.unwatch();
-    return OrderRejectReason.ORDER_EXCEEDS_LIMIT;
+    return OrderRejectReason.INCORRECT_QUANTITY;
   }
 
   public OrderRejectReason checkIntegrity(Trade trade) {
-    LOG.info("Checking integrity of trade " + trade);
+    LOG.debug("Checking integrity of trade {}", trade);
 
     OrderRejectReason marketOrderCheckIntegrityResult =
       marketOrderCheckIntegrity(trade);
 
     if (marketOrderCheckIntegrityResult == null) {
-      LOG.info("Trade " + trade + " accepted at " + java.time.Instant.now());
+      LOG.debug("Trade {} accepted", trade);
     }
 
     return marketOrderCheckIntegrityResult;
