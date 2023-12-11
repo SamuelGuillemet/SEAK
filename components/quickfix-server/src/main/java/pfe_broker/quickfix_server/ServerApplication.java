@@ -1,9 +1,11 @@
 package pfe_broker.quickfix_server;
 
-import static pfe_broker.log.Log.LOG;
-
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import java.util.HashMap;
+import java.util.Map;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.OrderRejectReason;
 import pfe_broker.avro.RejectedOrder;
@@ -50,6 +52,11 @@ public class ServerApplication
   extends MessageCracker
   implements Application {
 
+  private static final Logger LOG = LoggerFactory.getLogger(
+    ServerApplication.class
+  );
+  Map<String, SessionID> sessionIDMap = new HashMap<>();
+
   @SuppressWarnings("unused")
   @Inject
   private OrderProducer orderProducer;
@@ -74,14 +81,25 @@ public class ServerApplication
 
   @Override
   public void fromAdmin(Message message, SessionID sessionId)  throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, RejectLogon {
+    try {
+      String sender = message
+        .getHeader()
+        .getString(quickfix.field.SenderCompID.FIELD);
+      if (message.isAdmin() && message instanceof quickfix.fix42.Logon) {
+        sessionIDMap.put(sender, sessionId);
+      }
+    } catch (FieldNotFound e) {
+      e.printStackTrace();
+    }
     String username = message.getString(553);
     String password = message.getString(554);
     
+    
     // Check credentials
     if (checkCredentials(username, password)) {
-      System.out.println("Valid credentials for: " + username);
+      LOG.debug("Valid credentials for: " + username);
     } else {
-      System.out.println("Logon rejected for: " + username);
+      LOG.debug("Logon rejected for: " + username);
       throw new RejectLogon("Invalid username or password");
     }
   }
@@ -99,7 +117,7 @@ public class ServerApplication
   public void onMessage(NewOrderSingle message, SessionID sessionID) throws FieldNotFound,
             UnsupportedMessageType, IncorrectTagValue {
         try {
-            System.out.println("Received new Single Order");
+            LOG.debug("Received new Single Order");
             pfe_broker.avro.Side side;
             if (message.getString(Side.FIELD).charAt(0) == quickfix.field.Side.BUY) {
                 side = pfe_broker.avro.Side.BUY;
@@ -267,6 +285,14 @@ public MarketDataSnapshotFullRefresh createMarketDataSnapshot(MarketDataRequest 
   private boolean checkCredentials(String username, String password) {
     User user = userRepository.findByUsername(username).orElse(null);
     return user != null && user.getPassword().equals(password);
+  }
+
+  @SuppressWarnings("unused")
+  private void buildKafkaKey(Message message) throws FieldNotFound {
+    String key =
+      message.getString(quickfix.field.ClOrdID.FIELD) +
+      ":" +
+      message.getHeader().getString(quickfix.field.SenderCompID.FIELD);
   }
 
 }

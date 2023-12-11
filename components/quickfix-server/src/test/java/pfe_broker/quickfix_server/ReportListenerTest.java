@@ -41,7 +41,7 @@ import quickfix.fix42.ExecutionReport;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ReportListenerTest implements TestPropertyProvider {
   static {
-    MainApplication.setProperties();
+    Application.setProperties();
   }
 
   @Container

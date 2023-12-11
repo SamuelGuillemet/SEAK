@@ -5,6 +5,8 @@ import io.micronaut.configuration.kafka.annotation.KafkaListener;
 import io.micronaut.configuration.kafka.annotation.Topic;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
+import java.util.List;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
 
@@ -14,13 +16,22 @@ public class ReportListener {
   @Inject
   private ServerApplication serverApplication;
 
-  @KafkaListener("accepted-trades-consumer")
+  @KafkaListener(
+    groupId = "quickfix-accepted-trades-consumer",
+    pollTimeout = "0ms",
+    batch = true
+  )
   @Topic("${kafka.topics.accepted-trades}")
-  void receiveAcceptedTrade(@KafkaKey String key, Trade trade) {
-    serverApplication.sendTradeReport(key, trade);
+  void receiveAcceptedTrade(List<ConsumerRecord<String, Trade>> records) {
+    records.forEach(record -> {
+      serverApplication.sendTradeReport(
+        record.key(),
+        record.value()
+      );
+    });
   }
 
-  @KafkaListener("rejected-orders-consumer")
+  @KafkaListener("quickfix-rejected-orders-consumer")
   @Topic("${kafka.topics.rejected-orders}")
   void receiveRejectedOrder(@KafkaKey String key, RejectedOrder rejectedOrder) {
     serverApplication.sendRejectedOrderReport(key, rejectedOrder);

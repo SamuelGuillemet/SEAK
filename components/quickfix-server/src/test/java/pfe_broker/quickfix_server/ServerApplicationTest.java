@@ -51,7 +51,7 @@ import quickfix.fix42.NewOrderSingle;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ServerApplicationTest implements TestPropertyProvider {
   static {
-    MainApplication.setProperties();
+    Application.setProperties();
   }
 
   @Container
