@@ -11,7 +11,7 @@ import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
 
 @Singleton
-public class TradeOrderListener {
+public class ReportListener {
 
   @Inject
   private ServerApplication serverApplication;
@@ -24,13 +24,13 @@ public class TradeOrderListener {
   @Topic("${kafka.topics.accepted-trades}")
   void receiveAcceptedTrade(List<ConsumerRecord<String, Trade>> records) {
     records.forEach(record -> {
-      serverApplication.sendExecutionReport(record.key(), record.value());
+      serverApplication.sendTradeReport(record.key(), record.value());
     });
   }
 
   @KafkaListener("quickfix-rejected-orders-consumer")
   @Topic("${kafka.topics.rejected-orders}")
   void receiveRejectedOrder(@KafkaKey String key, RejectedOrder rejectedOrder) {
-    serverApplication.sendOrderCancelReject(key, rejectedOrder);
+    serverApplication.sendRejectedOrderReport(key, rejectedOrder);
   }
 }
