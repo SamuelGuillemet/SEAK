@@ -1,0 +1,35 @@
+{
+  "name": "quickfix-relay",
+  "$schema": "../../node_modules/nx/schemas/project-schema.json",
+  "projectType": "application",
+  "sourceRoot": "./components/quickfix-relay/src",
+  "targets": {
+    "build": {
+      "executor": "@jnxplus/nx-gradle:run-task",
+      "outputs": ["{projectRoot}/build"],
+      "options": {
+        "task": "build"
+      }
+    },
+    "build-image": {
+      "executor": "@jnxplus/nx-gradle:run-task",
+      "options": {
+        "task": "dockerBuild"
+      }
+    },
+    "serve": {
+      "executor": "@jnxplus/nx-gradle:run-task",
+      "options": {
+        "task": "run",
+        "keepItRunning": true
+      }
+    },
+    "test": {
+      "executor": "@jnxplus/nx-gradle:run-task",
+      "options": {
+        "task": "test"
+      }
+    }
+  },
+  "tags": ["lang:java", "type:app", "scope:quickfix-relay"]
+}

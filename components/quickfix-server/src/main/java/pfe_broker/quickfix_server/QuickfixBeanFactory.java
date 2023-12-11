@@ -41,10 +41,11 @@ import quickfix.mina.acceptor.DynamicAcceptorSessionProvider.TemplateMapping;
 @Factory
 public class QuickfixBeanFactory {
 
+
   private static final Logger LOG = LoggerFactory.getLogger(
     QuickfixBeanFactory.class
   );
-
+  
   @Bean
   @Singleton
   public SessionSettings serverSessionSettings(
@@ -68,11 +69,9 @@ public class QuickfixBeanFactory {
 
   @Bean
   @Singleton
-  public Application serverApplication(
-    ApplicationMessageCracker applicationMessageCracker
-  ) {
-    return applicationMessageCracker;
-  }
+  public Application serverApplication(ServerApplication serverApplication) {
+    return serverApplication;
+
 
   @Bean
   @Singleton
