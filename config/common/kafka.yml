@@ -19,6 +19,11 @@ kafka:
       metadata.max.age.ms: 30000 # 30 seconds
       value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
       key.deserializer: org.apache.kafka.common.serialization.StringDeserializer
+      fetch.min.bytes: 1
+      fetch.max.wait.ms: 10
+      allow.auto.create.topics: false
+
   streams:
     default:
       auto.offset.reset: "earliest"
+      commit.interval.ms: 10

@@ -18,8 +18,9 @@ Be sure to add the log4j2 and lib dependencies inside the `build.gradle` file as
 dependencies {
     implementation project(":libs:log")
     // Log4J
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.21.1'
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.0'
+    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.0'
+    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.22.0'
 
     // Rest of dependencies
 }

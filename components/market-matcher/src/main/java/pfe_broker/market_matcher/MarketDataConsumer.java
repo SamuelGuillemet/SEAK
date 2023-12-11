@@ -1,7 +1,5 @@
 package pfe_broker.market_matcher;
 
-import static pfe_broker.log.Log.LOG;
-
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.micronaut.context.annotation.Property;
@@ -16,10 +14,16 @@ import org.apache.kafka.clients.consumer.ConsumerRecords;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.common.TopicPartition;
 import org.apache.kafka.common.serialization.StringDeserializer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pfe_broker.avro.MarketData;
 
 @Singleton
 public class MarketDataConsumer {
+
+  private static final Logger LOG = LoggerFactory.getLogger(
+    MarketDataConsumer.class
+  );
 
   private final Environment environment;
   private final KafkaConsumer<String, MarketData> consumer;
@@ -47,16 +51,18 @@ public class MarketDataConsumer {
       KafkaAvroDeserializer.class
     );
     props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, true);
+    props.put(ConsumerConfig.FETCH_MAX_WAIT_MS_CONFIG, 10);
     return props;
   }
 
   public MarketDataConsumer(Environment environment) {
     this.environment = environment;
     this.consumer = new KafkaConsumer<>(this.buildProperties());
-    LOG.debug("MarketDataConsumer created");
   }
 
   public MarketData readLastStockData(String symbol) {
+    LOG.debug("Reading last stock data for {}", symbol);
+
     List<TopicPartition> partitions = consumer
       .partitionsFor(symbolTopicPrefix + symbol)
       .stream()
@@ -74,7 +80,7 @@ public class MarketDataConsumer {
     }
 
     ConsumerRecords<String, MarketData> records = consumer.poll(
-      Duration.ofMillis(100)
+      Duration.ofMillis(10)
     );
 
     ConsumerRecord<String, MarketData> stockData = null;

@@ -17,16 +17,18 @@ dependencies {
     implementation project(":libs:models")
     implementation project(":libs:common")
 
-    runtimeOnly "org.yaml:snakeyaml"
-    implementation("io.micronaut.kafka:micronaut-kafka")
-    implementation("io.micronaut:micronaut-runtime")
 
-    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
+    runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
+    implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.2.0'
+
+    // Database
+    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.0'
 
     // Log4J
-    implementation("org.apache.logging.log4j:log4j-core")
-    runtimeOnly("org.apache.logging.log4j:log4j-api")
-    runtimeOnly("org.apache.logging.log4j:log4j-slf4j2-impl")
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.0'
+    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.0'
+    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.22.0'
+
 
     // Avro
     implementation group: 'io.confluent', name: 'kafka-avro-serializer', version: '7.5.1'
@@ -39,12 +41,14 @@ dependencies {
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.8.0'
 }
 
+
 application {
-    mainClass.set("pfe_broker.quickfix_server.MainApplication")
+    mainClass.set("pfe_broker.quickfix_server.Application")
 }
 
 java {
@@ -58,8 +62,7 @@ sourceSets {
             srcDirs = [
                 "src/main/resources",
                 project(":").file("config/common").path,
-                project(":").file("config/quickfix").path,
-                project(":").file("config/log").path
+                project(":").file("config/quickfix").path
             ]
         }
     }
@@ -68,8 +71,7 @@ sourceSets {
             srcDirs = [
                 "src/test/resources",
                 project(":").file("config/common").path,
-                project(":").file("config/quickfix").path,
-                project(":").file("config/log").path
+                project(":").file("config/quickfix").path
             ]
         }
     }

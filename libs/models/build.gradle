@@ -11,22 +11,20 @@ repositories {
 }
 
 dependencies {
-    implementation project(":libs:log")
+    runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
-    testImplementation "io.micronaut.test:micronaut-test-junit5"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+    // Database dependencies
+    annotationProcessor group: 'io.micronaut.data', name: 'micronaut-data-processor', version: '4.4.0'
+    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.0'
+    implementation group: 'io.micronaut.sql', name: 'micronaut-jdbc-hikari', version: '5.4.0'
+    runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.7.1'
 
-    annotationProcessor("io.micronaut.data:micronaut-data-processor")
-
-    implementation("io.micronaut.data:micronaut-data-hibernate-jpa")
-    implementation("io.micronaut.sql:micronaut-jdbc-hikari")
-
-    runtimeOnly "org.yaml:snakeyaml"
-    runtimeOnly("org.postgresql:postgresql")
-
+    // Lombok
     compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
     annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
 
+    // Test dependencies
+    testImplementation "io.micronaut.test:micronaut-test-junit5"
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'

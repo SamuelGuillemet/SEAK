@@ -1,18 +1,16 @@
 package pfe_broker.market_matcher;
 
-import static pfe_broker.log.Log.LOG;
-
-import io.micronaut.configuration.kafka.annotation.KafkaKey;
 import io.micronaut.configuration.kafka.annotation.KafkaListener;
 import io.micronaut.configuration.kafka.annotation.OffsetReset;
-import io.micronaut.configuration.kafka.annotation.OffsetStrategy;
 import io.micronaut.configuration.kafka.annotation.Topic;
 import io.micronaut.messaging.annotation.SendTo;
 import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
-import org.apache.kafka.common.IsolationLevel;
+import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pfe_broker.avro.MarketData;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.Trade;
@@ -21,7 +19,11 @@ import pfe_broker.common.SymbolReader;
 @Singleton
 public class MarketMatcher {
 
-  private final MarketDataConsumer marketDataProducer;
+  private static final Logger LOG = LoggerFactory.getLogger(
+    MarketMatcher.class
+  );
+
+  private final MarketDataConsumer marketDataConsumer;
   private final SymbolReader symbolReader;
   public List<String> symbols = new ArrayList<>();
 
@@ -29,9 +31,8 @@ public class MarketMatcher {
     MarketDataConsumer marketDataProducer,
     SymbolReader symbolReader
   ) {
-    this.marketDataProducer = marketDataProducer;
+    this.marketDataConsumer = marketDataProducer;
     this.symbolReader = symbolReader;
-    LOG.debug("OrderConsumer created");
   }
 
   @PostConstruct
@@ -45,36 +46,37 @@ public class MarketMatcher {
 
   @KafkaListener(
     groupId = "market-matcher-orders",
+    producerClientId = "market-matcher-trades-producer",
     offsetReset = OffsetReset.EARLIEST,
-    producerClientId = "trades-producer",
-    offsetStrategy = OffsetStrategy.SYNC_PER_RECORD,
-    isolation = IsolationLevel.READ_COMMITTED
+    pollTimeout = "0ms",
+    batch = true
   )
   @Topic("${kafka.topics.accepted-orders}")
   @SendTo("${kafka.topics.trades}")
-  Trade receiveAcceptedOrder(@KafkaKey String key, Order order) {
+  List<Trade> receiveAcceptedOrder(List<Order> orders) {
+    return orders
+      .stream()
+      .map(this::processOrder)
+      .filter(trade -> trade != null)
+      .collect(Collectors.toList());
+  }
+
+  private Trade processOrder(Order order) {
     String symbol = order.getSymbol().toString();
 
     if (!symbols.contains(symbol)) {
-      LOG.warn("Ignoring order " + order + " for unknown symbol " + symbol);
+      LOG.warn("Ignoring order {} for unknown symbol {}", order, symbol);
       return null;
     }
 
-    MarketData marketData = marketDataProducer.readLastStockData(symbol);
+    MarketData marketData = marketDataConsumer.readLastStockData(symbol);
 
     if (marketData == null) {
-      LOG.warn("Ignoring order " + order + " for unknown symbol " + symbol);
+      LOG.warn("Ignoring order {} for unknown symbol {}", order, symbol);
       return null;
     }
 
-    LOG.info(
-      "Matching order " +
-      order +
-      " with market data " +
-      marketData +
-      "at instant " +
-      java.time.Instant.now()
-    );
+    LOG.debug("Matching order {} with market data {}", order, marketData);
 
     Trade trade = Trade
       .newBuilder()
@@ -94,7 +96,7 @@ public class MarketMatcher {
     try {
       this.symbols = symbolReader.getSymbols();
     } catch (Exception e) {
-      LOG.error("Error while retreiving symbols: " + e.getMessage());
+      LOG.error("Error while retreiving symbols: {}", e.getMessage());
     }
   }
 }

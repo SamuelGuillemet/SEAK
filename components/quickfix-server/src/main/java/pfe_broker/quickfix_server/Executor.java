@@ -1,15 +1,18 @@
 package pfe_broker.quickfix_server;
 
-import static pfe_broker.log.Log.LOG;
-
 import io.micronaut.context.annotation.Context;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Inject;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import quickfix.Acceptor;
 
 @Context
 public class Executor {
+
+  private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
   @Inject
   private Acceptor serverAcceptor;
