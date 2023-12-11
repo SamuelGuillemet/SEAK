@@ -1,8 +1,10 @@
 package pfe_broker.quickfix_server;
 
-import static org.junit.Assert.assertThat;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
 import io.micronaut.context.annotation.Property;
 import io.micronaut.core.annotation.NonNull;
@@ -21,8 +23,15 @@ import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.models.domains.User;
 import pfe_broker.models.repositories.UserRepository;
 import pfe_broker.quickfix_server.mocks.MockOrderListener;
+import quickfix.FieldNotFound;
 import quickfix.SessionID;
+import quickfix.field.MDReqID;
+import quickfix.field.NoMDEntries;
+import quickfix.field.NoRelatedSym;
 import quickfix.field.SenderCompID;
+import quickfix.field.Symbol;
+import quickfix.fix42.MarketDataRequest;
+import quickfix.fix42.MarketDataSnapshotFullRefresh;
 import quickfix.fix42.NewOrderSingle;
 
 @MicronautTest(
@@ -82,9 +91,9 @@ public class ServerApplicationTest implements TestPropertyProvider {
     newOrderSingle.set(new quickfix.field.Symbol("AAPL"));
     newOrderSingle.set(new quickfix.field.OrderQty(10));
     newOrderSingle.set(new quickfix.field.Side(quickfix.field.Side.BUY));
-    newOrderSingle.getHeader().setString(SenderCompID.FIELD, "user1");
+    newOrderSingle.getHeader().setString(SenderCompID.FIELD, "testuser");
     try {
-      serverApplication.onMessage(newOrderSingle, new SessionID("FIX.4.2", "user1", "SERVER"));
+      serverApplication.onMessage(newOrderSingle, new SessionID("FIX.4.2", "testuser", "SERVER"));
 
       await()
       .pollInterval(Duration.ofSeconds(1))
@@ -97,4 +106,20 @@ public class ServerApplicationTest implements TestPropertyProvider {
       e.printStackTrace();
     }
   }
+
+  // @Test
+  //   void createMarketDataSnapshotTest() throws FieldNotFound {
+  //       MarketDataRequest message = new MarketDataRequest();
+  //       message.setString(MDReqID.FIELD, "123456");
+  //       message.setInt(NoRelatedSym.FIELD, 2);
+  //       message.getGroup(1, new MarketDataRequest.NoRelatedSym()).setString(Symbol.FIELD, "GOOGL");
+  //       message.getGroup(2, new MarketDataRequest.NoRelatedSym()).setString(Symbol.FIELD, "AAPL");
+
+  //       MarketDataSnapshotFullRefresh result = null;
+  //       result = serverApplication.createMarketDataSnapshot(message);
+        
+  //       assertNotNull(result);
+  //       assertEquals("123456", result.getString(MDReqID.FIELD));
+  //       assertEquals(2, result.getInt(NoMDEntries.FIELD));
+  //   }
 }
