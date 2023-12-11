@@ -1,6 +1,5 @@
 package pfe_broker.quickfix_server;
 
-import static pfe_broker.log.Log.LOG;
 import static quickfix.Acceptor.SETTING_ACCEPTOR_TEMPLATE;
 import static quickfix.Acceptor.SETTING_SOCKET_ACCEPT_ADDRESS;
 import static quickfix.Acceptor.SETTING_SOCKET_ACCEPT_PORT;
@@ -21,6 +20,8 @@ import java.util.Optional;
 import javax.management.JMException;
 import javax.management.ObjectName;
 import org.quickfixj.jmx.JmxExporter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import quickfix.Acceptor;
 import quickfix.Application;
 import quickfix.ConfigError;
@@ -39,6 +40,10 @@ import quickfix.mina.acceptor.DynamicAcceptorSessionProvider.TemplateMapping;
 
 @Factory
 public class QuickfixBeanFactory {
+
+  private static final Logger LOG = LoggerFactory.getLogger(
+    QuickfixBeanFactory.class
+  );
 
   @Bean
   @Singleton
