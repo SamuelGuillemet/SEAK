@@ -33,7 +33,7 @@ import pfe_broker.models.repositories.UserRepository;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ApplicationMessageCrackerTest implements TestPropertyProvider {
   static {
-    MainApplication.setProperties();
+    Application.setProperties();
   }
 
   @Container
