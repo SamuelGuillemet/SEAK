@@ -22,7 +22,25 @@ Configuration:
         AppenderRef:
           - ref: LogToConsole
 
+      - name: quickfix
+        level: info
+        additivity: false
+        AppenderRef:
+          - ref: LogToConsole
+
+      - name: org.apache.kafka
+        level: error
+        additivity: false
+        AppenderRef:
+          - ref: LogToConsole
+
+      - name: io.confluent.kafka
+        level: error
+        additivity: false
+        AppenderRef:
+          - ref: LogToConsole
+
     Root:
-      - level: info
+      - level: error
         AppenderRef:
           - ref: LogToConsole
