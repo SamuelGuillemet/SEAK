@@ -8,6 +8,7 @@ import pfe_broker.avro.Order;
 import pfe_broker.avro.OrderRejectReason;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
+import pfe_broker.avro.utils.Converters;
 import pfe_broker.models.domains.User;
 import pfe_broker.models.repositories.UserRepository;
 import quickfix.Application;
@@ -233,8 +234,7 @@ public MarketDataSnapshotFullRefresh createMarketDataSnapshot(MarketDataRequest 
         side = Side.SELL;
       }
       int quantity = order.getQuantity();
-      int rejectReason;
-      OrderRejectReason reason = rejectedOrder.getReason();
+      int rejectReason = Converters.OrderRejectReason.charFromAvro(rejectedOrder.getReason());
       ExecutionReport executionReport = new ExecutionReport(
         new OrderID(clOrdID),
         new ExecID(execId),
@@ -247,7 +247,7 @@ public MarketDataSnapshotFullRefresh createMarketDataSnapshot(MarketDataRequest 
         new CumQty(0),
         new AvgPx(0));
       executionReport.set(new OrderQty(quantity));
-      executionReport.setInt(OrdRejReason.FIELD, 1);
+      executionReport.setInt(OrdRejReason.FIELD, rejectReason);
 
       String senderCompID = "SERVER";
       String targetCompID = "user1";
@@ -263,9 +263,18 @@ public MarketDataSnapshotFullRefresh createMarketDataSnapshot(MarketDataRequest 
   public void sendExecutionReport(ExecutionReport executionReport, SessionID sessionID) throws SessionNotFound{
     quickfix.Session.sendToTarget(executionReport, sessionID);
   }
-
+  /* for now, this method creates the user for testing purposes, normally it should just check the users credentials
+  * 
+  */
   private boolean checkCredentials(String username, String password) {
-    User user = userRepository.findByUsername(username).orElse(null);
+    User user;
+    User userMatch = userRepository.findByUsername(username).orElse(null);
+    if (userMatch==null) {
+      user = new User("user1", "password", 1000.0);
+      userRepository.save(user);
+    } else {
+      user = userMatch;
+    }
     return user != null && user.getPassword().equals(password);
   }
 
