@@ -24,12 +24,19 @@ import pfe_broker.models.domains.User;
 import pfe_broker.models.repositories.UserRepository;
 import pfe_broker.quickfix_server.mocks.MockOrderListener;
 import quickfix.FieldNotFound;
+import quickfix.Message;
 import quickfix.SessionID;
+import quickfix.field.MDEntryType;
 import quickfix.field.MDReqID;
+import quickfix.field.MDUpdateType;
+import quickfix.field.MarketDepth;
+import quickfix.field.MsgType;
 import quickfix.field.NoMDEntries;
 import quickfix.field.NoRelatedSym;
 import quickfix.field.SenderCompID;
+import quickfix.field.SubscriptionRequestType;
 import quickfix.field.Symbol;
+import quickfix.field.TargetCompID;
 import quickfix.fix42.MarketDataRequest;
 import quickfix.fix42.MarketDataSnapshotFullRefresh;
 import quickfix.fix42.NewOrderSingle;
@@ -107,19 +114,38 @@ public class ServerApplicationTest implements TestPropertyProvider {
     }
   }
 
-  // @Test
-  //   void createMarketDataSnapshotTest() throws FieldNotFound {
-  //       MarketDataRequest message = new MarketDataRequest();
-  //       message.setString(MDReqID.FIELD, "123456");
-  //       message.setInt(NoRelatedSym.FIELD, 2);
-  //       message.getGroup(1, new MarketDataRequest.NoRelatedSym()).setString(Symbol.FIELD, "GOOGL");
-  //       message.getGroup(2, new MarketDataRequest.NoRelatedSym()).setString(Symbol.FIELD, "AAPL");
+  @Test
+    void createMarketDataSnapshotTest() throws FieldNotFound {
+        MarketDataRequest marketDataRequest = new MarketDataRequest();
 
-  //       MarketDataSnapshotFullRefresh result = null;
-  //       result = serverApplication.createMarketDataSnapshot(message);
+        marketDataRequest.set(new MDReqID("1"));
+        marketDataRequest.set(new SubscriptionRequestType(SubscriptionRequestType.SNAPSHOT_UPDATES));
+        marketDataRequest.set(new MarketDepth(0));
+        marketDataRequest.set(new MDUpdateType(MDUpdateType.FULL_REFRESH));
+        marketDataRequest.getHeader().setField(new SenderCompID("user1"));
+        marketDataRequest.getHeader().setField(new TargetCompID("SERVER"));
+
+        MarketDataRequest.NoRelatedSym relatedSymbolGroup1 = new MarketDataRequest.NoRelatedSym();
+        relatedSymbolGroup1.set(new Symbol("GOOGL"));
+        marketDataRequest.addGroup(relatedSymbolGroup1);
+
+        MarketDataRequest.NoMDEntryTypes entryTypeGroup1 = new MarketDataRequest.NoMDEntryTypes();
+        entryTypeGroup1.set(new MDEntryType(MDEntryType.BID));
+        marketDataRequest.addGroup(entryTypeGroup1);
+
+        MarketDataRequest.NoRelatedSym relatedSymbolGroup2 = new MarketDataRequest.NoRelatedSym();
+        relatedSymbolGroup2.set(new Symbol("AAPL"));
+        marketDataRequest.addGroup(relatedSymbolGroup2);
+
+        MarketDataRequest.NoMDEntryTypes entryTypeGroup2 = new MarketDataRequest.NoMDEntryTypes();
+        entryTypeGroup2.set(new MDEntryType(MDEntryType.BID));
+        marketDataRequest.addGroup(entryTypeGroup2);
+
+        MarketDataSnapshotFullRefresh snapshot = null;
+        snapshot = serverApplication.createMarketDataSnapshot(marketDataRequest);
         
-  //       assertNotNull(result);
-  //       assertEquals("123456", result.getString(MDReqID.FIELD));
-  //       assertEquals(2, result.getInt(NoMDEntries.FIELD));
-  //   }
+        assertNotNull(snapshot);
+        assertEquals("1", snapshot.getString(MDReqID.FIELD));
+        assertEquals(2, snapshot.getInt(NoMDEntries.FIELD));
+    }
 }
