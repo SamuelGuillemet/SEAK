@@ -1,10 +1,10 @@
 [tool.poetry]
-name = "pfe-preprocessing"
+name = "pre-processing"
 version = "0.1.0"
 description = ""
 authors = ["Samuel Guillemet <samuel.guillemet@telecom-sudparis.eu>"]
 readme = "README.md"
-packages = [{ include = "pfe_preprocessing" }]
+packages = [{ include = "pre_processing" }]
 
 [tool.poetry.dependencies]
 python = "~3.11"
@@ -38,4 +38,4 @@ profile = "black"
 [tool.mypy]
 no_strict_optional = true
 ignore_missing_imports = true
-files = "^(pfe_preprocessing/|tests/)"
+files = "^(pre_processing/|tests/)"
