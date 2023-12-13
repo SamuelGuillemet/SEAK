@@ -23,7 +23,9 @@ def get_kafka_config() -> dict[str, Any]:
 def get_avro_schema(schema_name: str) -> str:
     """Parse config file at pfe-asr-monorepo/config/common/kafka.yml"""
     # Verify that the schema exists
-    avro_schema = Path(get_config_dir() / "common" / "avro" / f"{schema_name}.avsc")
+    if not schema_name.endswith(".avsc"):
+        schema_name += ".avsc"
+    avro_schema = Path(get_config_dir() / "avro" / f"{schema_name}")
     if not avro_schema.exists():
         raise FileNotFoundError(f"Schema {schema_name} not found")
     return avro_schema.read_text(encoding="utf-8")
