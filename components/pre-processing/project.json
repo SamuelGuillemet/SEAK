@@ -2,13 +2,13 @@
   "name": "pre-processing",
   "$schema": "../../node_modules/nx/schemas/project-schema.json",
   "projectType": "application",
-  "sourceRoot": "pre-processing/pre_processing",
+  "sourceRoot": "./components/pre-processing/pre_processing",
   "targets": {
     "lock": {
       "executor": "@nxlv/python:run-commands",
       "options": {
         "command": "poetry lock --no-update",
-        "cwd": "pre-processing"
+        "cwd": "components/pre-processing"
       }
     },
     "add": {
@@ -58,7 +58,14 @@
       ],
       "options": {
         "command": "poetry run pytest tests/",
-        "cwd": "pre-processing"
+        "cwd": "components/pre-processing"
+      }
+    },
+    "serve": {
+      "executor": "@nxlv/python:run-commands",
+      "options": {
+        "command": "poetry run python pre_processing/main.py",
+        "cwd": "components/pre-processing"
       }
     }
   },
