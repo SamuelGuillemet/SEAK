@@ -36,11 +36,10 @@ We can also specify the number of processes that will complete the pre processin
 To run the pre processing, you need to run the following command:
 
 ```bash
-(.venv) $ python pfe_preprocessing/main.py
+(.venv) $ python pre_processing/main.py
 ```
 
 You can use the following arguments to skip some steps:
 
-- `--skip-day-extraction`: Skip the day extraction if the CSV file already exists
 - `--skip-topic-creation`: Skip the topic creation if the topics already exists and you don't want to delete them
 - `--skip-schema-creation`: Skip the schema creation if the schema already exists and you don't want to delete it
