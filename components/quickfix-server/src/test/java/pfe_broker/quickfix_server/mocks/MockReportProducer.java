@@ -8,8 +8,9 @@ import pfe_broker.avro.Trade;
 
 @KafkaClient
 public interface MockReportProducer {
-  @Topic("${kafka.topics.accepted-orders}")
+  @Topic("${kafka.topics.accepted-trades}")
   void sendTrade(@KafkaKey String key, Trade trade);
+
   @Topic("${kafka.topics.rejected-orders}")
   void sendRejectedOrder(@KafkaKey String key, RejectedOrder rejectedOrder);
 }
