@@ -1,19 +1,17 @@
 package pfe_broker.quickfix_server;
 
+import static org.awaitility.Awaitility.await;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 import io.micronaut.context.annotation.Property;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.test.annotation.TransactionMode;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
-import jakarta.inject.Inject;
 import java.util.Map;
-import org.junit.jupiter.api.BeforeAll;
+import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
-import org.mockito.ArgumentCaptor;
-import org.mockito.Captor;
-import org.mockito.Mockito;
-import org.mockito.MockitoAnnotations;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.avro.Order;
@@ -21,8 +19,6 @@ import pfe_broker.avro.Side;
 import pfe_broker.avro.Trade;
 import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.quickfix_server.mocks.MockReportProducer;
-import quickfix.SessionID;
-import quickfix.fix42.ExecutionReport;
 
 @MicronautTest(
   rollback = false,
@@ -60,31 +56,21 @@ public class ReportListenerTest implements TestPropertyProvider {
       kafka.getSchemaRegistryUrl()
     );
   }
-    @Inject
-      private ServerApplication serverApplication;
 
-    @Captor
-    private ArgumentCaptor<ExecutionReport> orderCaptor;
+  @Test
+  public void testReportListener(
+    MockReportProducer mockReportProducer,
+    ServerApplication serverApplication
+  ) {
+    Order order = new Order("testuser", "AAPL", 10, Side.BUY);
+    Trade trade = new Trade(order, "APPL", 100.0, 10);
 
-    @Captor
-    private ArgumentCaptor<SessionID> keyCaptor;
+    mockReportProducer.sendTrade("testuser:1", trade);
 
-    @BeforeAll
-    void setup() {
-      MockitoAnnotations.openMocks(this);
-    }
-
-    @Test
-    public void testReportListener(MockReportProducer mockReportProducer) {
-      Order order = new Order("testuser", "AAPL", 10, Side.BUY);
-      Trade trade = new Trade(order, "APPL", 100.0, 10);
-      mockReportProducer.sendTrade("testuser", trade);
-      ArgumentCaptor<ExecutionReport> orderCaptor = ArgumentCaptor.forClass(ExecutionReport.class);
-      ArgumentCaptor<SessionID> keyCaptor = ArgumentCaptor.forClass(SessionID.class);
-      try {
-        Mockito.verify(serverApplication).sendExecutionReport(orderCaptor.capture(), keyCaptor.capture());
-      } catch (Exception e) {
-        e.printStackTrace();
-      }
-    }
+    await()
+      .atMost(5, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertEquals(1, serverApplication.getExecutionKey());
+      });
+  }
 }
