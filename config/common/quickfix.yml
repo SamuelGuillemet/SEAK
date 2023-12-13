@@ -1,3 +1,5 @@
 quickfix:
   config:
     executor_dynamic: executor_dynamic.cfg
+    version: 4.4
+    data_dictionary: FIX44.xml
