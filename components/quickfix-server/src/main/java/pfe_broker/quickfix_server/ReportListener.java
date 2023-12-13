@@ -24,10 +24,7 @@ public class ReportListener {
   @Topic("${kafka.topics.accepted-trades}")
   void receiveAcceptedTrade(List<ConsumerRecord<String, Trade>> records) {
     records.forEach(record -> {
-      serverApplication.sendTradeReport(
-        record.key(),
-        record.value()
-      );
+      serverApplication.sendTradeReport(record.key(), record.value());
     });
   }
 
