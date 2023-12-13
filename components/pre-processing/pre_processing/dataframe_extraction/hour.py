@@ -2,7 +2,7 @@ from typing import Generator
 
 import pandas as pd
 
-from pfe_preprocessing.data_completion.generation import complete_data
+from pre_processing.data_completion.generation import complete_data
 
 
 def split_by_hour(data: pd.DataFrame) -> list[pd.DataFrame]:

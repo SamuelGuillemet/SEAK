@@ -1,13 +1,15 @@
 import logging
+from typing import cast
 
 from confluent_kafka.schema_registry import Schema, SchemaRegistryClient
+from pre_processing.utils.loader import get_avro_schema, get_kafka_config
 
-logger = logging.getLogger("pfe_preprocessing.kafka.avro")
+logger = logging.getLogger("pre_processing.kafka.avro")
 
 
 class AvroService:
-    SCHEMA_URL = "http://localhost:8081"
-    SCHEMA_FILE = "./data/market-data.avsc"
+    SCHEMA_URL: str = get_kafka_config()["schema.registry.url"]
+    SCHEMA_FILE = "market-data.avsc"
 
     @classmethod
     def register_schema(cls, schema_registry_url, schema_registry_subject, schema_str):
@@ -51,6 +53,5 @@ class AvroService:
         schema_file_path: str,
     ):
         sr = SchemaRegistryClient({"url": schema_registry_subject})
-        with open(schema_file_path, "r", encoding="utf-8") as f:
-            schema_str = f.read()
+        schema_str = get_avro_schema(schema_file_path)
         return sr, schema_str

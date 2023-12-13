@@ -1,6 +1,8 @@
 import numpy as np
 
-DATA_PATH = "./data"
+from pre_processing.utils.loader import get_data_path
+
+DATA_PATH = get_data_path()
 
 TARGET_DATE_REGEX = r"\d{4}-\d{2}-\d{2}"
 

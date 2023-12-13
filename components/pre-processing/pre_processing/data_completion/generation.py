@@ -3,8 +3,8 @@ from typing import List, Tuple, cast
 import numpy as np
 
 import pandas as pd
-from pfe_preprocessing.data_completion.helpers import fast_round, generate_segments
-from pfe_preprocessing.decorators import performance_timer_decorator
+from pre_processing.data_completion.helpers import fast_round, generate_segments
+from pre_processing.decorators import performance_timer_decorator
 
 
 def generate_new_data(

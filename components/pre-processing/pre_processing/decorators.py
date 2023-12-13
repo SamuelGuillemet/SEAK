@@ -2,7 +2,7 @@ import logging
 import time
 from typing import List
 
-logger = logging.getLogger("pfe_preprocessing.decorators")
+logger = logging.getLogger("pre_processing.decorators")
 
 
 def performance_timer_decorator(context_args: List[str] | None = None, disable=False):

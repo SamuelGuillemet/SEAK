@@ -1,7 +1,7 @@
 import io
 from typing import IO
 
-from pfe_preprocessing.decorators import performance_timer_decorator
+from pre_processing.decorators import performance_timer_decorator
 
 
 def extract_date(line: str) -> str:

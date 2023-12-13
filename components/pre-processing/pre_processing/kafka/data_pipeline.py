@@ -8,11 +8,12 @@ from multiprocessing.synchronize import Event
 from typing import Dict, Generator, List, cast
 
 import pandas as pd
-from pfe_preprocessing.dataframe_extraction.hour import complete_a_day_hour_by_hour
-from pfe_preprocessing.decorators import performance_timer_decorator
-from pfe_preprocessing.kafka.producer import AIOProducer
+from pre_processing.dataframe_extraction.hour import complete_a_day_hour_by_hour
+from pre_processing.decorators import performance_timer_decorator
+from pre_processing.kafka.producer import AIOProducer
+from pre_processing.utils.loader import get_kafka_config
 
-logger = logging.getLogger("pfe_preprocessing.kafka.data_pipeline")
+logger = logging.getLogger("pre_processing.kafka.data_pipeline")
 
 
 class DataPipeline:
@@ -28,6 +29,9 @@ class DataPipeline:
 
     # Boolean variable to exit the program
     exited: bool = False
+
+    # Topic prefix
+    topic_prefix: str = get_kafka_config()["common"]["symbol-topic-prefix"]
 
     def __init__(self, configs: dict[str, str], interval_seconds: int = 60):
         self.data_dict: DictProxy[str, pd.DataFrame] = multiprocessing.Manager().dict()
@@ -172,7 +176,7 @@ class DataPipeline:
                     key, value = data
                     if index == 0:
                         last_key = key
-                    kafka_producer.produce(f"market-data.{ticker_name}", value, key)
+                    kafka_producer.produce(self.topic_prefix + ticker_name, value, key)
                 else:
                     logger.warning(f"Data is None for {ticker_name}")
 

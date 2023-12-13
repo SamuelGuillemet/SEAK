@@ -1,7 +1,7 @@
 import datetime
 
 import pandas as pd
-from pfe_preprocessing.data_completion.generation import complete_data
+from pre_processing.data_completion.generation import complete_data
 
 
 def extract_a_day(df: pd.DataFrame, day: datetime.date) -> pd.DataFrame:

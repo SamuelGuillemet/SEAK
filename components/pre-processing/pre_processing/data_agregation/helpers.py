@@ -1,7 +1,7 @@
 import pandas as pd
 
-from pfe_preprocessing.constant import CSV_COLUMNS, DATA_PATH
-from pfe_preprocessing.data_completion.helpers import (
+from pre_processing.constant import CSV_COLUMNS, DATA_PATH
+from pre_processing.data_completion.helpers import (
     add_ticker,
     bound_dataframe,
     preprocess_data,

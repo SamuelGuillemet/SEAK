@@ -1,6 +1,6 @@
 import pandas as pd
-from pfe_preprocessing.data_completion.generation import complete_data
-from pfe_preprocessing.dataframe_extraction import day
+from pre_processing.data_completion.generation import complete_data
+from pre_processing.dataframe_extraction import day
 
 
 def extract_a_month(df: pd.DataFrame, year: int, month: int) -> pd.DataFrame:

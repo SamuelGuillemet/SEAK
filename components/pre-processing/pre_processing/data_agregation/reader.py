@@ -5,10 +5,10 @@ from typing import IO, Iterator, List, Tuple
 
 import pandas as pd
 
-from pfe_preprocessing.constant import DATA_PATH, TARGET_DATE_REGEX
-from pfe_preprocessing.data_agregation.find_date import extract_full_day_from_file
-from pfe_preprocessing.data_agregation.helpers import generate_dataframe
-from pfe_preprocessing.decorators import performance_timer_decorator
+from pre_processing.constant import DATA_PATH, TARGET_DATE_REGEX
+from pre_processing.data_agregation.find_date import extract_full_day_from_file
+from pre_processing.data_agregation.helpers import generate_dataframe
+from pre_processing.decorators import performance_timer_decorator
 
 
 def zipfile_reader(

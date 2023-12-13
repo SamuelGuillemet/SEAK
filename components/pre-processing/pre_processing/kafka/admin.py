@@ -3,7 +3,7 @@ import logging
 from confluent_kafka.admin import AdminClient as _AdminClient
 from confluent_kafka.admin import NewTopic
 
-logger = logging.getLogger("pfe_preprocessing.kafka.admin")
+logger = logging.getLogger("pre_processing.kafka.admin")
 
 
 class AdminClient:
