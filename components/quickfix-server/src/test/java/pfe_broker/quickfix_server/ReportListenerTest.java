@@ -37,7 +37,7 @@ import pfe_broker.quickfix_server.mocks.MockReportProducer;
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ReportListenerTest implements TestPropertyProvider {
   static {
-    MainApplication.setProperties();
+    Application.setProperties();
   }
 
   @Container

@@ -28,6 +28,7 @@ services:
     image: confluentinc/cp-schema-registry:7.3.0
     hostname: schema-registry
     container_name: schema-registry
+    restart: on-failure
     depends_on:
       - broker
     ports:

@@ -31,6 +31,7 @@ import quickfix.field.MDReqID;
 import quickfix.field.MDUpdateType;
 import quickfix.field.MarketDepth;
 import quickfix.field.SenderCompID;
+import quickfix.field.SubscriptionRequestType;
 import quickfix.field.Symbol;
 import quickfix.field.TargetCompID;
 import quickfix.fix44.MarketDataRequest;

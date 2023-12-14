@@ -68,8 +68,8 @@ public class QuickfixBeanFactory {
 
   @Bean
   @Singleton
-  public Application serverApplication() {
-    return new ServerApplication();
+  public Application serverApplication(ServerApplication serverApplication) {
+    return serverApplication;
   }
 
   @Bean
