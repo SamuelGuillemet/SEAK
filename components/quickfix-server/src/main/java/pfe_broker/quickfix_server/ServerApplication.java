@@ -263,7 +263,6 @@ public class ServerApplication extends MessageCracker implements Application {
     String symbol = order.getSymbol().toString();
     String execId = executionKey.toString();
     String clOrdID = key.split(":")[1];
-    double leavesQty = 10;
     char side = Converters.Side.charFromAvro(order.getSide());
     int quantity = order.getQuantity();
     OrdRejReason rejectReason = Converters.OrderRejectReason.fromAvro(
@@ -275,7 +274,7 @@ public class ServerApplication extends MessageCracker implements Application {
       new ExecType(ExecType.REJECTED),
       new OrdStatus(OrdStatus.REJECTED),
       new Side(side),
-      new LeavesQty(leavesQty),
+      new LeavesQty(quantity),
       new CumQty(0),
       new AvgPx(0)
     );
