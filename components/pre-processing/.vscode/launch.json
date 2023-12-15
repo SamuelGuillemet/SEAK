@@ -1,0 +1,19 @@
+{
+    "configurations": [
+        {
+            "name": "Python: File",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "justMyCode": true
+        },
+        {
+            "name": "Main",
+            "type": "python",
+            "request": "launch",
+            "program": "${workspaceFolder}/pre_processing/main.py",
+            "console": "integratedTerminal",
+            "justMyCode": true
+        }
+    ]
+}

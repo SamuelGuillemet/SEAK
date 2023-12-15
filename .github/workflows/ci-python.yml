@@ -1,0 +1,63 @@
+name: CI - Python
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11, 3.12]
+        java-version: ["17"]
+        node-version: [20]
+        parameters:
+          - base_dir: "components"
+            project: "pre-processing"
+          # - base_dir: "clients"
+          #   project: "quickfix-client"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v4
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - uses: actions/setup-java@v4
+        with:
+          java-version: ${{ matrix.java-version }}
+          distribution: "temurin"
+          cache: "gradle"
+
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v2
+
+      # Cache node_modules
+      - uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: "npm"
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Verify formatting
+        run: npx nx format:check --exclude='*,!tag:lang:python'
+
+      - name: Define a cache for the virtual environment based on the dependencies lock file for ${{ matrix.parameters.project }}
+        uses: actions/cache@v3
+        with:
+          path: ./${{ matrix.parameters.base_dir }}/${{ matrix.parameters.project }}/.venv
+          key: venv-${{matrix.parameters.project}}-${{ hashFiles('./${{ matrix.parameters.base_dir }}/${{ matrix.parameters.project }}/poetry.lock') }}
+
+      - name: Install Dependencies
+        run: cd ./${{ matrix.parameters.base_dir }}/${{ matrix.parameters.project }} && poetry install
+
+      - name: Test
+        run: npx nx run-many -t lint,test,build --projects=${{ matrix.parameters.project }}
