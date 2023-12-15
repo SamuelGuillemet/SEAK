@@ -7,21 +7,31 @@ on:
   pull_request:
 
 jobs:
-  setup:
+  main:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11, 3.12]
+        java-version: ["17"]
+        node-version: [20]
+        parameters:
+          - base_dir: "components"
+            project: "pre-processing"
+          # - base_dir: "clients"
+          #   project: "quickfix-client"
     steps:
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Set up Python 3.11
+      - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v4
         with:
-          python-version: 3.11
+          python-version: ${{ matrix.python-version }}
 
       - uses: actions/setup-java@v4
         with:
-          java-version: "17"
+          java-version: ${{ matrix.java-version }}
           distribution: "temurin"
           cache: "gradle"
 
@@ -31,36 +41,23 @@ jobs:
       # Cache node_modules
       - uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: ${{ matrix.node-version }}
           cache: "npm"
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Set shas
-        uses: nrwl/nx-set-shas@v4
-
-      - name: Get main branch
-        # Verify the event is a pull request and the base branch is not main
-        if: github.event_name == 'pull_request' && github.event.pull_request.base.ref != 'main'
-        # This line is needed for nx affected to work when CI is running on a PR
-        run: git branch --track main origin/main
-
       - name: Verify formatting
         run: npx nx format:check --exclude='*,!tag:lang:python'
 
-  pre-processing:
-    runs-on: ubuntu-latest
-    needs: setup
-    steps:
-      - name: Define a cache for the virtual environment based on the dependencies lock file
+      - name: Define a cache for the virtual environment based on the dependencies lock file for ${{ matrix.parameters.project }}
         uses: actions/cache@v3
         with:
-          path: ./components/pre-processing/.venv
-          key: venv-pre-processing-${{ hashFiles('./components/pre-processing/poetry.lock') }}
+          path: ./${{ matrix.parameters.base_dir }}/${{ matrix.parameters.project }}/.venv
+          key: venv-${{matrix.parameters.project}}-${{ hashFiles('./${{ matrix.parameters.base_dir }}/${{ matrix.parameters.project }}/poetry.lock') }}
 
       - name: Install Dependencies
-        run: poetry install
+        run: cd ./${{ matrix.parameters.base_dir }}/${{ matrix.parameters.project }} && poetry install
 
       - name: Test
-        run: npx nx run-many -t lint,test,build --projects=pre-processing
+        run: npx nx run-many -t lint,test,build --projects=${{ matrix.parameters.project }}

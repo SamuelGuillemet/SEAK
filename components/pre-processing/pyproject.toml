@@ -7,7 +7,7 @@ readme = "README.md"
 packages = [{ include = "pre_processing" }]
 
 [tool.poetry.dependencies]
-python = "~3.11"
+python = ">=3.11"
 matplotlib = "^3.8.0"
 pandas = "^2.1.1"
 numpy = "^1.26.1"
