@@ -1,4 +1,4 @@
-name: CI
+name: CI - Java
 on:
   push:
     branches:
@@ -40,10 +40,7 @@ jobs:
         run: ./gradlew clean --no-daemon
 
       - name: Verify formatting
-        run: npx nx format:check
+        run: npx nx format:check --exclude='*,!tag:lang:java'
 
       - name: Test Java projects
         run: npx nx affected -t build --parallel=3 --exclude='*,!tag:lang:java'
-
-      - name: Test Python projects
-        run: npx nx affected -t lint,test,build --parallel=3 --exclude='*,!tag:lang:python'

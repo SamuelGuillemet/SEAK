@@ -14,7 +14,6 @@ dependencies {
 
     runtimeOnly "org.yaml:snakeyaml"
     implementation("io.micronaut.kafka:micronaut-kafka")
-    // implementation("io.micronaut.kafka:micronaut-kafka-streams")
 
     implementation group: 'org.testcontainers', name: 'kafka', version: '1.19.3'
     implementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'

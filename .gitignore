@@ -33,6 +33,8 @@ npm-debug.log
 yarn-error.log
 testem.log
 /typings
+/logs
+/reports
 
 # System Files
 .DS_Store
@@ -47,3 +49,7 @@ Thumbs.db
 !**/src/main/**/build/
 !**/src/test/**/build/
 !gradle/wrapper/gradle-wrapper.jar
+
+# Data
+data/*
+!data/.gitkeep

@@ -1,0 +1,5 @@
+quickfix:
+  config:
+    executor_dynamic: executor_dynamic.cfg # Needed for the test because the bean is initialized before the config is loaded
+    version: 4.4
+    data_dictionary: FIX44.xml
