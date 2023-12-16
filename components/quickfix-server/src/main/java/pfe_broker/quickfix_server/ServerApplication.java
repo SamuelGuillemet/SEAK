@@ -32,6 +32,7 @@ import quickfix.SessionID;
 import quickfix.SessionNotFound;
 import quickfix.UnsupportedMessageType;
 import quickfix.field.AvgPx;
+import quickfix.field.ClOrdID;
 import quickfix.field.CumQty;
 import quickfix.field.ExecID;
 import quickfix.field.ExecType;
@@ -43,6 +44,7 @@ import quickfix.field.MDReqID;
 import quickfix.field.NoRelatedSym;
 import quickfix.field.OrdRejReason;
 import quickfix.field.OrdStatus;
+import quickfix.field.OrdType;
 import quickfix.field.OrderID;
 import quickfix.field.OrderQty;
 import quickfix.field.Password;
@@ -155,21 +157,28 @@ public class ServerApplication extends MessageCracker implements Application {
 
   public void onMessage(NewOrderSingle message, SessionID sessionID)
     throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
-    LOG.debug("Received new Single Order");
-    Order avroOrder = new Order(
-      message.getHeader().getString(SenderCompID.FIELD),
-      message.getString(Symbol.FIELD),
-      message.getInt(OrderQty.FIELD),
-      Converters.Side.toAvro(message.getSide())
-    );
-    String key =
-      avroOrder.getUsername() +
-      ":" +
-      message.getString(quickfix.field.ClOrdID.FIELD);
+    String username = message.getHeader().getString(SenderCompID.FIELD);
+    String symbol = message.getString(Symbol.FIELD);
+    int quantity = message.getInt(OrderQty.FIELD);
+    pfe_broker.avro.Side side = Converters.Side.toAvro(message.getSide());
+    pfe_broker.avro.Type type = Converters.Type.toAvro(message.getOrdType());
+    String clOrdID = message.getString(ClOrdID.FIELD);
+
+    Order order;
+    if (type == pfe_broker.avro.Type.MARKET) {
+      order = new Order(username, symbol, quantity, side, type, null, clOrdID);
+    } else if (type == pfe_broker.avro.Type.LIMIT) {
+      double price = message.getDouble(quickfix.field.Price.FIELD);
+      order = new Order(username, symbol, quantity, side, type, price, clOrdID);
+    } else {
+      throw new IncorrectTagValue(quickfix.field.OrdType.FIELD);
+    }
+
+    String key = username + ":" + orderKey.toString();
 
     orderKey++;
 
-    orderProducer.sendOrder(key, avroOrder);
+    orderProducer.sendOrder(key, order);
   }
 
   public void onMessage(MarketDataRequest message, SessionID sessionID) {
@@ -234,24 +243,28 @@ public class ServerApplication extends MessageCracker implements Application {
     Order order = trade.getOrder();
     String symbol = order.getSymbol().toString();
     String execId = executionKey.toString();
-    String clOrdID = key.split(":")[1];
+    String orderID = key.split(":")[1];
     char side = Converters.Side.charFromAvro(order.getSide());
+    char type = Converters.Type.charFromAvro(order.getType());
     int tradeQuantity = trade.getQuantity();
     int baseQuantity = order.getQuantity();
     double price = trade.getPrice();
+    String clOrdID = order.getClOrderID().toString();
 
     ExecutionReport executionReport = new ExecutionReport(
-      new OrderID(clOrdID),
+      new OrderID(orderID),
       new ExecID(execId),
       new ExecType(ExecType.TRADE),
       new OrdStatus(OrdStatus.FILLED),
       new Side(side),
       new LeavesQty(baseQuantity - tradeQuantity),
-      new CumQty(0),
+      new CumQty(tradeQuantity),
       new AvgPx(price)
     );
     executionReport.set(new Symbol(symbol));
-    executionReport.set(new OrderQty(tradeQuantity));
+    executionReport.set(new OrderQty(baseQuantity));
+    executionReport.set(new ClOrdID(clOrdID));
+    executionReport.set(new OrdType(type));
 
     executionKey++;
 
@@ -262,14 +275,17 @@ public class ServerApplication extends MessageCracker implements Application {
     Order order = rejectedOrder.getOrder();
     String symbol = order.getSymbol().toString();
     String execId = executionKey.toString();
-    String clOrdID = key.split(":")[1];
+    String orderID = key.split(":")[1];
     char side = Converters.Side.charFromAvro(order.getSide());
+    char type = Converters.Type.charFromAvro(order.getType());
     int quantity = order.getQuantity();
-    OrdRejReason rejectReason = Converters.OrderRejectReason.fromAvro(
+    int rejectReason = Converters.OrderRejectReason.intFromAvro(
       rejectedOrder.getReason()
     );
+    String clOrdID = order.getClOrderID().toString();
+
     ExecutionReport executionReport = new ExecutionReport(
-      new OrderID(clOrdID),
+      new OrderID(orderID),
       new ExecID(execId),
       new ExecType(ExecType.REJECTED),
       new OrdStatus(OrdStatus.REJECTED),
@@ -280,7 +296,9 @@ public class ServerApplication extends MessageCracker implements Application {
     );
     executionReport.set(new Symbol(symbol));
     executionReport.set(new OrderQty(quantity));
-    executionReport.set(rejectReason);
+    executionReport.set(new OrdRejReason(rejectReason));
+    executionReport.set(new ClOrdID(clOrdID));
+    executionReport.set(new OrdType(type));
 
     executionKey++;
 
