@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.OrderRejectReason;
 import pfe_broker.avro.Side;
+import pfe_broker.avro.Type;
 import pfe_broker.common.SymbolReader;
 import pfe_broker.common.UtilsRunning;
 
@@ -108,6 +109,7 @@ public class OrderIntegrityCheckService {
     String username = order.getUsername().toString();
     String symbol = order.getSymbol().toString();
     Integer quantity = order.getQuantity();
+    Type type = order.getType();
 
     if (username == null || username.isEmpty()) {
       LOG.debug("Order {} rejected because of empty username", order);
@@ -127,14 +129,18 @@ public class OrderIntegrityCheckService {
       return OrderRejectReason.UNKNOWN_ACCOUNT;
     }
 
-    OrderRejectReason marketOrderCheckIntegrityResult =
-      marketOrderCheckIntegrity(order);
-
-    if (marketOrderCheckIntegrityResult == null) {
-      LOG.debug("Market order {} accepted", order);
+    OrderRejectReason orderCheckIntegrityResult = OrderRejectReason.OTHER;
+    if (type == Type.MARKET) {
+      orderCheckIntegrityResult = marketOrderCheckIntegrity(order);
+    } else if (type == Type.LIMIT) {
+      LOG.warn("Limit order not implemented yet");
     }
 
-    return marketOrderCheckIntegrityResult;
+    if (orderCheckIntegrityResult == null) {
+      LOG.debug("Order {} accepted", order);
+    }
+
+    return orderCheckIntegrityResult;
   }
 
   /**

@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import pfe_broker.avro.OrderRejectReason;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Trade;
+import pfe_broker.avro.Type;
 import pfe_broker.common.UtilsRunning;
 
 public class TradeIntegrityCheckService {
@@ -87,15 +88,20 @@ public class TradeIntegrityCheckService {
 
   public OrderRejectReason checkIntegrity(Trade trade) {
     LOG.debug("Checking integrity of trade {}", trade);
+    Type type = trade.getOrder().getType();
 
-    OrderRejectReason marketOrderCheckIntegrityResult =
-      marketOrderCheckIntegrity(trade);
+    OrderRejectReason tradeCheckIntegrityResult = OrderRejectReason.OTHER;
+    if (type == Type.MARKET) {
+      tradeCheckIntegrityResult = marketOrderCheckIntegrity(trade);
+    } else if (type == Type.LIMIT) {
+      LOG.warn("Limit order not implemented yet");
+    }
 
-    if (marketOrderCheckIntegrityResult == null) {
+    if (tradeCheckIntegrityResult == null) {
       LOG.debug("Trade {} accepted", trade);
     }
 
-    return marketOrderCheckIntegrityResult;
+    return tradeCheckIntegrityResult;
   }
 
   private boolean isRedisRunning() {
