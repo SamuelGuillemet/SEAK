@@ -1,6 +1,7 @@
 kafka:
   bootstrap.servers: localhost:9092
   schema.registry.url: http://localhost:8081
+  auto.register.schemas: false
   common:
     symbol-topic-prefix: market-data.
   topics:
