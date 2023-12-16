@@ -17,6 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Trade;
+import pfe_broker.avro.Type;
 import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.common.utils.RedisTestContainer;
 import pfe_broker.trade_stream.mocks.MockListener;
@@ -72,7 +73,15 @@ public class TradeStreamTest implements TestPropertyProvider {
     StatefulRedisConnection<String, String> redisConnection
   ) {
     // Given
-    Order order = new Order("user", "AAPL", 10, Side.BUY);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.MARKET,
+      null,
+      "1"
+    );
     Trade trade = new Trade(order, "APPL", 100.0, 10);
     redisConnection.sync().set("user:balance", "10000");
 
@@ -98,7 +107,15 @@ public class TradeStreamTest implements TestPropertyProvider {
     StatefulRedisConnection<String, String> redisConnection
   ) {
     // Given
-    Order order = new Order("user", "AAPL", 10, Side.SELL);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.SELL,
+      Type.MARKET,
+      null,
+      "1"
+    );
     Trade trade = new Trade(order, "APPL", 100.0, 10);
     redisConnection.sync().set("user:balance", "10000");
 
@@ -123,7 +140,15 @@ public class TradeStreamTest implements TestPropertyProvider {
     StatefulRedisConnection<String, String> redisConnection
   ) {
     // Given
-    Order order = new Order("user", "AAPL", 10, Side.BUY);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.MARKET,
+      null,
+      "1"
+    );
     Trade trade = new Trade(order, "APPL", 100.0, 10);
     redisConnection.sync().set("user:balance", "100");
 

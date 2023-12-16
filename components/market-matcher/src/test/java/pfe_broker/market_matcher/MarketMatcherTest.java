@@ -18,6 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.avro.MarketData;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.Side;
+import pfe_broker.avro.Type;
 import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.market_matcher.mocks.MockMarketDataProducer;
 import pfe_broker.market_matcher.mocks.MockOrderProducer;
@@ -83,7 +84,15 @@ class MarketMatcherTest implements TestPropertyProvider {
     // Assert that AAPL is in the list of symbols of the order consumer
     assertThat(marketMatcher.symbols).contains("AAPL");
     // Given
-    Order order = new Order("user", "AAPL", 10, Side.BUY);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.MARKET,
+      null,
+      "1"
+    );
 
     // When
     mockOrderProducer.sendOrder("user", order);
@@ -106,7 +115,15 @@ class MarketMatcherTest implements TestPropertyProvider {
     MockOrderProducer mockOrderProducer
   ) {
     // Given
-    Order order = new Order("user", "UNKNOWN", 10, Side.BUY);
+    Order order = new Order(
+      "user",
+      "UNKNOWN",
+      10,
+      Side.BUY,
+      Type.MARKET,
+      null,
+      "1"
+    );
 
     // When
     mockOrderProducer.sendOrder("user", order);

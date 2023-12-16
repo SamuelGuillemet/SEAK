@@ -17,6 +17,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.Side;
+import pfe_broker.avro.Type;
 import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.common.utils.RedisTestContainer;
 import pfe_broker.order_stream.mocks.MockOrderListener;
@@ -82,7 +83,15 @@ public class OrderStreamTest implements TestPropertyProvider {
     MockOrderListener mockOrderListener
   ) {
     // Given
-    Order order = new Order("user", "AAPL", 10, Side.BUY);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.MARKET,
+      null,
+      "1"
+    );
 
     // When
     mockOrderProducer.sendOrder("user", order);
@@ -104,7 +113,15 @@ public class OrderStreamTest implements TestPropertyProvider {
   ) {
     // Given
     redisConnection.sync().set("user:AAPL", "10");
-    Order order = new Order("user", "AAPL", 7, Side.SELL);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      7,
+      Side.SELL,
+      Type.MARKET,
+      null,
+      "1"
+    );
 
     // When
     mockOrderProducer.sendOrder("user", order);
@@ -127,7 +144,15 @@ public class OrderStreamTest implements TestPropertyProvider {
   ) {
     // Given
     redisConnection.sync().set("user:AAPL", "9");
-    Order order = new Order("user", "AAPL", 10, Side.SELL);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.SELL,
+      Type.MARKET,
+      null,
+      "1"
+    );
 
     // When
     mockOrderProducer.sendOrder("user", order);

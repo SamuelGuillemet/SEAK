@@ -17,6 +17,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Trade;
+import pfe_broker.avro.Type;
 import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.quickfix_server.mocks.MockReportProducer;
 
@@ -62,7 +63,15 @@ public class ReportListenerTest implements TestPropertyProvider {
     MockReportProducer mockReportProducer,
     ServerApplication serverApplication
   ) {
-    Order order = new Order("testuser", "AAPL", 10, Side.BUY);
+    Order order = new Order(
+      "testuser",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.MARKET,
+      null,
+      "0"
+    );
     Trade trade = new Trade(order, "APPL", 100.0, 10);
 
     mockReportProducer.sendTrade("testuser:1", trade);
