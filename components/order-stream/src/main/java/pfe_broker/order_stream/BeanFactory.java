@@ -38,6 +38,13 @@ public class BeanFactory {
   }
 
   @Bean
+  NewTopic acceptedOrdersOrderBookTopic(
+    @Property(name = "kafka.topics.accepted-orders-order-book") String topicName
+  ) {
+    return new NewTopic(topicName, 2, (short) 1);
+  }
+
+  @Bean
   NewTopic rejectedOrdersTopic(
     @Property(name = "kafka.topics.rejected-orders") String topicName
   ) {
@@ -54,6 +61,13 @@ public class BeanFactory {
   @Bean
   public SchemaRecord acceptedOrdersSchema(
     @Property(name = "kafka.topics.accepted-orders") String topicName
+  ) {
+    return new SchemaRecord(Order.getClassSchema(), topicName);
+  }
+
+  @Bean
+  public SchemaRecord acceptedOrdersOrderBookSchema(
+    @Property(name = "kafka.topics.accepted-orders-order-book") String topicName
   ) {
     return new SchemaRecord(Order.getClassSchema(), topicName);
   }
