@@ -18,6 +18,7 @@ import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.RejectedOrder;
+import pfe_broker.avro.Type;
 
 @Factory
 public class OrderStream {
@@ -36,6 +37,9 @@ public class OrderStream {
 
   @Property(name = "kafka.topics.rejected-orders")
   private String rejectedOrdersTopic;
+
+  @Property(name = "kafka.topics.accepted-orders-order-book")
+  private String acceptedOrdersOrderBookTopic;
 
   private final Serdes.StringSerde keySerde = new Serdes.StringSerde();
 
@@ -73,8 +77,18 @@ public class OrderStream {
   private void processAcceptedAndRejectedOrders(
     KStream<String, OrderIntegrityCheckRecord> integrityCheckedOrdersStream
   ) {
-    KStream<String, Order> acceptedOrders = integrityCheckedOrdersStream
-      .filter((key, value) -> value.orderRejectReason() == null)
+    KStream<String, Order> acceptedOrdersMarket = integrityCheckedOrdersStream
+      .filter((key, value) ->
+        value.orderRejectReason() == null &&
+        value.order().getType() == Type.MARKET
+      )
+      .mapValues(OrderIntegrityCheckRecord::order);
+
+    KStream<String, Order> acceptedOrdersLimit = integrityCheckedOrdersStream
+      .filter((key, value) ->
+        value.orderRejectReason() == null &&
+        value.order().getType() == Type.LIMIT
+      )
       .mapValues(OrderIntegrityCheckRecord::order);
 
     KStream<String, RejectedOrder> rejectedOrders = integrityCheckedOrdersStream
@@ -83,8 +97,12 @@ public class OrderStream {
         new RejectedOrder(value.order(), value.orderRejectReason())
       );
 
-    acceptedOrders.to(
+    acceptedOrdersMarket.to(
       acceptedOrdersTopic,
+      Produced.with(keySerde, this.orderAvroSerde())
+    );
+    acceptedOrdersLimit.to(
+      acceptedOrdersOrderBookTopic,
       Produced.with(keySerde, this.orderAvroSerde())
     );
     rejectedOrders.to(

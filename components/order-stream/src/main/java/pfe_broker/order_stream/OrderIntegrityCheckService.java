@@ -56,19 +56,20 @@ public class OrderIntegrityCheckService {
     return redisConnection.sync().exists(username + ":balance") == 1;
   }
 
-  private OrderRejectReason marketOrderCheckIntegrity(Order order) {
-    RedisCommands<String, String> syncCommands = redisConnection.sync();
-
+  /**
+   * Check the integrity of a sell order (market or limit):
+   * @param order the order to check
+   * @return null if the order is valid, the reason why it is not valid otherwise
+   */
+  private OrderRejectReason sellVerification(
+    Order order,
+    RedisCommands<String, String> syncCommands
+  ) {
     String username = order.getUsername().toString();
     String symbol = order.getSymbol().toString();
     Integer quantity = order.getQuantity();
-    Side side = order.getSide();
 
     String stockKey = username + ":" + symbol;
-
-    if (side == Side.BUY) {
-      return null;
-    }
 
     syncCommands.watch(stockKey);
     int countdown = 10;
@@ -103,6 +104,94 @@ public class OrderIntegrityCheckService {
     return OrderRejectReason.INCORRECT_QUANTITY;
   }
 
+  /**
+   * Check the integrity of a buy limit order:
+   * @param order the order to check
+   * @return null if the order is valid, the reason why it is not valid otherwise
+   */
+  private OrderRejectReason buyLimitVerification(
+    Order order,
+    RedisCommands<String, String> syncCommands
+  ) {
+    String username = order.getUsername().toString();
+    Integer quantity = order.getQuantity();
+    Double price = order.getPrice();
+
+    Double orderTotalPrice = quantity * price;
+
+    String balanceKey = username + ":balance";
+
+    syncCommands.watch(balanceKey);
+    int countdown = 10;
+    while (countdown-- > 0) {
+      Integer balance = Integer.parseInt(syncCommands.get(balanceKey));
+      if (balance < orderTotalPrice) {
+        LOG.debug("Order {} rejected because of insufficient balance", order);
+        syncCommands.unwatch();
+        return OrderRejectReason.INCORRECT_QUANTITY;
+      }
+      syncCommands.multi();
+      syncCommands.incrbyfloat(balanceKey, -orderTotalPrice);
+      try {
+        syncCommands.exec();
+        syncCommands.unwatch();
+        return null;
+      } catch (Exception e) {
+        LOG.debug("Retrying order {}", order);
+      }
+    }
+    return null;
+  }
+
+  /**
+   * Check the integrity of a market order:
+   * @param order the order to check
+   * @return null if the order is valid, the reason why it is not valid otherwise
+   */
+  private OrderRejectReason marketOrderCheckIntegrity(Order order) {
+    RedisCommands<String, String> syncCommands = redisConnection.sync();
+
+    Side side = order.getSide();
+
+    // No need to check for BUY market orders
+    if (side == Side.BUY) {
+      return null;
+    }
+
+    return sellVerification(order, syncCommands);
+  }
+
+  /**
+   * Check the integrity of a limit order:
+   * @param order the order to check
+   * @return null if the order is valid, the reason why it is not valid otherwise
+   */
+  private OrderRejectReason limitOrderCheckIntegrity(Order order) {
+    RedisCommands<String, String> syncCommands = redisConnection.sync();
+
+    Side side = order.getSide();
+
+    if (side == Side.BUY) {
+      return buyLimitVerification(order, syncCommands);
+    }
+
+    return sellVerification(order, syncCommands);
+  }
+
+  /**
+   * Check the integrity of an order:
+   *
+   * What needs to be checked with redis:
+   *
+   * Market order:
+   * - BUY: nothing
+   * - SELL: check if the user has enough stocks
+   *
+   * Limit order:
+   * - BUY: check if the user has enough balance
+   * - SELL: check if the user has enough stocks
+   *
+   */
   public OrderRejectReason checkIntegrity(Order order) {
     LOG.debug("Checking integrity of order {}", order);
 
@@ -133,7 +222,7 @@ public class OrderIntegrityCheckService {
     if (type == Type.MARKET) {
       orderCheckIntegrityResult = marketOrderCheckIntegrity(order);
     } else if (type == Type.LIMIT) {
-      LOG.warn("Limit order not implemented yet");
+      orderCheckIntegrityResult = limitOrderCheckIntegrity(order);
     }
 
     if (orderCheckIntegrityResult == null) {
