@@ -7,7 +7,6 @@ import io.micronaut.context.annotation.Requires;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsOptions;
 import org.apache.kafka.clients.admin.NewTopic;
-import pfe_broker.avro.Order;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
 import pfe_broker.avro.utils.SchemaRecord;
