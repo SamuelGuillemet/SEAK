@@ -21,7 +21,7 @@ dependencies {
     implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.2.0'
 
     // Database
-    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.0'
+    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.1'
 
     // Log4J
     implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.0'
