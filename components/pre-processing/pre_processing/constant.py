@@ -6,6 +6,8 @@ DATA_PATH = get_data_path()
 
 TARGET_DATE_REGEX = r"\d{4}-\d{2}-\d{2}"
 
+MARKET_DATA_PARTIONS = 3
+
 CSV_COLUMNS = [
     "date",
     "X",

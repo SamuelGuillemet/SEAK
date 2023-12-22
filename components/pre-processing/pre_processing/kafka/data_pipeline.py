@@ -8,6 +8,8 @@ from multiprocessing.synchronize import Event
 from typing import Dict, Generator, List, cast
 
 import pandas as pd
+
+from pre_processing.constant import MARKET_DATA_PARTIONS
 from pre_processing.dataframe_extraction.hour import complete_a_day_hour_by_hour
 from pre_processing.decorators import performance_timer_decorator
 from pre_processing.kafka.producer import AIOProducer
@@ -161,11 +163,15 @@ class DataPipeline:
         seg_iter_dict: dict[str, tuple[int, int]] = {
             ticker: (0, 0) for ticker in process_data
         }
+        counter = 0
         while True:
             # Wait for the synchronization event to be set
             self.main_sync_event.wait()
 
             start_time = time.perf_counter()
+
+            partition_number = (process_num + counter) % MARKET_DATA_PARTIONS
+            counter += 1
 
             last_key: str = ""
             for index, ticker_name in enumerate(process_data):
@@ -176,7 +182,9 @@ class DataPipeline:
                     key, value = data
                     if index == 0:
                         last_key = key
-                    kafka_producer.produce(self.topic_prefix + ticker_name, value, key)
+                    kafka_producer.produce(
+                        self.topic_prefix + ticker_name, value, key, partition_number
+                    )
                 else:
                     logger.warning(f"Data is None for {ticker_name}")
 
@@ -291,7 +299,7 @@ class DataPipeline:
         overflow_exec_time = 0
         while not self.exited:
             start_time = time.perf_counter()
-            logger.info("-------------------------------")
+            logger.debug("-------------------------------")
 
             # Set the synchronization event
             self.main_sync_event.set()
@@ -320,7 +328,7 @@ class DataPipeline:
                     )
                 )
             else:
-                logger.info(
+                logger.debug(
                     (
                         "Global sending time is lower than interval time:"
                         f"{end_time - start_time} < {self.interval_seconds}"

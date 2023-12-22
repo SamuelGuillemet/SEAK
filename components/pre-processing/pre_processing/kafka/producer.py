@@ -29,12 +29,18 @@ class AIOProducer:
         else:
             pass
 
-    def produce(self, topic: str, value: Any, key: Any = None):
+    def produce(
+        self, topic: str, value: Any, key: Any = None, partition: int = -1
+    ) -> None:
         """
         An awaitable produce method.
         """
         self._producer.produce(
-            topic, key=key, value=value, on_delivery=self.on_delivery
+            topic,
+            key=key,
+            value=value,
+            on_delivery=self.on_delivery,
+            partition=partition,
         )
 
     def flush(self, timeout: float = 5.0) -> None:

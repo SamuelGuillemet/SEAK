@@ -84,7 +84,7 @@ def main(
     """
     Main function to feed kafka with data from 2022-04-05
     """
-    setup_logs("pre_processing")
+    setup_logs("pre_processing", level=logging.DEBUG)
 
     if not verify_day_extracted(day):
         extract_day(day=day)

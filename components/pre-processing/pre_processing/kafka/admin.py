@@ -3,6 +3,8 @@ import logging
 from confluent_kafka.admin import AdminClient as _AdminClient
 from confluent_kafka.admin import NewTopic
 
+from pre_processing.constant import MARKET_DATA_PARTIONS
+
 logger = logging.getLogger("pre_processing.kafka.admin")
 
 
@@ -14,7 +16,8 @@ class AdminClient:
         """Create topics"""
 
         new_topics = [
-            NewTopic(topic, num_partitions=3, replication_factor=1) for topic in topics
+            NewTopic(topic, num_partitions=MARKET_DATA_PARTIONS, replication_factor=1)
+            for topic in topics
         ]
         # Call create_topics to asynchronously create topics, a dict
         # of <topic,future> is returned.
