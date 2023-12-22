@@ -312,7 +312,7 @@ public class ServerApplication extends MessageCracker implements Application {
     User user;
     User userMatch = userRepository.findByUsername(username).orElse(null);
     if (userMatch == null) {
-      user = new User("user1", "password", 1000.0);
+      user = new User(username, password, 1000.0);
       userRepository.save(user);
     } else {
       user = userMatch;

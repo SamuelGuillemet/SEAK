@@ -53,6 +53,14 @@ public class OrderIntegrityCheckService {
   }
 
   private boolean verifyUserExistInRedis(String username) {
+    Boolean userExists =
+      redisConnection.sync().exists(username + ":balance") == 1;
+    if (userExists) {
+      return true;
+    } else {
+      // Create the user in redis
+      redisConnection.sync().set(username + ":balance", "10000");
+    }
     return redisConnection.sync().exists(username + ":balance") == 1;
   }
 
@@ -124,7 +132,7 @@ public class OrderIntegrityCheckService {
     syncCommands.watch(balanceKey);
     int countdown = 10;
     while (countdown-- > 0) {
-      Integer balance = Integer.parseInt(syncCommands.get(balanceKey));
+      Double balance = Double.parseDouble(syncCommands.get(balanceKey));
       if (balance < orderTotalPrice) {
         LOG.debug("Order {} rejected because of insufficient balance", order);
         syncCommands.unwatch();
