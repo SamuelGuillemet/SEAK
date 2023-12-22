@@ -28,9 +28,6 @@ import pfe_broker.market_matcher.mocks.MockTradeListener;
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class MarketMatcherTest implements TestPropertyProvider {
-  static {
-    Application.setProperties();
-  }
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();
@@ -45,6 +42,7 @@ class MarketMatcherTest implements TestPropertyProvider {
     if (!kafka.isRunning()) {
       kafka.start();
     }
+    kafka.registerTopics("market-data.AAPL", "accepted-orders", "trades");
     return Map.of(
       "kafka.bootstrap.servers",
       kafka.getBootstrapServers(),

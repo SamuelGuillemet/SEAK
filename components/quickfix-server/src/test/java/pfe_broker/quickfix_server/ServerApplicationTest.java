@@ -54,9 +54,6 @@ import quickfix.fix44.NewOrderSingle;
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ServerApplicationTest implements TestPropertyProvider {
-  static {
-    Application.setProperties();
-  }
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();

@@ -37,9 +37,6 @@ import pfe_broker.quickfix_server.mocks.MockReportProducer;
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ReportListenerTest implements TestPropertyProvider {
-  static {
-    Application.setProperties();
-  }
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();

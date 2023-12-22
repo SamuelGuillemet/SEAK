@@ -9,7 +9,6 @@ import io.micronaut.test.support.TestPropertyProvider;
 import jakarta.inject.Inject;
 import java.time.Duration;
 import java.util.Map;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
@@ -37,6 +36,7 @@ class LimitOrderBookTest implements TestPropertyProvider {
 
   private final Double lowValue = 90.0;
   private final Double highValue = 120.0;
+  private final String symbol = "AAPL";
 
   @Inject
   MockTradeListener mockTradeListener;
@@ -52,6 +52,11 @@ class LimitOrderBookTest implements TestPropertyProvider {
     if (!kafka.isRunning()) {
       kafka.start();
     }
+    kafka.registerTopics(
+      "market-data.AAPL",
+      "accepted-orders-order-book",
+      "trades"
+    );
     return Map.of(
       "kafka.bootstrap.servers",
       kafka.getBootstrapServers(),
@@ -63,11 +68,11 @@ class LimitOrderBookTest implements TestPropertyProvider {
   @BeforeEach
   void reset(MockTradeListener mockTradeListener) {
     mockTradeListener.trades.clear();
+    orderBooks.clear();
   }
 
   @Test
   void testAddOrder() {
-    String symbol = "APPL";
     assertThat(orderBooks.getOrderBook(symbol)).isNull();
 
     Order order = new Order(
@@ -91,6 +96,197 @@ class LimitOrderBookTest implements TestPropertyProvider {
         assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
         assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
       });
-    System.out.println(orderBooks.getOrderBook(symbol));
+  }
+
+  @Test
+  void testMarketDataWithoutMatchingOrdersBuy() {
+    Double limitPrice = lowValue - 1;
+
+    Order order = new Order(
+      "user",
+      symbol,
+      10,
+      Side.BUY,
+      Type.LIMIT,
+      limitPrice,
+      "1"
+    );
+
+    mockOrderProducer.sendOrder("user:1", order);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+      });
+
+    MarketData marketData = new MarketData(
+      100.0,
+      highValue,
+      lowValue,
+      100.0,
+      10
+    );
+    mockMarketDataProducer.sendMarketData(marketData);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+      });
+  }
+
+  @Test
+  void testMarketDataWithMatchingOrdersBuy() {
+    Double limitPrice = lowValue + 1;
+
+    Order order = new Order(
+      "user",
+      symbol,
+      10,
+      Side.BUY,
+      Type.LIMIT,
+      limitPrice,
+      "1"
+    );
+
+    mockOrderProducer.sendOrder("user:1", order);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+      });
+
+    MarketData marketData = new MarketData(
+      100.0,
+      highValue,
+      lowValue,
+      100.0,
+      10
+    );
+    mockMarketDataProducer.sendMarketData(marketData);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(mockTradeListener.trades).hasSize(1);
+        assertThat(mockTradeListener.trades.get(0).getOrder()).isEqualTo(order);
+        assertThat(mockTradeListener.trades.get(0).getPrice())
+          .isEqualTo(limitPrice);
+      });
+  }
+
+  @Test
+  void testMarketDataWithoutMatchingOrdersSell() {
+    Double limitPrice = highValue + 1;
+
+    Order order = new Order(
+      "user",
+      symbol,
+      10,
+      Side.SELL,
+      Type.LIMIT,
+      limitPrice,
+      "1"
+    );
+
+    mockOrderProducer.sendOrder("user:1", order);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+      });
+
+    MarketData marketData = new MarketData(
+      100.0,
+      highValue,
+      lowValue,
+      100.0,
+      10
+    );
+    mockMarketDataProducer.sendMarketData(marketData);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+      });
+  }
+
+  @Test
+  void testMarketDataWithMatchingOrdersSell() {
+    Double limitPrice = highValue - 1;
+
+    Order order = new Order(
+      "user",
+      symbol,
+      10,
+      Side.SELL,
+      Type.LIMIT,
+      limitPrice,
+      "1"
+    );
+
+    mockOrderProducer.sendOrder("user:1", order);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+      });
+
+    MarketData marketData = new MarketData(
+      100.0,
+      highValue,
+      lowValue,
+      100.0,
+      10
+    );
+    mockMarketDataProducer.sendMarketData(marketData);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(mockTradeListener.trades).hasSize(1);
+        assertThat(mockTradeListener.trades.get(0).getOrder()).isEqualTo(order);
+        assertThat(mockTradeListener.trades.get(0).getPrice())
+          .isEqualTo(limitPrice);
+      });
   }
 }

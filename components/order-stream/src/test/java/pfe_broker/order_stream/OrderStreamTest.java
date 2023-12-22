@@ -27,9 +27,6 @@ import pfe_broker.order_stream.mocks.MockOrderProducer;
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class OrderStreamTest implements TestPropertyProvider {
-  static {
-    Application.setProperties();
-  }
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();
@@ -45,12 +42,7 @@ public class OrderStreamTest implements TestPropertyProvider {
     if (!kafka.isRunning()) {
       kafka.start();
     }
-    kafka.registerTopics(
-      "orders",
-      "accepted-orders",
-      "rejected-orders",
-      "market-data.AAPL"
-    );
+    kafka.registerTopics("market-data.AAPL");
     if (!redis.isRunning()) {
       redis.start();
     }
