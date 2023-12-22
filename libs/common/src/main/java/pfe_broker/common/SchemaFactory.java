@@ -1,10 +1,11 @@
 package pfe_broker.common;
 
+import io.micronaut.context.ApplicationContext;
 import io.micronaut.context.annotation.Context;
+import io.micronaut.context.annotation.Property;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.http.HttpRequest;
 import io.micronaut.http.client.HttpClient;
-import io.micronaut.http.client.annotation.Client;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -19,9 +20,21 @@ public class SchemaFactory {
 
   public SchemaFactory(
     @NonNull List<SchemaRecord> schemas,
-    @Client(value = "${kafka.schema.registry.url}") HttpClient httpClient
+    ApplicationContext applicationContext,
+    @Property(name = "kafka.schema.registry.url") String schemaRegistryUrl
   ) {
-    LOG.info("Registering schemas");
+    if (schemas == null || schemas.isEmpty()) {
+      return;
+    }
+    if (!UtilsRunning.isSchemaRegistryRunning(schemaRegistryUrl)) {
+      LOG.error("Schema registry is not running");
+      return;
+    }
+    HttpClient httpClient = applicationContext.createBean(
+      HttpClient.class,
+      schemaRegistryUrl
+    );
+    LOG.debug("Registering schemas");
     schemas.forEach(schemaRecord -> {
       String schemaString = schemaRecord
         .schema()
@@ -39,7 +52,7 @@ public class SchemaFactory {
       try {
         String response = httpClient.toBlocking().retrieve(requestGet);
         if (response.contains(schemaString)) {
-          LOG.info("Schema already registered with latest version");
+          LOG.trace("Schema already registered with latest version");
           return;
         }
       } catch (Exception e) {
