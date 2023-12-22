@@ -70,7 +70,7 @@ class ExecutionReportHandler:
         side = SideEnum(get_message_field(execution_report, fix.Side))
         order_type = OrderTypeEnum(get_message_field(execution_report, fix.OrdType))
         leaves_qty = get_message_field(execution_report, fix.LeavesQty)
-        price = get_message_field(execution_report, fix.Price)
+        price = get_message_field(execution_report, fix.AvgPx)
         cum_quantity = get_message_field(execution_report, fix.CumQty)
 
         filled = FilledExecutionReport(
