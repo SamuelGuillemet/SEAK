@@ -6,10 +6,14 @@ import java.util.Map;
 import java.util.SortedMap;
 import java.util.TreeMap;
 import java.util.stream.Collectors;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.Side;
 
 public class OrderTree {
+
+  private static final Logger LOG = LoggerFactory.getLogger(OrderTree.class);
 
   // All order of the side, map (id, price)
   private final Map<String, Double> orders;
@@ -27,6 +31,7 @@ public class OrderTree {
   }
 
   public Order addOrder(String id, Order order) {
+    LOG.trace("Add order [{}]{} to order tree {}", id, order, this.side);
     Double price = order.getPrice();
     if (priceMap.containsKey(price)) {
       OrderList orderList = priceMap.get(price);
@@ -41,6 +46,7 @@ public class OrderTree {
   }
 
   public Order removeOrder(String id) {
+    LOG.trace("Remove order [{}] from order tree {}", id, this.side);
     Double price = orders.get(id);
     if (price == null) {
       return null;
@@ -55,6 +61,7 @@ public class OrderTree {
   }
 
   public Order replaceOrder(String id, Order order) {
+    LOG.trace("Replace order [{}]{} in order tree {}", id, order, this.side);
     Double oldPrice = orders.get(id);
     if (oldPrice == null) {
       return null;
@@ -86,6 +93,7 @@ public class OrderTree {
    * @return Map of order id and order
    */
   public Map<String, Order> matchOrders(Double price) {
+    LOG.trace("Match orders in order tree {} with price {}", this.side, price);
     Map<String, Order> ordersMap = null;
     if (side == Side.BUY) {
       ordersMap = matchBuyOrders(price);

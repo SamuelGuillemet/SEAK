@@ -28,6 +28,7 @@ public class LimitOrderBook {
   }
 
   public void addOrder(String id, Order order) {
+    LOG.debug("Add order [{}]{} to order book {}", id, order, symbol);
     if (order.getSide() == Side.BUY) {
       buyOrderTree.addOrder(id, order);
     } else {
@@ -36,6 +37,7 @@ public class LimitOrderBook {
   }
 
   public Order removeOrder(String id) {
+    LOG.debug("Remove order [{}] from order book {}", id, symbol);
     Order order = null;
     if (buyOrderTree.contains(id)) {
       order = buyOrderTree.removeOrder(id);
@@ -46,6 +48,7 @@ public class LimitOrderBook {
   }
 
   public Order replaceOrder(String id, Order order) {
+    LOG.debug("Replace order [{}]{} in order book {}", id, order, symbol);
     Order oldOrder = null;
     if (buyOrderTree.contains(id)) {
       oldOrder = buyOrderTree.replaceOrder(id, order);
@@ -56,6 +59,11 @@ public class LimitOrderBook {
   }
 
   public Map<String, Trade> matchOrdersToTrade(MarketData marketData) {
+    LOG.trace(
+      "Match orders to trade in order book {} with market data {}",
+      symbol,
+      marketData
+    );
     Double low = marketData.getLow();
     Double high = marketData.getHigh();
 
