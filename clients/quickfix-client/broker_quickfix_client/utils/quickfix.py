@@ -1,8 +1,22 @@
 import logging
 
-from quickfix import DataDictionary, FieldBase, Message, MsgType, MsgType_Heartbeat
+from quickfix import (
+    DataDictionary,
+    Dictionary,
+    FieldBase,
+    Message,
+    MsgType,
+    MsgType_Heartbeat,
+    SessionID,
+    SessionSettings,
+)
 
-from broker_quickfix_client.constant import DATA_DICTIONNARY
+from broker_quickfix_client.constant import (
+    DATA_DICTIONNARY,
+    SERVER_IP,
+    SERVER_NAME,
+    SERVER_PORT,
+)
 from broker_quickfix_client.decorators import default_return_value_decorator
 
 logger = logging.getLogger("quickfix.event")
@@ -49,3 +63,35 @@ def get_message_field(message: Message, field_type: type[FieldBase]) -> str:
     field = field_type()
     message.getField(field)
     return field.getString()
+
+
+def set_settings(username: str):
+    settings = SessionSettings()
+
+    # Default settings
+    default_dict = Dictionary()
+
+    default_dict.setString("FileStorePath", "./storage/")
+    default_dict.setString("FileLogPath", "./logs/client")
+    default_dict.setBool("ResetOnLogon", True)
+    default_dict.setBool("ResetOnLogout", True)
+    default_dict.setBool("ResetOnDisconnect", True)
+    default_dict.setBool("UseDataDictionary", True)
+
+    settings.set(default_dict)
+
+    # User settings
+    session_id = SessionID("FIX.4.4", username, SERVER_NAME)
+    session_dict = Dictionary()
+
+    session_dict.setString("ConnectionType", "initiator")
+    session_dict.setString("SocketConnectHost", SERVER_IP)
+    session_dict.setInt("SocketConnectPort", SERVER_PORT)
+    session_dict.setString("DataDictionary", "./config/FIX44.xml")
+    session_dict.setString("StartTime", "00:00:00")
+    session_dict.setString("EndTime", "00:00:00")
+    session_dict.setInt("HeartBtInt", 30)
+
+    settings.set(session_id, session_dict)
+
+    return settings
