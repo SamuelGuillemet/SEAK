@@ -27,9 +27,6 @@ import pfe_broker.trade_stream.mocks.MockTradeProducer;
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class TradeStreamTest implements TestPropertyProvider {
-  static {
-    Application.setProperties();
-  }
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();
@@ -42,7 +39,6 @@ public class TradeStreamTest implements TestPropertyProvider {
     if (!kafka.isRunning()) {
       kafka.start();
     }
-    kafka.registerTopics("trades", "accepted-trades", "rejected-orders");
     if (!redis.isRunning()) {
       redis.start();
     }

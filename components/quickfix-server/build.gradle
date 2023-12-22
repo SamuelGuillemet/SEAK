@@ -3,6 +3,10 @@ plugins {
     id "io.micronaut.application"
 }
 
+ext {
+    configFiles = "classpath:application.yml,classpath:kafka.yml,classpath:quickfix.yml,classpath:data.yml"
+}
+
 version = "${version}"
 group = "pfe_broker"
 
@@ -87,4 +91,10 @@ micronaut {
 test {
     testLogging.showStandardStreams = true
     testLogging.exceptionFormat = 'full'
+}
+
+[Test, JavaExec].each { targetType ->
+    tasks.withType(targetType) { task ->
+        task.systemProperty "micronaut.config.files", configFiles
+    }
 }
