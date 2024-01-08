@@ -22,13 +22,13 @@ dependencies {
 
     // Test dependencies
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.1'
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
 
     // Log4J
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.0'
-    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.0'
-    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.22.0'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.1'
+    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
+    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.22.1'
 
     // Avro
     implementation group: 'io.confluent', name: 'kafka-streams-avro-serde', version: '7.5.1'

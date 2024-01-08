@@ -21,12 +21,12 @@ dependencies {
     implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.2.0'
 
     // Database
-    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.0'
+    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.1'
 
     // Log4J
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.0'
-    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.0'
-    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.22.0'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.1'
+    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
+    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.22.1'
 
     // Avro
     implementation group: 'io.confluent', name: 'kafka-avro-serializer', version: '7.5.1'
@@ -36,7 +36,7 @@ dependencies {
     implementation group: 'org.quickfixj', name: 'quickfixj-messages-all', version: '2.3.1'
 
     // Test implementation
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.24.2'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.1'
     testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
