@@ -1,0 +1,6 @@
+{
+  "namespace": "pfe_broker.avro",
+  "type": "enum",
+  "name": "OrderBookRequestType",
+  "symbols": ["NEW", "REPLACE", "CANCEL"]
+}

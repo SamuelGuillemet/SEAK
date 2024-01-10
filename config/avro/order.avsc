@@ -27,7 +27,8 @@
     {
       "name": "price",
       "type": ["null", "double"],
-      "default": null
+      "default": null,
+      "doc": "Only used for LIMIT orders"
     },
     {
       "name": "clOrderID",

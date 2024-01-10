@@ -17,7 +17,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
   private static final long serialVersionUID = -3668500449969664216L;
 
 
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Order\",\"namespace\":\"pfe_broker.avro\",\"fields\":[{\"name\":\"username\",\"type\":\"string\"},{\"name\":\"symbol\",\"type\":\"string\"},{\"name\":\"quantity\",\"type\":\"int\"},{\"name\":\"side\",\"type\":{\"type\":\"enum\",\"name\":\"Side\",\"symbols\":[\"BUY\",\"SELL\"]}},{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"Type\",\"symbols\":[\"MARKET\",\"LIMIT\"]},\"default\":\"MARKET\"},{\"name\":\"price\",\"type\":[\"null\",\"double\"],\"default\":null},{\"name\":\"clOrderID\",\"type\":\"string\",\"default\":\"\"}]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Order\",\"namespace\":\"pfe_broker.avro\",\"fields\":[{\"name\":\"username\",\"type\":\"string\"},{\"name\":\"symbol\",\"type\":\"string\"},{\"name\":\"quantity\",\"type\":\"int\"},{\"name\":\"side\",\"type\":{\"type\":\"enum\",\"name\":\"Side\",\"symbols\":[\"BUY\",\"SELL\"]}},{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"Type\",\"symbols\":[\"MARKET\",\"LIMIT\"]},\"default\":\"MARKET\"},{\"name\":\"price\",\"type\":[\"null\",\"double\"],\"doc\":\"Only used for LIMIT orders\",\"default\":null},{\"name\":\"clOrderID\",\"type\":\"string\",\"default\":\"\"}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static final SpecificData MODEL$ = new SpecificData();
@@ -78,6 +78,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
   private int quantity;
   private pfe_broker.avro.Side side;
   private pfe_broker.avro.Type type;
+  /** Only used for LIMIT orders */
   private java.lang.Double price;
   private java.lang.CharSequence clOrderID;
 
@@ -95,7 +96,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
    * @param quantity The new value for quantity
    * @param side The new value for side
    * @param type The new value for type
-   * @param price The new value for price
+   * @param price Only used for LIMIT orders
    * @param clOrderID The new value for clOrderID
    */
   public Order(java.lang.CharSequence username, java.lang.CharSequence symbol, java.lang.Integer quantity, pfe_broker.avro.Side side, pfe_broker.avro.Type type, java.lang.Double price, java.lang.CharSequence clOrderID) {
@@ -232,7 +233,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
 
   /**
    * Gets the value of the 'price' field.
-   * @return The value of the 'price' field.
+   * @return Only used for LIMIT orders
    */
   public java.lang.Double getPrice() {
     return price;
@@ -241,6 +242,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
 
   /**
    * Sets the value of the 'price' field.
+   * Only used for LIMIT orders
    * @param value the value to set.
    */
   public void setPrice(java.lang.Double value) {
@@ -310,6 +312,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
     private int quantity;
     private pfe_broker.avro.Side side;
     private pfe_broker.avro.Type type;
+    /** Only used for LIMIT orders */
     private java.lang.Double price;
     private java.lang.CharSequence clOrderID;
 
@@ -591,6 +594,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
 
     /**
       * Gets the value of the 'price' field.
+      * Only used for LIMIT orders
       * @return The value.
       */
     public java.lang.Double getPrice() {
@@ -600,6 +604,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
 
     /**
       * Sets the value of the 'price' field.
+      * Only used for LIMIT orders
       * @param value The value of 'price'.
       * @return This builder.
       */
@@ -612,6 +617,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
 
     /**
       * Checks whether the 'price' field has been set.
+      * Only used for LIMIT orders
       * @return True if the 'price' field has been set, false otherwise.
       */
     public boolean hasPrice() {
@@ -621,6 +627,7 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
 
     /**
       * Clears the value of the 'price' field.
+      * Only used for LIMIT orders
       * @return This builder.
       */
     public pfe_broker.avro.Order.Builder clearPrice() {
