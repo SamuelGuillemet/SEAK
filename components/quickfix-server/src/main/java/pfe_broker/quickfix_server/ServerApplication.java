@@ -1,25 +1,20 @@
 package pfe_broker.quickfix_server;
 
-import io.micronaut.context.annotation.Property;
-import io.micronaut.core.io.ResourceLoader;
-import jakarta.annotation.PostConstruct;
 import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pfe_broker.avro.Order;
+import pfe_broker.avro.OrderBookRequest;
+import pfe_broker.avro.OrderBookRequestType;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
+import pfe_broker.avro.Type;
 import pfe_broker.avro.utils.Converters;
 import pfe_broker.models.domains.User;
 import pfe_broker.models.repositories.UserRepository;
+import pfe_broker.quickfix_server.interfaces.IMessageSender;
 import quickfix.Application;
-import quickfix.ConfigError;
-import quickfix.DataDictionary;
 import quickfix.DoNotSend;
 import quickfix.FieldNotFound;
 import quickfix.IncorrectDataFormat;
@@ -27,37 +22,33 @@ import quickfix.IncorrectTagValue;
 import quickfix.Message;
 import quickfix.MessageCracker;
 import quickfix.RejectLogon;
-import quickfix.Session;
 import quickfix.SessionID;
-import quickfix.SessionNotFound;
 import quickfix.UnsupportedMessageType;
 import quickfix.field.AvgPx;
 import quickfix.field.ClOrdID;
 import quickfix.field.CumQty;
+import quickfix.field.CxlRejResponseTo;
 import quickfix.field.ExecID;
 import quickfix.field.ExecType;
 import quickfix.field.LeavesQty;
-import quickfix.field.MDEntryPx;
-import quickfix.field.MDEntrySize;
-import quickfix.field.MDEntryType;
-import quickfix.field.MDReqID;
-import quickfix.field.NoRelatedSym;
 import quickfix.field.OrdRejReason;
 import quickfix.field.OrdStatus;
 import quickfix.field.OrdType;
 import quickfix.field.OrderID;
 import quickfix.field.OrderQty;
+import quickfix.field.OrigClOrdID;
 import quickfix.field.Password;
 import quickfix.field.SenderCompID;
 import quickfix.field.Side;
 import quickfix.field.Symbol;
-import quickfix.field.TargetCompID;
 import quickfix.field.Username;
 import quickfix.fix44.ExecutionReport;
 import quickfix.fix44.Logon;
 import quickfix.fix44.MarketDataRequest;
-import quickfix.fix44.MarketDataSnapshotFullRefresh;
 import quickfix.fix44.NewOrderSingle;
+import quickfix.fix44.OrderCancelReject;
+import quickfix.fix44.OrderCancelReplaceRequest;
+import quickfix.fix44.OrderCancelRequest;
 
 @Singleton
 public class ServerApplication extends MessageCracker implements Application {
@@ -66,35 +57,17 @@ public class ServerApplication extends MessageCracker implements Application {
     ServerApplication.class
   );
 
-  private Map<String, SessionID> sessionIDMap = new HashMap<>();
+  @Inject
+  private QuickFixLogger quickFixLogger;
+
+  @Inject
+  private IMessageSender messageSender;
 
   @Inject
   private OrderProducer orderProducer;
 
   @Inject
   private UserRepository userRepository;
-
-  @Property(name = "quickfix.config.data_dictionary")
-  private String dataDictionaryPath;
-
-  @Inject
-  ResourceLoader resourceLoader;
-
-  DataDictionary dataDictionary;
-
-  @PostConstruct
-  public void init() {
-    try {
-      dataDictionary =
-        new DataDictionary(
-          resourceLoader
-            .getResourceAsStream("classpath:" + dataDictionaryPath)
-            .get()
-        );
-    } catch (ConfigError configError) {
-      configError.printStackTrace();
-    }
-  }
 
   private Integer orderKey = 0;
   private Integer executionKey = 0;
@@ -122,11 +95,11 @@ public class ServerApplication extends MessageCracker implements Application {
   @Override
   public void fromAdmin(Message message, SessionID sessionId)
     throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, RejectLogon {
-    try {
-      String sender = message
-        .getHeader()
-        .getString(quickfix.field.SenderCompID.FIELD);
-      if (message.isAdmin() && message instanceof Logon) {
+    if (message.isAdmin() && message instanceof Logon) {
+      try {
+        String sender = message
+          .getHeader()
+          .getString(quickfix.field.SenderCompID.FIELD);
         String username = message.getString(Username.FIELD);
         String password = message.getString(Password.FIELD);
 
@@ -138,10 +111,11 @@ public class ServerApplication extends MessageCracker implements Application {
           throw new RejectLogon("Invalid username or password");
         }
 
-        sessionIDMap.put(sender, sessionId);
+        messageSender.registerNewUser(sender, sessionId);
+      } catch (FieldNotFound e) {
+        e.printStackTrace();
+        throw new RejectLogon("Invalid username or password");
       }
-    } catch (FieldNotFound e) {
-      e.printStackTrace();
     }
   }
 
@@ -151,10 +125,18 @@ public class ServerApplication extends MessageCracker implements Application {
   @Override
   public void fromApp(Message message, SessionID sessionId)
     throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {
-    logQuickFixJMessage(message, "Received message");
+    quickFixLogger.logQuickFixJMessage(message, "Received message");
     crack(message, sessionId);
   }
 
+  /**
+   * This method is called when a NewOrderSingle message is received
+   * @param message
+   * @param sessionID
+   * @throws FieldNotFound
+   * @throws UnsupportedMessageType
+   * @throws IncorrectTagValue
+   */
   public void onMessage(NewOrderSingle message, SessionID sessionID)
     throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
     String username = message.getHeader().getString(SenderCompID.FIELD);
@@ -165,13 +147,18 @@ public class ServerApplication extends MessageCracker implements Application {
     String clOrdID = message.getString(ClOrdID.FIELD);
 
     Order order;
-    if (type == pfe_broker.avro.Type.MARKET) {
-      order = new Order(username, symbol, quantity, side, type, null, clOrdID);
-    } else if (type == pfe_broker.avro.Type.LIMIT) {
-      double price = message.getDouble(quickfix.field.Price.FIELD);
-      order = new Order(username, symbol, quantity, side, type, price, clOrdID);
-    } else {
-      throw new IncorrectTagValue(quickfix.field.OrdType.FIELD);
+    switch (type) {
+      case MARKET:
+        order =
+          new Order(username, symbol, quantity, side, type, null, clOrdID);
+        break;
+      case LIMIT:
+        double price = message.getDouble(quickfix.field.Price.FIELD);
+        order =
+          new Order(username, symbol, quantity, side, type, price, clOrdID);
+        break;
+      default:
+        throw new IncorrectTagValue(quickfix.field.OrdType.FIELD);
     }
 
     String key = username + ":" + orderKey.toString();
@@ -181,128 +168,289 @@ public class ServerApplication extends MessageCracker implements Application {
     orderProducer.sendOrder(key, order);
   }
 
+  /**
+   * This method is called when a OrderCancelReplaceRequest message is received
+   * @param message
+   * @param sessionID
+   * @throws FieldNotFound
+   * @throws UnsupportedMessageType
+   * @throws IncorrectTagValue
+   */
+
+  public void onMessage(OrderCancelReplaceRequest message, SessionID sessionID)
+    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+    String username = message.getHeader().getString(SenderCompID.FIELD);
+    String symbol = message.getString(Symbol.FIELD);
+    int quantity = message.getInt(OrderQty.FIELD);
+    pfe_broker.avro.Side side = Converters.Side.toAvro(message.getSide());
+    pfe_broker.avro.Type type = Converters.Type.toAvro(message.getOrdType());
+    String clOrdID = message.getString(ClOrdID.FIELD);
+    String origClOrdID = message.getString(OrigClOrdID.FIELD);
+    String orderId = message.getString(OrderID.FIELD);
+
+    if (type != pfe_broker.avro.Type.LIMIT) {
+      throw new IncorrectTagValue(quickfix.field.OrdType.FIELD);
+    }
+
+    double price = message.getDouble(quickfix.field.Price.FIELD);
+    Order order = new Order(
+      username,
+      symbol,
+      quantity,
+      side,
+      type,
+      price,
+      clOrdID
+    );
+
+    String key = username + ":" + orderId;
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.REPLACE,
+      order,
+      origClOrdID
+    );
+
+    orderProducer.sendOrderBookRequest(key, orderBookRequest);
+  }
+
+  /**
+   * This method is called when a OrderCancelRequest message is received
+   * @param message
+   * @param sessionID
+   * @throws FieldNotFound
+   * @throws UnsupportedMessageType
+   * @throws IncorrectTagValue
+   */
+  public void onMessage(OrderCancelRequest message, SessionID sessionID)
+    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+    String username = message.getHeader().getString(SenderCompID.FIELD);
+    String symbol = message.getString(Symbol.FIELD);
+    pfe_broker.avro.Side side = Converters.Side.toAvro(message.getSide());
+    String clOrdID = message.getString(ClOrdID.FIELD);
+    String origClOrdID = message.getString(OrigClOrdID.FIELD);
+    String orderId = message.getString(OrderID.FIELD);
+
+    Order order = new Order(
+      username,
+      symbol,
+      0,
+      side,
+      Type.LIMIT,
+      0.0,
+      clOrdID
+    );
+
+    String key = username + ":" + orderId;
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.CANCEL,
+      order,
+      origClOrdID
+    );
+
+    orderProducer.sendOrderBookRequest(key, orderBookRequest);
+  }
+
+  /**
+   * This method is called when a MarketDataRequest message is received
+   * @param message
+   * @param sessionID
+   */
   public void onMessage(MarketDataRequest message, SessionID sessionID) {
-    try {
-      sendMarketDataSnapshot(message);
-    } catch (quickfix.FieldNotFound e) {
-      e.printStackTrace();
-    }
+    throw new UnsupportedOperationException(
+      "Unimplemented method 'onMessage(MarketDataRequest message, SessionID sessionID)'"
+    );
   }
 
-  public void sendMarketDataSnapshot(MarketDataRequest message)
-    throws FieldNotFound {
-    MarketDataSnapshotFullRefresh fixMD = createMarketDataSnapshot(message);
-
-    String senderCompId = message.getHeader().getString(SenderCompID.FIELD);
-    String targetCompId = message.getHeader().getString(TargetCompID.FIELD);
-    fixMD.getHeader().setString(SenderCompID.FIELD, targetCompId);
-    fixMD.getHeader().setString(TargetCompID.FIELD, senderCompId);
-
-    sendMessage(message, targetCompId);
-  }
-
-  public MarketDataSnapshotFullRefresh createMarketDataSnapshot(
-    MarketDataRequest message
-  ) throws FieldNotFound {
-    MarketDataRequest.NoRelatedSym noRelatedSyms =
-      new MarketDataRequest.NoRelatedSym();
-
-    int relatedSymbolCount = message.getInt(NoRelatedSym.FIELD);
-
-    MarketDataSnapshotFullRefresh fixMD = new MarketDataSnapshotFullRefresh();
-    fixMD.setString(MDReqID.FIELD, message.getString(MDReqID.FIELD));
-
-    for (int i = 1; i <= relatedSymbolCount; ++i) {
-      message.getGroup(i, noRelatedSyms);
-      String symbol = noRelatedSyms.getString(Symbol.FIELD);
-      fixMD.setString(Symbol.FIELD, symbol);
-
-      double symbolPrice = 0.0;
-      int symbolVolume = 0;
-
-      if (symbol.equals("GOOGL")) {
-        symbolPrice = 123.45;
-        symbolVolume = 1000;
-      } else if (symbol.equals("AAPL")) {
-        symbolPrice = 456.78;
-        symbolVolume = 1000;
-      }
-
-      MarketDataSnapshotFullRefresh.NoMDEntries noMDEntries =
-        new MarketDataSnapshotFullRefresh.NoMDEntries();
-      noMDEntries.setChar(MDEntryType.FIELD, '0');
-      noMDEntries.setDouble(MDEntryPx.FIELD, symbolPrice);
-      noMDEntries.setInt(MDEntrySize.FIELD, symbolVolume);
-      fixMD.addGroup(noMDEntries);
-    }
-
-    return fixMD;
-  }
-
+  /**
+   * This method is called to send a trade report
+   * @param key
+   * @param trade
+   */
   public void sendTradeReport(String key, Trade trade) {
     Order order = trade.getOrder();
-    String symbol = order.getSymbol().toString();
-    String execId = executionKey.toString();
-    String orderID = key.split(":")[1];
-    char side = Converters.Side.charFromAvro(order.getSide());
-    char type = Converters.Type.charFromAvro(order.getType());
     int tradeQuantity = trade.getQuantity();
     int baseQuantity = order.getQuantity();
-    double price = trade.getPrice();
-    String clOrdID = order.getClOrderID().toString();
 
-    ExecutionReport executionReport = new ExecutionReport(
-      new OrderID(orderID),
-      new ExecID(execId),
-      new ExecType(ExecType.TRADE),
-      new OrdStatus(OrdStatus.FILLED),
-      new Side(side),
-      new LeavesQty(baseQuantity - tradeQuantity),
-      new CumQty(tradeQuantity),
-      new AvgPx(price)
+    ExecutionReport executionReport = buildExecutionReport(
+      key,
+      order,
+      OrdStatus.FILLED,
+      ExecType.TRADE,
+      baseQuantity - tradeQuantity,
+      tradeQuantity,
+      trade.getPrice()
     );
-    executionReport.set(new Symbol(symbol));
-    executionReport.set(new OrderQty(baseQuantity));
-    executionReport.set(new ClOrdID(clOrdID));
-    executionReport.set(new OrdType(type));
 
-    executionKey++;
-
-    sendMessage(executionReport, order.getUsername().toString());
+    messageSender.sendMessage(executionReport, order.getUsername().toString());
   }
 
+  /**
+   * This method is called to send a rejected order report
+   * @param key
+   * @param rejectedOrder
+   */
   public void sendRejectedOrderReport(String key, RejectedOrder rejectedOrder) {
     Order order = rejectedOrder.getOrder();
+    int rejectReason = Converters.OrderRejectReason.intFromAvro(
+      rejectedOrder.getReason()
+    );
+
+    ExecutionReport executionReport = buildExecutionReport(
+      key,
+      order,
+      OrdStatus.REJECTED,
+      ExecType.REJECTED,
+      0,
+      0,
+      0.0
+    );
+    executionReport.set(new OrdRejReason(rejectReason));
+
+    messageSender.sendMessage(executionReport, order.getUsername().toString());
+  }
+
+  /**
+   * This method is called to send an order book report
+   * @param key
+   * @param orderBookRequest
+   */
+  public void sendOrderBookReport(
+    String key,
+    OrderBookRequest orderBookRequest
+  ) {
+    Order order = orderBookRequest.getOrder();
+    char execType;
+    char ordStatus;
+
+    switch (orderBookRequest.getType()) {
+      case NEW:
+        execType = ExecType.NEW;
+        ordStatus = OrdStatus.NEW;
+        break;
+      case CANCEL:
+        execType = ExecType.CANCELED;
+        ordStatus = OrdStatus.CANCELED;
+        break;
+      case REPLACE:
+        execType = ExecType.NEW;
+        ordStatus = OrdStatus.REPLACED;
+        break;
+      default:
+        throw new UnsupportedOperationException(
+          "Unimplemented OrderBookRequestType"
+        );
+    }
+
+    ExecutionReport executionReport = buildExecutionReport(
+      key,
+      order,
+      ordStatus,
+      execType,
+      order.getQuantity(),
+      0,
+      order.getPrice()
+    );
+
+    if (
+      orderBookRequest.getType() == OrderBookRequestType.REPLACE ||
+      orderBookRequest.getType() == OrderBookRequestType.CANCEL
+    ) {
+      String origClOrdID = orderBookRequest.getOrigClOrderID().toString();
+      executionReport.set(new OrigClOrdID(origClOrdID));
+    }
+
+    messageSender.sendMessage(executionReport, order.getUsername().toString());
+  }
+
+  /**
+   * This method is called to send an order book rejected report
+   * @param key
+   * @param orderBookRequest
+   */
+  public void sendOrderBookRejected(
+    String key,
+    OrderBookRequest orderBookRequest
+  ) {
+    Order order = orderBookRequest.getOrder();
+    String orderID = key.split(":")[1];
+    String clOrdID = order.getClOrderID().toString();
+    String origClOrdID = orderBookRequest.getOrigClOrderID().toString();
+    OrderBookRequestType orderBookRequestType = orderBookRequest.getType();
+
+    char cxlRejResponseTo;
+    switch (orderBookRequestType) {
+      case CANCEL:
+        cxlRejResponseTo = CxlRejResponseTo.ORDER_CANCEL_REQUEST;
+        break;
+      case REPLACE:
+        cxlRejResponseTo = CxlRejResponseTo.ORDER_CANCEL_REPLACE_REQUEST;
+        break;
+      default:
+        throw new UnsupportedOperationException(
+          "Unimplemented OrderBookRequestType"
+        );
+    }
+
+    OrderCancelReject orderCancelReject = new OrderCancelReject(
+      new OrderID(orderID),
+      new ClOrdID(clOrdID),
+      new OrigClOrdID(origClOrdID),
+      new OrdStatus(OrdStatus.REJECTED),
+      new CxlRejResponseTo(cxlRejResponseTo)
+    );
+
+    messageSender.sendMessage(
+      orderCancelReject,
+      order.getUsername().toString()
+    );
+  }
+
+  /**
+   * This method is called to build an execution report
+   * @param key the kafka key
+   * @param order the order
+   * @param ordStatus
+   * @param execType
+   * @param leavesQty
+   * @param cumQty
+   * @param avgPx
+   * @return
+   */
+  private ExecutionReport buildExecutionReport(
+    String key,
+    Order order,
+    char ordStatus,
+    char execType,
+    int leavesQty,
+    int cumQty,
+    Double avgPx
+  ) {
     String symbol = order.getSymbol().toString();
     String execId = executionKey.toString();
     String orderID = key.split(":")[1];
     char side = Converters.Side.charFromAvro(order.getSide());
     char type = Converters.Type.charFromAvro(order.getType());
     int quantity = order.getQuantity();
-    int rejectReason = Converters.OrderRejectReason.intFromAvro(
-      rejectedOrder.getReason()
-    );
     String clOrdID = order.getClOrderID().toString();
 
     ExecutionReport executionReport = new ExecutionReport(
       new OrderID(orderID),
       new ExecID(execId),
-      new ExecType(ExecType.REJECTED),
-      new OrdStatus(OrdStatus.REJECTED),
+      new ExecType(execType),
+      new OrdStatus(ordStatus),
       new Side(side),
-      new LeavesQty(quantity),
-      new CumQty(0),
-      new AvgPx(0)
+      new LeavesQty(leavesQty),
+      new CumQty(cumQty),
+      new AvgPx(avgPx)
     );
     executionReport.set(new Symbol(symbol));
     executionReport.set(new OrderQty(quantity));
-    executionReport.set(new OrdRejReason(rejectReason));
     executionReport.set(new ClOrdID(clOrdID));
     executionReport.set(new OrdType(type));
 
     executionKey++;
 
-    sendMessage(executionReport, order.getUsername().toString());
+    return executionReport;
   }
 
   /**
@@ -318,47 +466,5 @@ public class ServerApplication extends MessageCracker implements Application {
       user = userMatch;
     }
     return user != null && user.getPassword().equals(password);
-  }
-
-  protected void sendMessage(Message message, String username) {
-    logQuickFixJMessage(message, "Sending message");
-    SessionID sessionID = sessionIDMap.get(username);
-    try {
-      Session.sendToTarget(message, sessionID);
-    } catch (SessionNotFound | NullPointerException e) {
-      LOG.error("Session not found for user [{}]({})", username, sessionID);
-    }
-  }
-
-  private void logQuickFixJMessage(Message message, String prefix) {
-    List<String> messageParts = Arrays
-      .stream(message.toString().split("\u0001"))
-      .map(s -> {
-        String[] split = s.split("=");
-        if (split.length != 2) {
-          return s;
-        }
-        String key = split[0];
-        String value = split[1];
-
-        String fieldName = dataDictionary.getFieldName(Integer.parseInt(key));
-        String fieldValue = dataDictionary.getValueName(
-          Integer.parseInt(key),
-          value
-        );
-
-        if (fieldName == null) {
-          fieldName = key;
-        }
-        if (fieldValue == null) {
-          fieldValue = value;
-        }
-
-        return fieldName + "=" + fieldValue;
-      })
-      .toList();
-
-    String messageString = String.join("|", messageParts);
-    LOG.debug("{}: {}", prefix, messageString);
   }
 }
