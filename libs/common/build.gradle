@@ -16,8 +16,8 @@ dependencies {
     runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
     implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.2.0'
 
-    implementation group: 'io.micronaut', name: 'micronaut-http-client-jdk', version: '4.2.1'
-    implementation group: 'io.micronaut.serde', name: 'micronaut-serde-jackson', version: '2.5.1'
+    implementation group: 'io.micronaut', name: 'micronaut-http-client-jdk', version: '4.2.3'
+    implementation group: 'io.micronaut.serde', name: 'micronaut-serde-jackson', version: '2.7.0'
 
     implementation group: 'org.testcontainers', name: 'kafka', version: '1.19.3'
     implementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
@@ -28,10 +28,10 @@ dependencies {
     testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
 
     // Log4J
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.21.1'
+    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
 
     // Avro
-    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.1'
+    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.3'
 }
 
 java {
