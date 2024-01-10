@@ -3,6 +3,7 @@ package pfe_broker.order_book;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.awaitility.Awaitility.await;
 
+import io.lettuce.core.api.StatefulRedisConnection;
 import io.micronaut.core.annotation.NonNull;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
@@ -14,11 +15,13 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import pfe_broker.avro.MarketData;
 import pfe_broker.avro.Order;
+import pfe_broker.avro.OrderBookRequest;
+import pfe_broker.avro.OrderBookRequestType;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Type;
 import pfe_broker.common.utils.KafkaTestContainer;
+import pfe_broker.common.utils.RedisTestContainer;
 import pfe_broker.order_book.mocks.MockMarketDataProducer;
 import pfe_broker.order_book.mocks.MockOrderProducer;
 import pfe_broker.order_book.mocks.MockTradeListener;
@@ -26,16 +29,17 @@ import pfe_broker.order_book.mocks.MockTradeListener;
 @MicronautTest(transactional = false)
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class LimitOrderBookTest implements TestPropertyProvider {
+class LimitOrderBookOperationsTest implements TestPropertyProvider {
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();
 
+  @Container
+  static final RedisTestContainer redis = new RedisTestContainer();
+
   @Inject
   OrderBookCatalog orderBooks;
 
-  private final Double lowValue = 90.0;
-  private final Double highValue = 120.0;
   private final String symbol = "AAPL";
 
   @Inject
@@ -52,16 +56,17 @@ class LimitOrderBookTest implements TestPropertyProvider {
     if (!kafka.isRunning()) {
       kafka.start();
     }
-    kafka.registerTopics(
-      "market-data.AAPL",
-      "accepted-orders-order-book",
-      "trades"
-    );
+    kafka.registerTopics("order-book-request");
+    if (!redis.isRunning()) {
+      redis.start();
+    }
     return Map.of(
       "kafka.bootstrap.servers",
       kafka.getBootstrapServers(),
       "kafka.schema.registry.url",
-      kafka.getSchemaRegistryUrl()
+      kafka.getSchemaRegistryUrl(),
+      "redis.uri",
+      redis.getRedisUrl()
     );
   }
 
@@ -72,7 +77,7 @@ class LimitOrderBookTest implements TestPropertyProvider {
   }
 
   @Test
-  void testAddOrder() {
+  void testAddBuyOrder() {
     assertThat(orderBooks.getOrderBook(symbol)).isNull();
 
     Order order = new Order(
@@ -85,7 +90,13 @@ class LimitOrderBookTest implements TestPropertyProvider {
       "1"
     );
 
-    mockOrderProducer.sendOrder("user:1", order);
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.NEW,
+      order,
+      null
+    );
+
+    mockOrderProducer.sendOrderBookRequest("user:1", orderBookRequest);
 
     await()
       .atMost(Duration.ofSeconds(5))
@@ -99,8 +110,12 @@ class LimitOrderBookTest implements TestPropertyProvider {
   }
 
   @Test
-  void testMarketDataWithoutMatchingOrdersBuy() {
-    Double limitPrice = lowValue - 1;
+  void testReplaceBuyOrder(
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    assertThat(orderBooks.getOrderBook(symbol)).isNull();
+
+    redisConnection.sync().set("user:balance", "800");
 
     Order order = new Order(
       "user",
@@ -108,11 +123,17 @@ class LimitOrderBookTest implements TestPropertyProvider {
       10,
       Side.BUY,
       Type.LIMIT,
-      limitPrice,
+      80.0,
       "1"
     );
 
-    mockOrderProducer.sendOrder("user:1", order);
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.NEW,
+      order,
+      null
+    );
+
+    mockOrderProducer.sendOrderBookRequest("user:1", orderBookRequest);
 
     await()
       .atMost(Duration.ofSeconds(5))
@@ -124,14 +145,23 @@ class LimitOrderBookTest implements TestPropertyProvider {
         assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
       });
 
-    MarketData marketData = new MarketData(
-      100.0,
-      highValue,
-      lowValue,
-      100.0,
-      10
+    Order newOrder = new Order(
+      "user",
+      symbol,
+      20,
+      Side.BUY,
+      Type.LIMIT,
+      80.0,
+      "2"
     );
-    mockMarketDataProducer.sendMarketData(marketData);
+
+    OrderBookRequest newOrderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.REPLACE,
+      newOrder,
+      "1"
+    );
+
+    mockOrderProducer.sendOrderBookRequest("user:1", newOrderBookRequest);
 
     await()
       .atMost(Duration.ofSeconds(5))
@@ -141,12 +171,17 @@ class LimitOrderBookTest implements TestPropertyProvider {
         assertThat(orderBook).isNotNull();
         assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
         assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(redisConnection.sync().get("user:balance")).isEqualTo("0");
       });
   }
 
   @Test
-  void testMarketDataWithMatchingOrdersBuy() {
-    Double limitPrice = lowValue + 1;
+  void testCancelBuyOrder(
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    assertThat(orderBooks.getOrderBook(symbol)).isNull();
+
+    redisConnection.sync().set("user:balance", "800");
 
     Order order = new Order(
       "user",
@@ -154,11 +189,17 @@ class LimitOrderBookTest implements TestPropertyProvider {
       10,
       Side.BUY,
       Type.LIMIT,
-      limitPrice,
+      80.0,
       "1"
     );
 
-    mockOrderProducer.sendOrder("user:1", order);
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.NEW,
+      order,
+      null
+    );
+
+    mockOrderProducer.sendOrderBookRequest("user:1", orderBookRequest);
 
     await()
       .atMost(Duration.ofSeconds(5))
@@ -170,14 +211,23 @@ class LimitOrderBookTest implements TestPropertyProvider {
         assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
       });
 
-    MarketData marketData = new MarketData(
-      100.0,
-      highValue,
-      lowValue,
-      100.0,
-      10
+    Order cancelOrder = new Order(
+      "user",
+      symbol,
+      0,
+      Side.BUY,
+      Type.LIMIT,
+      0.0,
+      "2"
     );
-    mockMarketDataProducer.sendMarketData(marketData);
+
+    OrderBookRequest cancelOrderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.CANCEL,
+      cancelOrder,
+      "1"
+    );
+
+    mockOrderProducer.sendOrderBookRequest("user:1", cancelOrderBookRequest);
 
     await()
       .atMost(Duration.ofSeconds(5))
@@ -187,16 +237,14 @@ class LimitOrderBookTest implements TestPropertyProvider {
         assertThat(orderBook).isNotNull();
         assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
         assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
-        assertThat(mockTradeListener.trades).hasSize(1);
-        assertThat(mockTradeListener.trades.get(0).getOrder()).isEqualTo(order);
-        assertThat(mockTradeListener.trades.get(0).getPrice())
-          .isEqualTo(limitPrice);
+        assertThat(redisConnection.sync().get("user:balance"))
+          .isEqualTo("1600");
       });
   }
 
   @Test
-  void testMarketDataWithoutMatchingOrdersSell() {
-    Double limitPrice = highValue + 1;
+  void testAddSellOrder() {
+    assertThat(orderBooks.getOrderBook(symbol)).isNull();
 
     Order order = new Order(
       "user",
@@ -204,30 +252,17 @@ class LimitOrderBookTest implements TestPropertyProvider {
       10,
       Side.SELL,
       Type.LIMIT,
-      limitPrice,
+      80.0,
       "1"
     );
 
-    mockOrderProducer.sendOrder("user:1", order);
-
-    await()
-      .atMost(Duration.ofSeconds(5))
-      .pollInterval(Duration.ofSeconds(1))
-      .untilAsserted(() -> {
-        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
-        assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
-      });
-
-    MarketData marketData = new MarketData(
-      100.0,
-      highValue,
-      lowValue,
-      100.0,
-      10
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.NEW,
+      order,
+      null
     );
-    mockMarketDataProducer.sendMarketData(marketData);
+
+    mockOrderProducer.sendOrderBookRequest("user:1", orderBookRequest);
 
     await()
       .atMost(Duration.ofSeconds(5))
@@ -241,8 +276,12 @@ class LimitOrderBookTest implements TestPropertyProvider {
   }
 
   @Test
-  void testMarketDataWithMatchingOrdersSell() {
-    Double limitPrice = highValue - 1;
+  void testReplaceSellOrder(
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    assertThat(orderBooks.getOrderBook(symbol)).isNull();
+
+    redisConnection.sync().set("user:AAPL", "20");
 
     Order order = new Order(
       "user",
@@ -250,11 +289,17 @@ class LimitOrderBookTest implements TestPropertyProvider {
       10,
       Side.SELL,
       Type.LIMIT,
-      limitPrice,
+      80.0,
       "1"
     );
 
-    mockOrderProducer.sendOrder("user:1", order);
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.NEW,
+      order,
+      null
+    );
+
+    mockOrderProducer.sendOrderBookRequest("user:1", orderBookRequest);
 
     await()
       .atMost(Duration.ofSeconds(5))
@@ -266,14 +311,89 @@ class LimitOrderBookTest implements TestPropertyProvider {
         assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
       });
 
-    MarketData marketData = new MarketData(
-      100.0,
-      highValue,
-      lowValue,
-      100.0,
-      10
+    Order newOrder = new Order(
+      "user",
+      symbol,
+      20,
+      Side.SELL,
+      Type.LIMIT,
+      80.0,
+      "2"
     );
-    mockMarketDataProducer.sendMarketData(marketData);
+
+    OrderBookRequest newOrderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.REPLACE,
+      newOrder,
+      "1"
+    );
+
+    mockOrderProducer.sendOrderBookRequest("user:1", newOrderBookRequest);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+        assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("10");
+      });
+  }
+
+  @Test
+  void testCancelSellOrder(
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    assertThat(orderBooks.getOrderBook(symbol)).isNull();
+
+    redisConnection.sync().set("user:AAPL", "20");
+
+    Order order = new Order(
+      "user",
+      symbol,
+      10,
+      Side.SELL,
+      Type.LIMIT,
+      80.0,
+      "1"
+    );
+
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.NEW,
+      order,
+      null
+    );
+
+    mockOrderProducer.sendOrderBookRequest("user:1", orderBookRequest);
+
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .pollInterval(Duration.ofSeconds(1))
+      .untilAsserted(() -> {
+        LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
+        assertThat(orderBook).isNotNull();
+        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+      });
+
+    Order cancelOrder = new Order(
+      "user",
+      symbol,
+      0,
+      Side.SELL,
+      Type.LIMIT,
+      0.0,
+      "2"
+    );
+
+    OrderBookRequest cancelOrderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.CANCEL,
+      cancelOrder,
+      "1"
+    );
+
+    mockOrderProducer.sendOrderBookRequest("user:1", cancelOrderBookRequest);
 
     await()
       .atMost(Duration.ofSeconds(5))
@@ -283,10 +403,7 @@ class LimitOrderBookTest implements TestPropertyProvider {
         assertThat(orderBook).isNotNull();
         assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
         assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
-        assertThat(mockTradeListener.trades).hasSize(1);
-        assertThat(mockTradeListener.trades.get(0).getOrder()).isEqualTo(order);
-        assertThat(mockTradeListener.trades.get(0).getPrice())
-          .isEqualTo(limitPrice);
+        assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("30");
       });
   }
 }
