@@ -58,6 +58,16 @@ public class LimitOrderBook {
     return oldOrder;
   }
 
+  public Order getOrder(String id) {
+    Order order = null;
+    if (buyOrderTree.contains(id)) {
+      order = buyOrderTree.getOrder(id);
+    } else if (sellOrderTree.contains(id)) {
+      order = sellOrderTree.getOrder(id);
+    }
+    return order;
+  }
+
   public Map<String, Trade> matchOrdersToTrade(MarketData marketData) {
     LOG.trace(
       "Match orders to trade in order book {} with market data {}",

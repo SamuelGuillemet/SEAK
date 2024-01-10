@@ -143,6 +143,15 @@ public class OrderTree {
     return ordersMap;
   }
 
+  public Order getOrder(String id) {
+    Double price = orders.get(id);
+    if (price == null) {
+      return null;
+    }
+    OrderList orderList = priceMap.get(price);
+    return orderList.getOrder(id);
+  }
+
   public boolean contains(String id) {
     return orders.containsKey(id);
   }

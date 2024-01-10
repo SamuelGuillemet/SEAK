@@ -34,6 +34,10 @@ public class OrderList {
     orders.put(id, order);
   }
 
+  public Order getOrder(String id) {
+    return orders.get(id);
+  }
+
   public double getPrice() {
     return price;
   }
