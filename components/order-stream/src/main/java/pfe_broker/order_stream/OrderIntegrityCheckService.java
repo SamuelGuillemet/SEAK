@@ -148,7 +148,9 @@ public class OrderIntegrityCheckService {
         LOG.debug("Retrying order {}", order);
       }
     }
-    return null;
+    LOG.debug("Order {} rejected because of insufficient stocks", order);
+    syncCommands.unwatch();
+    return OrderRejectReason.INCORRECT_QUANTITY;
   }
 
   /**
