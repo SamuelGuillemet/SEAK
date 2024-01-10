@@ -3,6 +3,7 @@ package pfe_broker.quickfix_server.mocks;
 import io.micronaut.configuration.kafka.annotation.KafkaClient;
 import io.micronaut.configuration.kafka.annotation.KafkaKey;
 import io.micronaut.configuration.kafka.annotation.Topic;
+import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
 
@@ -13,4 +14,16 @@ public interface MockReportProducer {
 
   @Topic("${kafka.topics.rejected-orders}")
   void sendRejectedOrder(@KafkaKey String key, RejectedOrder rejectedOrder);
+
+  @Topic("${kafka.topics.order-book-response}")
+  void sendOrderBookResponse(
+    @KafkaKey String key,
+    OrderBookRequest orderBookRequest
+  );
+
+  @Topic("${kafka.topics.order-book-rejected}")
+  void sendOrderBookRejected(
+    @KafkaKey String key,
+    OrderBookRequest orderBookRequest
+  );
 }

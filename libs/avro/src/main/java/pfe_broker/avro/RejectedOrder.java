@@ -14,10 +14,10 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class RejectedOrder extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -1963098368973760489L;
+  private static final long serialVersionUID = 484513667864573901L;
 
 
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"RejectedOrder\",\"namespace\":\"pfe_broker.avro\",\"fields\":[{\"name\":\"order\",\"type\":{\"type\":\"record\",\"name\":\"Order\",\"fields\":[{\"name\":\"username\",\"type\":\"string\"},{\"name\":\"symbol\",\"type\":\"string\"},{\"name\":\"quantity\",\"type\":\"int\"},{\"name\":\"side\",\"type\":{\"type\":\"enum\",\"name\":\"Side\",\"symbols\":[\"BUY\",\"SELL\"]}}]}},{\"name\":\"reason\",\"type\":{\"type\":\"enum\",\"name\":\"OrderRejectReason\",\"symbols\":[\"BROKER_EXCHANGE_OPTION\",\"UNKNOWN_SYMBOL\",\"EXCHANGE_CLOSED\",\"ORDER_EXCEEDS_LIMIT\",\"TOO_LATE_TO_ENTER\",\"UNKNOWN_ORDER\",\"DUPLICATE_ORDER\",\"STALE_ORDER\",\"INCORRECT_QUANTITY\",\"UNKNOWN_ACCOUNT\",\"PRICE_EXCEEDS_CURRENT_PRICE_BAND\",\"OTHER\"]}}]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"RejectedOrder\",\"namespace\":\"pfe_broker.avro\",\"fields\":[{\"name\":\"order\",\"type\":{\"type\":\"record\",\"name\":\"Order\",\"fields\":[{\"name\":\"username\",\"type\":\"string\"},{\"name\":\"symbol\",\"type\":\"string\"},{\"name\":\"quantity\",\"type\":\"int\"},{\"name\":\"side\",\"type\":{\"type\":\"enum\",\"name\":\"Side\",\"symbols\":[\"BUY\",\"SELL\"]}},{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"Type\",\"symbols\":[\"MARKET\",\"LIMIT\"]},\"default\":\"MARKET\"},{\"name\":\"price\",\"type\":[\"null\",\"double\"],\"doc\":\"Only used for LIMIT orders\",\"default\":null},{\"name\":\"clOrderID\",\"type\":\"string\",\"default\":\"\"}]}},{\"name\":\"reason\",\"type\":{\"type\":\"enum\",\"name\":\"OrderRejectReason\",\"symbols\":[\"BROKER_EXCHANGE_OPTION\",\"UNKNOWN_SYMBOL\",\"EXCHANGE_CLOSED\",\"ORDER_EXCEEDS_LIMIT\",\"TOO_LATE_TO_ENTER\",\"UNKNOWN_ORDER\",\"DUPLICATE_ORDER\",\"STALE_ORDER\",\"INCORRECT_QUANTITY\",\"UNKNOWN_ACCOUNT\",\"PRICE_EXCEEDS_CURRENT_PRICE_BAND\",\"OTHER\"]}}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static final SpecificData MODEL$ = new SpecificData();

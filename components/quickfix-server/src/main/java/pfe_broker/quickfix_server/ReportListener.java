@@ -7,6 +7,7 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.List;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
 
@@ -32,5 +33,23 @@ public class ReportListener {
   @Topic("${kafka.topics.rejected-orders}")
   void receiveRejectedOrder(@KafkaKey String key, RejectedOrder rejectedOrder) {
     serverApplication.sendRejectedOrderReport(key, rejectedOrder);
+  }
+
+  @KafkaListener("quickfix-order-book-response")
+  @Topic("${kafka.topics.order-book-response}")
+  void receiveOrderBookResponse(
+    @KafkaKey String key,
+    OrderBookRequest orderBookRequest
+  ) {
+    serverApplication.sendOrderBookReport(key, orderBookRequest);
+  }
+
+  @KafkaListener("quickfix-order-book-rejected")
+  @Topic("${kafka.topics.order-book-rejected}")
+  void receiveOrderBookRejected(
+    @KafkaKey String key,
+    OrderBookRequest orderBookRequest
+  ) {
+    serverApplication.sendOrderBookRejected(key, orderBookRequest);
   }
 }

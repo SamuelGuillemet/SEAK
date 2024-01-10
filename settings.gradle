@@ -5,10 +5,12 @@ pluginManagement {
     id 'com.github.johnrengelman.shadow' version "${shadowVersion}"
     id 'io.github.khalilou88.jnxplus' version "${jnxplusGradlePluginVersion}"
     id 'io.freefair.lombok' version "${lombokGradlePluginVersion}"
+    id 'jacoco'
   }
 }
 
 rootProject.name = 'pfe-broker'
+include('components:order-book')
 include('components:quickfix-server')
 include('components:trade-stream')
 include('components:order-stream')

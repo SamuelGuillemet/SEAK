@@ -10,15 +10,28 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.avro.Order;
+import pfe_broker.avro.OrderBookRequest;
+import pfe_broker.avro.OrderBookRequestType;
+import pfe_broker.avro.OrderRejectReason;
+import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Trade;
+import pfe_broker.avro.Type;
 import pfe_broker.common.utils.KafkaTestContainer;
+import pfe_broker.quickfix_server.mocks.MockMessageSender;
 import pfe_broker.quickfix_server.mocks.MockReportProducer;
+import quickfix.FieldNotFound;
+import quickfix.Message;
+import quickfix.field.CxlRejResponseTo;
+import quickfix.field.ExecType;
+import quickfix.field.OrdStatus;
+import quickfix.field.OrderID;
 
 @MicronautTest(
   rollback = false,
@@ -36,9 +49,6 @@ import pfe_broker.quickfix_server.mocks.MockReportProducer;
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class ReportListenerTest implements TestPropertyProvider {
-  static {
-    Application.setProperties();
-  }
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();
@@ -57,12 +67,26 @@ public class ReportListenerTest implements TestPropertyProvider {
     );
   }
 
+  @AfterEach
+  public void clearMessages(MockMessageSender mockMessageSender) {
+    mockMessageSender.messages.clear();
+  }
+
   @Test
-  public void testReportListener(
+  public void testAcceptedTrade(
     MockReportProducer mockReportProducer,
-    ServerApplication serverApplication
-  ) {
-    Order order = new Order("testuser", "AAPL", 10, Side.BUY);
+    ServerApplication serverApplication,
+    MockMessageSender mockMessageSender
+  ) throws InterruptedException, FieldNotFound {
+    Order order = new Order(
+      "testuser",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.MARKET,
+      null,
+      "0"
+    );
     Trade trade = new Trade(order, "APPL", 100.0, 10);
 
     mockReportProducer.sendTrade("testuser:1", trade);
@@ -70,7 +94,222 @@ public class ReportListenerTest implements TestPropertyProvider {
     await()
       .atMost(5, TimeUnit.SECONDS)
       .untilAsserted(() -> {
-        assertEquals(1, serverApplication.getExecutionKey());
+        assertEquals(1, mockMessageSender.messages.size());
       });
+    Message message = mockMessageSender.messages.take();
+    assertEquals('1', message.getChar(OrderID.FIELD));
+  }
+
+  @Test
+  public void testRejectedOrder(
+    MockReportProducer mockReportProducer,
+    ServerApplication serverApplication,
+    MockMessageSender mockMessageSender
+  ) throws InterruptedException, FieldNotFound {
+    Order order = new Order(
+      "testuser",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.MARKET,
+      null,
+      "0"
+    );
+    RejectedOrder rejectedOrder = new RejectedOrder(
+      order,
+      OrderRejectReason.OTHER
+    );
+
+    mockReportProducer.sendRejectedOrder("testuser:1", rejectedOrder);
+
+    await()
+      .atMost(5, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertEquals(1, mockMessageSender.messages.size());
+      });
+
+    Message message = mockMessageSender.messages.take();
+    assertEquals('1', message.getChar(OrderID.FIELD));
+  }
+
+  @Test
+  public void testOrderBookResponseNew(
+    MockReportProducer mockReportProducer,
+    ServerApplication serverApplication,
+    MockMessageSender mockMessageSender
+  ) throws InterruptedException, FieldNotFound {
+    Order order = new Order(
+      "testuser",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.LIMIT,
+      100.0,
+      "0"
+    );
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.NEW,
+      order,
+      null
+    );
+
+    mockReportProducer.sendOrderBookResponse("testuser:1", orderBookRequest);
+
+    await()
+      .atMost(5, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertEquals(1, mockMessageSender.messages.size());
+      });
+
+    Message message = mockMessageSender.messages.take();
+    assertEquals('1', message.getChar(OrderID.FIELD));
+    assertEquals(ExecType.NEW, message.getChar(ExecType.FIELD));
+    assertEquals(OrdStatus.NEW, message.getChar(OrdStatus.FIELD));
+  }
+
+  @Test
+  public void testOrderBookResponseCancel(
+    MockReportProducer mockReportProducer,
+    ServerApplication serverApplication,
+    MockMessageSender mockMessageSender
+  ) throws FieldNotFound, InterruptedException {
+    Order order = new Order(
+      "testuser",
+      "AAPL",
+      0,
+      Side.BUY,
+      Type.LIMIT,
+      0.0,
+      "1"
+    );
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.CANCEL,
+      order,
+      "0"
+    );
+
+    mockReportProducer.sendOrderBookResponse("testuser:1", orderBookRequest);
+
+    await()
+      .atMost(5, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertEquals(1, mockMessageSender.messages.size());
+      });
+
+    Message message = mockMessageSender.messages.take();
+    assertEquals('1', message.getChar(OrderID.FIELD));
+    assertEquals(ExecType.CANCELED, message.getChar(ExecType.FIELD));
+    assertEquals(OrdStatus.CANCELED, message.getChar(OrdStatus.FIELD));
+  }
+
+  @Test
+  public void testOrderBookReplace(
+    MockReportProducer mockReportProducer,
+    ServerApplication serverApplication,
+    MockMessageSender mockMessageSender
+  ) throws InterruptedException, FieldNotFound {
+    Order order = new Order(
+      "testuser",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.LIMIT,
+      90.0,
+      "1"
+    );
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.REPLACE,
+      order,
+      "0"
+    );
+
+    mockReportProducer.sendOrderBookResponse("testuser:1", orderBookRequest);
+
+    await()
+      .atMost(5, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertEquals(1, mockMessageSender.messages.size());
+      });
+
+    Message message = mockMessageSender.messages.take();
+    assertEquals('1', message.getChar(OrderID.FIELD));
+    assertEquals(ExecType.NEW, message.getChar(ExecType.FIELD));
+    assertEquals(OrdStatus.REPLACED, message.getChar(OrdStatus.FIELD));
+  }
+
+  @Test
+  public void testOrderBookRejectedCancel(
+    MockReportProducer mockReportProducer,
+    ServerApplication serverApplication,
+    MockMessageSender mockMessageSender
+  ) throws FieldNotFound, InterruptedException {
+    Order order = new Order(
+      "testuser",
+      "AAPL",
+      0,
+      Side.BUY,
+      Type.LIMIT,
+      0.0,
+      "1"
+    );
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.CANCEL,
+      order,
+      "0"
+    );
+
+    mockReportProducer.sendOrderBookRejected("testuser:1", orderBookRequest);
+
+    await()
+      .atMost(5, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertEquals(1, mockMessageSender.messages.size());
+      });
+
+    Message message = mockMessageSender.messages.take();
+    assertEquals('1', message.getChar(OrderID.FIELD));
+    assertEquals(
+      CxlRejResponseTo.ORDER_CANCEL_REQUEST,
+      message.getChar(CxlRejResponseTo.FIELD)
+    );
+    assertEquals(OrdStatus.REJECTED, message.getChar(OrdStatus.FIELD));
+  }
+
+  @Test
+  public void testOrderBookRejectedReplace(
+    MockReportProducer mockReportProducer,
+    ServerApplication serverApplication,
+    MockMessageSender mockMessageSender
+  ) throws InterruptedException, FieldNotFound {
+    Order order = new Order(
+      "testuser",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.LIMIT,
+      90.0,
+      "1"
+    );
+    OrderBookRequest orderBookRequest = new OrderBookRequest(
+      OrderBookRequestType.REPLACE,
+      order,
+      "0"
+    );
+
+    mockReportProducer.sendOrderBookRejected("testuser:1", orderBookRequest);
+
+    await()
+      .atMost(5, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertEquals(1, mockMessageSender.messages.size());
+      });
+
+    Message message = mockMessageSender.messages.take();
+    assertEquals('1', message.getChar(OrderID.FIELD));
+    assertEquals(
+      CxlRejResponseTo.ORDER_CANCEL_REPLACE_REQUEST,
+      message.getChar(CxlRejResponseTo.FIELD)
+    );
+    assertEquals(OrdStatus.REJECTED, message.getChar(OrdStatus.FIELD));
   }
 }

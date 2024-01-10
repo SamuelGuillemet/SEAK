@@ -64,7 +64,7 @@
     "serve": {
       "executor": "@nxlv/python:run-commands",
       "options": {
-        "command": "poetry run python pre_processing/main.py",
+        "command": "poetry run python pre_processing/main.py --skip-schema-creation --skip-topic-creation",
         "cwd": "components/pre-processing"
       }
     }

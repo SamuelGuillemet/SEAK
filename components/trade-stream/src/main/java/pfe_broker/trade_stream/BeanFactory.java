@@ -7,6 +7,9 @@ import io.micronaut.context.annotation.Requires;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsOptions;
 import org.apache.kafka.clients.admin.NewTopic;
+import pfe_broker.avro.RejectedOrder;
+import pfe_broker.avro.Trade;
+import pfe_broker.avro.utils.SchemaRecord;
 
 @Requires(bean = AdminClient.class)
 @Factory
@@ -39,5 +42,26 @@ public class BeanFactory {
     @Property(name = "kafka.topics.rejected-orders") String topicName
   ) {
     return new NewTopic(topicName, 2, (short) 1);
+  }
+
+  @Bean
+  public SchemaRecord tradesSchema(
+    @Property(name = "kafka.topics.trades") String topicName
+  ) {
+    return new SchemaRecord(Trade.getClassSchema(), topicName);
+  }
+
+  @Bean
+  public SchemaRecord acceptedTradessSchema(
+    @Property(name = "kafka.topics.accepted-trades") String topicName
+  ) {
+    return new SchemaRecord(Trade.getClassSchema(), topicName);
+  }
+
+  @Bean
+  public SchemaRecord rejectedOrdersSchema(
+    @Property(name = "kafka.topics.rejected-orders") String topicName
+  ) {
+    return new SchemaRecord(RejectedOrder.getClassSchema(), topicName);
   }
 }

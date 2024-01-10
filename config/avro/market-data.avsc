@@ -5,19 +5,19 @@
   "fields": [
     {
       "name": "open",
-      "type": "float"
+      "type": "double"
     },
     {
       "name": "high",
-      "type": "float"
+      "type": "double"
     },
     {
       "name": "low",
-      "type": "float"
+      "type": "double"
     },
     {
       "name": "close",
-      "type": "float"
+      "type": "double"
     },
     {
       "name": "volume",

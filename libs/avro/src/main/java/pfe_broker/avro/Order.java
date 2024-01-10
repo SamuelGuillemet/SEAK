@@ -14,10 +14,10 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class Order extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = 5889493834219403263L;
+  private static final long serialVersionUID = -3668500449969664216L;
 
 
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Order\",\"namespace\":\"pfe_broker.avro\",\"fields\":[{\"name\":\"username\",\"type\":\"string\"},{\"name\":\"symbol\",\"type\":\"string\"},{\"name\":\"quantity\",\"type\":\"int\"},{\"name\":\"side\",\"type\":{\"type\":\"enum\",\"name\":\"Side\",\"symbols\":[\"BUY\",\"SELL\"]}}]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"Order\",\"namespace\":\"pfe_broker.avro\",\"fields\":[{\"name\":\"username\",\"type\":\"string\"},{\"name\":\"symbol\",\"type\":\"string\"},{\"name\":\"quantity\",\"type\":\"int\"},{\"name\":\"side\",\"type\":{\"type\":\"enum\",\"name\":\"Side\",\"symbols\":[\"BUY\",\"SELL\"]}},{\"name\":\"type\",\"type\":{\"type\":\"enum\",\"name\":\"Type\",\"symbols\":[\"MARKET\",\"LIMIT\"]},\"default\":\"MARKET\"},{\"name\":\"price\",\"type\":[\"null\",\"double\"],\"doc\":\"Only used for LIMIT orders\",\"default\":null},{\"name\":\"clOrderID\",\"type\":\"string\",\"default\":\"\"}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static final SpecificData MODEL$ = new SpecificData();
@@ -77,6 +77,10 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
   private java.lang.CharSequence symbol;
   private int quantity;
   private pfe_broker.avro.Side side;
+  private pfe_broker.avro.Type type;
+  /** Only used for LIMIT orders */
+  private java.lang.Double price;
+  private java.lang.CharSequence clOrderID;
 
   /**
    * Default constructor.  Note that this does not initialize fields
@@ -91,12 +95,18 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
    * @param symbol The new value for symbol
    * @param quantity The new value for quantity
    * @param side The new value for side
+   * @param type The new value for type
+   * @param price Only used for LIMIT orders
+   * @param clOrderID The new value for clOrderID
    */
-  public Order(java.lang.CharSequence username, java.lang.CharSequence symbol, java.lang.Integer quantity, pfe_broker.avro.Side side) {
+  public Order(java.lang.CharSequence username, java.lang.CharSequence symbol, java.lang.Integer quantity, pfe_broker.avro.Side side, pfe_broker.avro.Type type, java.lang.Double price, java.lang.CharSequence clOrderID) {
     this.username = username;
     this.symbol = symbol;
     this.quantity = quantity;
     this.side = side;
+    this.type = type;
+    this.price = price;
+    this.clOrderID = clOrderID;
   }
 
   @Override
@@ -113,6 +123,9 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
     case 1: return symbol;
     case 2: return quantity;
     case 3: return side;
+    case 4: return type;
+    case 5: return price;
+    case 6: return clOrderID;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -126,6 +139,9 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
     case 1: symbol = (java.lang.CharSequence)value$; break;
     case 2: quantity = (java.lang.Integer)value$; break;
     case 3: side = (pfe_broker.avro.Side)value$; break;
+    case 4: type = (pfe_broker.avro.Type)value$; break;
+    case 5: price = (java.lang.Double)value$; break;
+    case 6: clOrderID = (java.lang.CharSequence)value$; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
   }
@@ -199,6 +215,58 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
   }
 
   /**
+   * Gets the value of the 'type' field.
+   * @return The value of the 'type' field.
+   */
+  public pfe_broker.avro.Type getType() {
+    return type;
+  }
+
+
+  /**
+   * Sets the value of the 'type' field.
+   * @param value the value to set.
+   */
+  public void setType(pfe_broker.avro.Type value) {
+    this.type = value;
+  }
+
+  /**
+   * Gets the value of the 'price' field.
+   * @return Only used for LIMIT orders
+   */
+  public java.lang.Double getPrice() {
+    return price;
+  }
+
+
+  /**
+   * Sets the value of the 'price' field.
+   * Only used for LIMIT orders
+   * @param value the value to set.
+   */
+  public void setPrice(java.lang.Double value) {
+    this.price = value;
+  }
+
+  /**
+   * Gets the value of the 'clOrderID' field.
+   * @return The value of the 'clOrderID' field.
+   */
+  public java.lang.CharSequence getClOrderID() {
+    return clOrderID;
+  }
+
+
+  /**
+   * Sets the value of the 'clOrderID' field.
+   * @param value the value to set.
+   */
+  public void setClOrderID(java.lang.CharSequence value) {
+    this.clOrderID = value;
+  }
+
+  /**
    * Creates a new Order RecordBuilder.
    * @return A new Order RecordBuilder
    */
@@ -243,6 +311,10 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
     private java.lang.CharSequence symbol;
     private int quantity;
     private pfe_broker.avro.Side side;
+    private pfe_broker.avro.Type type;
+    /** Only used for LIMIT orders */
+    private java.lang.Double price;
+    private java.lang.CharSequence clOrderID;
 
     /** Creates a new Builder */
     private Builder() {
@@ -271,6 +343,18 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
         this.side = data().deepCopy(fields()[3].schema(), other.side);
         fieldSetFlags()[3] = other.fieldSetFlags()[3];
       }
+      if (isValidValue(fields()[4], other.type)) {
+        this.type = data().deepCopy(fields()[4].schema(), other.type);
+        fieldSetFlags()[4] = other.fieldSetFlags()[4];
+      }
+      if (isValidValue(fields()[5], other.price)) {
+        this.price = data().deepCopy(fields()[5].schema(), other.price);
+        fieldSetFlags()[5] = other.fieldSetFlags()[5];
+      }
+      if (isValidValue(fields()[6], other.clOrderID)) {
+        this.clOrderID = data().deepCopy(fields()[6].schema(), other.clOrderID);
+        fieldSetFlags()[6] = other.fieldSetFlags()[6];
+      }
     }
 
     /**
@@ -294,6 +378,18 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
       if (isValidValue(fields()[3], other.side)) {
         this.side = data().deepCopy(fields()[3].schema(), other.side);
         fieldSetFlags()[3] = true;
+      }
+      if (isValidValue(fields()[4], other.type)) {
+        this.type = data().deepCopy(fields()[4].schema(), other.type);
+        fieldSetFlags()[4] = true;
+      }
+      if (isValidValue(fields()[5], other.price)) {
+        this.price = data().deepCopy(fields()[5].schema(), other.price);
+        fieldSetFlags()[5] = true;
+      }
+      if (isValidValue(fields()[6], other.clOrderID)) {
+        this.clOrderID = data().deepCopy(fields()[6].schema(), other.clOrderID);
+        fieldSetFlags()[6] = true;
       }
     }
 
@@ -456,6 +552,130 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
       return this;
     }
 
+    /**
+      * Gets the value of the 'type' field.
+      * @return The value.
+      */
+    public pfe_broker.avro.Type getType() {
+      return type;
+    }
+
+
+    /**
+      * Sets the value of the 'type' field.
+      * @param value The value of 'type'.
+      * @return This builder.
+      */
+    public pfe_broker.avro.Order.Builder setType(pfe_broker.avro.Type value) {
+      validate(fields()[4], value);
+      this.type = value;
+      fieldSetFlags()[4] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'type' field has been set.
+      * @return True if the 'type' field has been set, false otherwise.
+      */
+    public boolean hasType() {
+      return fieldSetFlags()[4];
+    }
+
+
+    /**
+      * Clears the value of the 'type' field.
+      * @return This builder.
+      */
+    public pfe_broker.avro.Order.Builder clearType() {
+      type = null;
+      fieldSetFlags()[4] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'price' field.
+      * Only used for LIMIT orders
+      * @return The value.
+      */
+    public java.lang.Double getPrice() {
+      return price;
+    }
+
+
+    /**
+      * Sets the value of the 'price' field.
+      * Only used for LIMIT orders
+      * @param value The value of 'price'.
+      * @return This builder.
+      */
+    public pfe_broker.avro.Order.Builder setPrice(java.lang.Double value) {
+      validate(fields()[5], value);
+      this.price = value;
+      fieldSetFlags()[5] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'price' field has been set.
+      * Only used for LIMIT orders
+      * @return True if the 'price' field has been set, false otherwise.
+      */
+    public boolean hasPrice() {
+      return fieldSetFlags()[5];
+    }
+
+
+    /**
+      * Clears the value of the 'price' field.
+      * Only used for LIMIT orders
+      * @return This builder.
+      */
+    public pfe_broker.avro.Order.Builder clearPrice() {
+      price = null;
+      fieldSetFlags()[5] = false;
+      return this;
+    }
+
+    /**
+      * Gets the value of the 'clOrderID' field.
+      * @return The value.
+      */
+    public java.lang.CharSequence getClOrderID() {
+      return clOrderID;
+    }
+
+
+    /**
+      * Sets the value of the 'clOrderID' field.
+      * @param value The value of 'clOrderID'.
+      * @return This builder.
+      */
+    public pfe_broker.avro.Order.Builder setClOrderID(java.lang.CharSequence value) {
+      validate(fields()[6], value);
+      this.clOrderID = value;
+      fieldSetFlags()[6] = true;
+      return this;
+    }
+
+    /**
+      * Checks whether the 'clOrderID' field has been set.
+      * @return True if the 'clOrderID' field has been set, false otherwise.
+      */
+    public boolean hasClOrderID() {
+      return fieldSetFlags()[6];
+    }
+
+
+    /**
+      * Clears the value of the 'clOrderID' field.
+      * @return This builder.
+      */
+    public pfe_broker.avro.Order.Builder clearClOrderID() {
+      clOrderID = null;
+      fieldSetFlags()[6] = false;
+      return this;
+    }
+
     @Override
     @SuppressWarnings("unchecked")
     public Order build() {
@@ -465,6 +685,9 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
         record.symbol = fieldSetFlags()[1] ? this.symbol : (java.lang.CharSequence) defaultValue(fields()[1]);
         record.quantity = fieldSetFlags()[2] ? this.quantity : (java.lang.Integer) defaultValue(fields()[2]);
         record.side = fieldSetFlags()[3] ? this.side : (pfe_broker.avro.Side) defaultValue(fields()[3]);
+        record.type = fieldSetFlags()[4] ? this.type : (pfe_broker.avro.Type) defaultValue(fields()[4]);
+        record.price = fieldSetFlags()[5] ? this.price : (java.lang.Double) defaultValue(fields()[5]);
+        record.clOrderID = fieldSetFlags()[6] ? this.clOrderID : (java.lang.CharSequence) defaultValue(fields()[6]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
         throw e;
@@ -505,6 +728,18 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
 
     out.writeEnum(this.side.ordinal());
 
+    out.writeEnum(this.type.ordinal());
+
+    if (this.price == null) {
+      out.writeIndex(0);
+      out.writeNull();
+    } else {
+      out.writeIndex(1);
+      out.writeDouble(this.price);
+    }
+
+    out.writeString(this.clOrderID);
+
   }
 
   @Override public void customDecode(org.apache.avro.io.ResolvingDecoder in)
@@ -520,8 +755,19 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
 
       this.side = pfe_broker.avro.Side.values()[in.readEnum()];
 
+      this.type = pfe_broker.avro.Type.values()[in.readEnum()];
+
+      if (in.readIndex() != 1) {
+        in.readNull();
+        this.price = null;
+      } else {
+        this.price = in.readDouble();
+      }
+
+      this.clOrderID = in.readString(this.clOrderID instanceof Utf8 ? (Utf8)this.clOrderID : null);
+
     } else {
-      for (int i = 0; i < 4; i++) {
+      for (int i = 0; i < 7; i++) {
         switch (fieldOrder[i].pos()) {
         case 0:
           this.username = in.readString(this.username instanceof Utf8 ? (Utf8)this.username : null);
@@ -537,6 +783,23 @@ public class Order extends org.apache.avro.specific.SpecificRecordBase implement
 
         case 3:
           this.side = pfe_broker.avro.Side.values()[in.readEnum()];
+          break;
+
+        case 4:
+          this.type = pfe_broker.avro.Type.values()[in.readEnum()];
+          break;
+
+        case 5:
+          if (in.readIndex() != 1) {
+            in.readNull();
+            this.price = null;
+          } else {
+            this.price = in.readDouble();
+          }
+          break;
+
+        case 6:
+          this.clOrderID = in.readString(this.clOrderID instanceof Utf8 ? (Utf8)this.clOrderID : null);
           break;
 
         default:

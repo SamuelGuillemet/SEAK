@@ -1,6 +1,11 @@
 plugins {
     id "com.github.johnrengelman.shadow"
     id "io.micronaut.application"
+    id "jacoco"
+}
+
+ext {
+    configFiles = "classpath:application.yml,classpath:kafka.yml,classpath:quickfix.yml,classpath:data.yml"
 }
 
 version = "${version}"
@@ -87,4 +92,26 @@ micronaut {
 test {
     testLogging.showStandardStreams = true
     testLogging.exceptionFormat = 'full'
+}
+
+[Test, JavaExec].each { targetType ->
+    tasks.withType(targetType) { task ->
+        task.systemProperty "micronaut.config.files", configFiles
+    }
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = false
+		csv.required = false
+	}
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/Application.class',
+            ])
+        }))
+    }
 }

@@ -14,10 +14,10 @@ import org.apache.avro.message.SchemaStore;
 
 @org.apache.avro.specific.AvroGenerated
 public class MarketData extends org.apache.avro.specific.SpecificRecordBase implements org.apache.avro.specific.SpecificRecord {
-  private static final long serialVersionUID = -7647647996371877075L;
+  private static final long serialVersionUID = -276699413808386372L;
 
 
-  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"MarketData\",\"namespace\":\"pfe_broker.avro\",\"fields\":[{\"name\":\"open\",\"type\":\"float\"},{\"name\":\"high\",\"type\":\"float\"},{\"name\":\"low\",\"type\":\"float\"},{\"name\":\"close\",\"type\":\"float\"},{\"name\":\"volume\",\"type\":\"int\"}]}");
+  public static final org.apache.avro.Schema SCHEMA$ = new org.apache.avro.Schema.Parser().parse("{\"type\":\"record\",\"name\":\"MarketData\",\"namespace\":\"pfe_broker.avro\",\"fields\":[{\"name\":\"open\",\"type\":\"double\"},{\"name\":\"high\",\"type\":\"double\"},{\"name\":\"low\",\"type\":\"double\"},{\"name\":\"close\",\"type\":\"double\"},{\"name\":\"volume\",\"type\":\"int\"}]}");
   public static org.apache.avro.Schema getClassSchema() { return SCHEMA$; }
 
   private static final SpecificData MODEL$ = new SpecificData();
@@ -73,10 +73,10 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
     return DECODER.decode(b);
   }
 
-  private float open;
-  private float high;
-  private float low;
-  private float close;
+  private double open;
+  private double high;
+  private double low;
+  private double close;
   private int volume;
 
   /**
@@ -94,7 +94,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
    * @param close The new value for close
    * @param volume The new value for volume
    */
-  public MarketData(java.lang.Float open, java.lang.Float high, java.lang.Float low, java.lang.Float close, java.lang.Integer volume) {
+  public MarketData(java.lang.Double open, java.lang.Double high, java.lang.Double low, java.lang.Double close, java.lang.Integer volume) {
     this.open = open;
     this.high = high;
     this.low = low;
@@ -126,10 +126,10 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
   @SuppressWarnings(value="unchecked")
   public void put(int field$, java.lang.Object value$) {
     switch (field$) {
-    case 0: open = (java.lang.Float)value$; break;
-    case 1: high = (java.lang.Float)value$; break;
-    case 2: low = (java.lang.Float)value$; break;
-    case 3: close = (java.lang.Float)value$; break;
+    case 0: open = (java.lang.Double)value$; break;
+    case 1: high = (java.lang.Double)value$; break;
+    case 2: low = (java.lang.Double)value$; break;
+    case 3: close = (java.lang.Double)value$; break;
     case 4: volume = (java.lang.Integer)value$; break;
     default: throw new IndexOutOfBoundsException("Invalid index: " + field$);
     }
@@ -139,7 +139,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
    * Gets the value of the 'open' field.
    * @return The value of the 'open' field.
    */
-  public float getOpen() {
+  public double getOpen() {
     return open;
   }
 
@@ -148,7 +148,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
    * Sets the value of the 'open' field.
    * @param value the value to set.
    */
-  public void setOpen(float value) {
+  public void setOpen(double value) {
     this.open = value;
   }
 
@@ -156,7 +156,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
    * Gets the value of the 'high' field.
    * @return The value of the 'high' field.
    */
-  public float getHigh() {
+  public double getHigh() {
     return high;
   }
 
@@ -165,7 +165,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
    * Sets the value of the 'high' field.
    * @param value the value to set.
    */
-  public void setHigh(float value) {
+  public void setHigh(double value) {
     this.high = value;
   }
 
@@ -173,7 +173,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
    * Gets the value of the 'low' field.
    * @return The value of the 'low' field.
    */
-  public float getLow() {
+  public double getLow() {
     return low;
   }
 
@@ -182,7 +182,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
    * Sets the value of the 'low' field.
    * @param value the value to set.
    */
-  public void setLow(float value) {
+  public void setLow(double value) {
     this.low = value;
   }
 
@@ -190,7 +190,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
    * Gets the value of the 'close' field.
    * @return The value of the 'close' field.
    */
-  public float getClose() {
+  public double getClose() {
     return close;
   }
 
@@ -199,7 +199,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
    * Sets the value of the 'close' field.
    * @param value the value to set.
    */
-  public void setClose(float value) {
+  public void setClose(double value) {
     this.close = value;
   }
 
@@ -261,10 +261,10 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
   public static class Builder extends org.apache.avro.specific.SpecificRecordBuilderBase<MarketData>
     implements org.apache.avro.data.RecordBuilder<MarketData> {
 
-    private float open;
-    private float high;
-    private float low;
-    private float close;
+    private double open;
+    private double high;
+    private double low;
+    private double close;
     private int volume;
 
     /** Creates a new Builder */
@@ -332,7 +332,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
       * Gets the value of the 'open' field.
       * @return The value.
       */
-    public float getOpen() {
+    public double getOpen() {
       return open;
     }
 
@@ -342,7 +342,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
       * @param value The value of 'open'.
       * @return This builder.
       */
-    public pfe_broker.avro.MarketData.Builder setOpen(float value) {
+    public pfe_broker.avro.MarketData.Builder setOpen(double value) {
       validate(fields()[0], value);
       this.open = value;
       fieldSetFlags()[0] = true;
@@ -371,7 +371,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
       * Gets the value of the 'high' field.
       * @return The value.
       */
-    public float getHigh() {
+    public double getHigh() {
       return high;
     }
 
@@ -381,7 +381,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
       * @param value The value of 'high'.
       * @return This builder.
       */
-    public pfe_broker.avro.MarketData.Builder setHigh(float value) {
+    public pfe_broker.avro.MarketData.Builder setHigh(double value) {
       validate(fields()[1], value);
       this.high = value;
       fieldSetFlags()[1] = true;
@@ -410,7 +410,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
       * Gets the value of the 'low' field.
       * @return The value.
       */
-    public float getLow() {
+    public double getLow() {
       return low;
     }
 
@@ -420,7 +420,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
       * @param value The value of 'low'.
       * @return This builder.
       */
-    public pfe_broker.avro.MarketData.Builder setLow(float value) {
+    public pfe_broker.avro.MarketData.Builder setLow(double value) {
       validate(fields()[2], value);
       this.low = value;
       fieldSetFlags()[2] = true;
@@ -449,7 +449,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
       * Gets the value of the 'close' field.
       * @return The value.
       */
-    public float getClose() {
+    public double getClose() {
       return close;
     }
 
@@ -459,7 +459,7 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
       * @param value The value of 'close'.
       * @return This builder.
       */
-    public pfe_broker.avro.MarketData.Builder setClose(float value) {
+    public pfe_broker.avro.MarketData.Builder setClose(double value) {
       validate(fields()[3], value);
       this.close = value;
       fieldSetFlags()[3] = true;
@@ -528,10 +528,10 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
     public MarketData build() {
       try {
         MarketData record = new MarketData();
-        record.open = fieldSetFlags()[0] ? this.open : (java.lang.Float) defaultValue(fields()[0]);
-        record.high = fieldSetFlags()[1] ? this.high : (java.lang.Float) defaultValue(fields()[1]);
-        record.low = fieldSetFlags()[2] ? this.low : (java.lang.Float) defaultValue(fields()[2]);
-        record.close = fieldSetFlags()[3] ? this.close : (java.lang.Float) defaultValue(fields()[3]);
+        record.open = fieldSetFlags()[0] ? this.open : (java.lang.Double) defaultValue(fields()[0]);
+        record.high = fieldSetFlags()[1] ? this.high : (java.lang.Double) defaultValue(fields()[1]);
+        record.low = fieldSetFlags()[2] ? this.low : (java.lang.Double) defaultValue(fields()[2]);
+        record.close = fieldSetFlags()[3] ? this.close : (java.lang.Double) defaultValue(fields()[3]);
         record.volume = fieldSetFlags()[4] ? this.volume : (java.lang.Integer) defaultValue(fields()[4]);
         return record;
       } catch (org.apache.avro.AvroMissingFieldException e) {
@@ -565,13 +565,13 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
   @Override public void customEncode(org.apache.avro.io.Encoder out)
     throws java.io.IOException
   {
-    out.writeFloat(this.open);
+    out.writeDouble(this.open);
 
-    out.writeFloat(this.high);
+    out.writeDouble(this.high);
 
-    out.writeFloat(this.low);
+    out.writeDouble(this.low);
 
-    out.writeFloat(this.close);
+    out.writeDouble(this.close);
 
     out.writeInt(this.volume);
 
@@ -582,13 +582,13 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
   {
     org.apache.avro.Schema.Field[] fieldOrder = in.readFieldOrderIfDiff();
     if (fieldOrder == null) {
-      this.open = in.readFloat();
+      this.open = in.readDouble();
 
-      this.high = in.readFloat();
+      this.high = in.readDouble();
 
-      this.low = in.readFloat();
+      this.low = in.readDouble();
 
-      this.close = in.readFloat();
+      this.close = in.readDouble();
 
       this.volume = in.readInt();
 
@@ -596,19 +596,19 @@ public class MarketData extends org.apache.avro.specific.SpecificRecordBase impl
       for (int i = 0; i < 5; i++) {
         switch (fieldOrder[i].pos()) {
         case 0:
-          this.open = in.readFloat();
+          this.open = in.readDouble();
           break;
 
         case 1:
-          this.high = in.readFloat();
+          this.high = in.readDouble();
           break;
 
         case 2:
-          this.low = in.readFloat();
+          this.low = in.readDouble();
           break;
 
         case 3:
-          this.close = in.readFloat();
+          this.close = in.readDouble();
           break;
 
         case 4:

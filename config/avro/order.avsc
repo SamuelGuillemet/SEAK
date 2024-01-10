@@ -18,6 +18,22 @@
     {
       "name": "side",
       "type": "Side" // Reference to the Side schema
+    },
+    {
+      "name": "type",
+      "type": "Type", // Reference to the Type schema
+      "default": "MARKET"
+    },
+    {
+      "name": "price",
+      "type": ["null", "double"],
+      "default": null,
+      "doc": "Only used for LIMIT orders"
+    },
+    {
+      "name": "clOrderID",
+      "type": "string",
+      "default": ""
     }
   ]
 }

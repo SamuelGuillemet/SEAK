@@ -1,5 +1,8 @@
+![GitHub Release](https://img.shields.io/github/v/release/SamuelGuillemet/pfe-asr-broker?label=Version)
 [![CodeQL](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/codeql.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/codeql.yml)
-[![CI](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci.yml)
+[![CI - Java](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-java.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-java.yml)
+[![CI - Python](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-python.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-python.yml)
+
 
 # PFE Asr Broker
 
