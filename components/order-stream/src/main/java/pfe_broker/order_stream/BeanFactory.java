@@ -8,6 +8,7 @@ import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsOptions;
 import org.apache.kafka.clients.admin.NewTopic;
 import pfe_broker.avro.Order;
+import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.utils.SchemaRecord;
 
@@ -39,7 +40,7 @@ public class BeanFactory {
 
   @Bean
   NewTopic acceptedOrdersOrderBookTopic(
-    @Property(name = "kafka.topics.accepted-orders-order-book") String topicName
+    @Property(name = "kafka.topics.order-book-response") String topicName
   ) {
     return new NewTopic(topicName, 2, (short) 1);
   }
@@ -67,9 +68,9 @@ public class BeanFactory {
 
   @Bean
   public SchemaRecord acceptedOrdersOrderBookSchema(
-    @Property(name = "kafka.topics.accepted-orders-order-book") String topicName
+    @Property(name = "kafka.topics.order-book-response") String topicName
   ) {
-    return new SchemaRecord(Order.getClassSchema(), topicName);
+    return new SchemaRecord(OrderBookRequest.getClassSchema(), topicName);
   }
 
   @Bean
