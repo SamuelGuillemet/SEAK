@@ -9,8 +9,10 @@ kafka:
     accepted-trades: accepted-trades
     orders: orders
     accepted-orders: accepted-orders-market
-    accepted-orders-order-book: accepted-orders-order-book
     rejected-orders: rejected-orders
+    order-book-request: order-book-request
+    order-book-response: order-book-response
+    order-book-rejected: order-book-rejected
   producers:
     default:
       value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
