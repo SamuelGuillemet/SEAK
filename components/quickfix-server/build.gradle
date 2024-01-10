@@ -1,6 +1,7 @@
 plugins {
     id "com.github.johnrengelman.shadow"
     id "io.micronaut.application"
+    id "jacoco"
 }
 
 ext {
@@ -96,5 +97,21 @@ test {
 [Test, JavaExec].each { targetType ->
     tasks.withType(targetType) { task ->
         task.systemProperty "micronaut.config.files", configFiles
+    }
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = false
+		csv.required = false
+	}
+
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/Application.class',
+            ])
+        }))
     }
 }

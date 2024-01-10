@@ -5,6 +5,7 @@ pluginManagement {
     id 'com.github.johnrengelman.shadow' version "${shadowVersion}"
     id 'io.github.khalilou88.jnxplus' version "${jnxplusGradlePluginVersion}"
     id 'io.freefair.lombok' version "${lombokGradlePluginVersion}"
+    id 'jacoco'
   }
 }
 

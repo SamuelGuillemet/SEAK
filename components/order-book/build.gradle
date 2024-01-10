@@ -1,10 +1,11 @@
 plugins {
     id "com.github.johnrengelman.shadow"
     id "io.micronaut.application"
+    id "jacoco"
 }
 
 ext {
-    configFiles = "classpath:application.yml,classpath:kafka.yml"
+    configFiles = "classpath:application.yml,classpath:kafka.yml,classpath:redis.yml"
 }
 
 version = "${version}"
@@ -22,6 +23,7 @@ dependencies {
 
     runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
     implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.2.0'
+    implementation group: 'io.micronaut.redis', name: 'micronaut-redis-lettuce', version: '6.1.0'
 
     // Test dependencies
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
@@ -78,5 +80,20 @@ test {
 [Test, JavaExec].each { targetType ->
     tasks.withType(targetType) { task ->
         task.systemProperty "micronaut.config.files", configFiles
+    }
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = false
+		csv.required = false
+	}
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/Application.class',
+            ])
+        }))
     }
 }
