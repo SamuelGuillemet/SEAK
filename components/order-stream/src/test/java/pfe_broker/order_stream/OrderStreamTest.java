@@ -64,6 +64,7 @@ public class OrderStreamTest implements TestPropertyProvider {
     orderIntegrityCheckService.retreiveSymbols();
     mockOrderListener.acceptedOrders.clear();
     mockOrderListener.rejectedOrders.clear();
+    mockOrderListener.orderBookRequests.clear();
     redisConnection.sync().flushall();
     // Register user
     redisConnection.sync().set("user:balance", "100000");
@@ -157,6 +158,72 @@ public class OrderStreamTest implements TestPropertyProvider {
         assertThat(mockOrderListener.acceptedOrders).hasSize(0);
         assertThat(mockOrderListener.rejectedOrders).hasSize(1);
         assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("9");
+      });
+  }
+
+  @Test
+  void testOrderStreamBuyLimitOrder(
+    MockOrderProducer mockOrderProducer,
+    MockOrderListener mockOrderListener,
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    // Given
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.LIMIT,
+      100.0,
+      "1"
+    );
+
+    // When
+    mockOrderProducer.sendOrder("user", order);
+
+    // Then
+    await()
+      .pollInterval(Duration.ofSeconds(1))
+      .atMost(Duration.ofSeconds(10))
+      .untilAsserted(() -> {
+        assertThat(mockOrderListener.acceptedOrders).hasSize(0);
+        assertThat(mockOrderListener.rejectedOrders).hasSize(0);
+        assertThat(redisConnection.sync().get("user:balance"))
+          .isEqualTo("99000");
+        assertThat(mockOrderListener.orderBookRequests).hasSize(1);
+      });
+  }
+
+  @Test
+  void testOrderStreamSellLimitOrder(
+    MockOrderProducer mockOrderProducer,
+    MockOrderListener mockOrderListener,
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    // Given
+    redisConnection.sync().set("user:AAPL", "10");
+    Order order = new Order(
+      "user",
+      "AAPL",
+      7,
+      Side.SELL,
+      Type.LIMIT,
+      100.0,
+      "1"
+    );
+
+    // When
+    mockOrderProducer.sendOrder("user", order);
+
+    // Then
+    await()
+      .pollInterval(Duration.ofSeconds(1))
+      .atMost(Duration.ofSeconds(10))
+      .untilAsserted(() -> {
+        assertThat(mockOrderListener.acceptedOrders).hasSize(0);
+        assertThat(mockOrderListener.rejectedOrders).hasSize(0);
+        assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("3");
+        assertThat(mockOrderListener.orderBookRequests).hasSize(1);
       });
   }
 }
