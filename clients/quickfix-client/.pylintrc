@@ -1,0 +1,9 @@
+[MASTER]
+init-hook='import sys; sys.path.append(".")'
+
+[MESSAGES CONTROL]
+disable=missing-module-docstring, missing-function-docstring, missing-class-docstring, too-few-public-methods, too-many-arguments, too-many-instance-attributes, too-many-locals, logging-fstring-interpolation, redefined-builtin, arguments-renamed
+
+[FORMAT]
+good-names=i,j,k,ex,Run,_,pk,x,y,e,f
+max-line-length = 120
