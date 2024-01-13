@@ -1,6 +1,6 @@
 [tool.poetry]
-name = "pre-processing"
-version = "0.1.0"
+name = "broker-quickfix-client"
+version = "0.3.0"
 description = ""
 authors = ["Samuel Guillemet <samuel.guillemet@telecom-sudparis.eu>"]
 readme = "README.md"
