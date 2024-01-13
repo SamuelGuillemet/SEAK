@@ -31,6 +31,26 @@ class OrderStatusEnum(Enum):
     PENDING_REPLACE = "E"
 
 
+class ExecTypeEnum(Enum):
+    NEW = "0"
+    DONE_FOR_DAY = "3"
+    CANCELED = "4"
+    REPLACED = "5"
+    PENDING_CANCEL = "6"
+    STOPPED = "7"
+    REJECTED = "8"
+    SUSPENDED = "9"
+    PENDING_NEW = "A"
+    CALCULATED = "B"
+    EXPIRED = "C"
+    RESTATED = "D"
+    PENDING_REPLACE = "E"
+    TRADE = "F"
+    TRADE_CORRECT = "G"
+    TRADE_CANCEL = "H"
+    ORDER_STATUS = "I"
+
+
 class OrderRejectReasonEnum(Enum):
     BROKER_CREDIT = "0"
     UNKNOWN_SYMBOL = "1"
@@ -48,3 +68,8 @@ class OrderRejectReasonEnum(Enum):
     INCORRECT_ALLOCATED_QUANTITY = "14"
     UNKNOWN_ACCOUNT = "15"
     OTHER = "99"
+
+
+class CxlRejResponseToEnum(Enum):
+    ORDER_CANCEL_REQUEST = "1"
+    ORDER_CANCEL_REPLACE_REQUEST = "2"
