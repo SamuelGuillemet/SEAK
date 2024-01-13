@@ -17,6 +17,7 @@ import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.Side;
+import pfe_broker.avro.Type;
 import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.common.utils.RedisTestContainer;
 import pfe_broker.order_stream.mocks.MockOrderListener;
@@ -26,9 +27,6 @@ import pfe_broker.order_stream.mocks.MockOrderProducer;
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 public class OrderStreamTest implements TestPropertyProvider {
-  static {
-    Application.setProperties();
-  }
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();
@@ -44,12 +42,7 @@ public class OrderStreamTest implements TestPropertyProvider {
     if (!kafka.isRunning()) {
       kafka.start();
     }
-    kafka.registerTopics(
-      "orders",
-      "accepted-orders",
-      "rejected-orders",
-      "market-data.AAPL"
-    );
+    kafka.registerTopics("market-data.AAPL");
     if (!redis.isRunning()) {
       redis.start();
     }
@@ -71,6 +64,7 @@ public class OrderStreamTest implements TestPropertyProvider {
     orderIntegrityCheckService.retreiveSymbols();
     mockOrderListener.acceptedOrders.clear();
     mockOrderListener.rejectedOrders.clear();
+    mockOrderListener.orderBookRequests.clear();
     redisConnection.sync().flushall();
     // Register user
     redisConnection.sync().set("user:balance", "100000");
@@ -82,7 +76,15 @@ public class OrderStreamTest implements TestPropertyProvider {
     MockOrderListener mockOrderListener
   ) {
     // Given
-    Order order = new Order("user", "AAPL", 10, Side.BUY);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.MARKET,
+      null,
+      "1"
+    );
 
     // When
     mockOrderProducer.sendOrder("user", order);
@@ -104,7 +106,15 @@ public class OrderStreamTest implements TestPropertyProvider {
   ) {
     // Given
     redisConnection.sync().set("user:AAPL", "10");
-    Order order = new Order("user", "AAPL", 7, Side.SELL);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      7,
+      Side.SELL,
+      Type.MARKET,
+      null,
+      "1"
+    );
 
     // When
     mockOrderProducer.sendOrder("user", order);
@@ -127,7 +137,15 @@ public class OrderStreamTest implements TestPropertyProvider {
   ) {
     // Given
     redisConnection.sync().set("user:AAPL", "9");
-    Order order = new Order("user", "AAPL", 10, Side.SELL);
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.SELL,
+      Type.MARKET,
+      null,
+      "1"
+    );
 
     // When
     mockOrderProducer.sendOrder("user", order);
@@ -140,6 +158,72 @@ public class OrderStreamTest implements TestPropertyProvider {
         assertThat(mockOrderListener.acceptedOrders).hasSize(0);
         assertThat(mockOrderListener.rejectedOrders).hasSize(1);
         assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("9");
+      });
+  }
+
+  @Test
+  void testOrderStreamBuyLimitOrder(
+    MockOrderProducer mockOrderProducer,
+    MockOrderListener mockOrderListener,
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    // Given
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.LIMIT,
+      100.0,
+      "1"
+    );
+
+    // When
+    mockOrderProducer.sendOrder("user", order);
+
+    // Then
+    await()
+      .pollInterval(Duration.ofSeconds(1))
+      .atMost(Duration.ofSeconds(10))
+      .untilAsserted(() -> {
+        assertThat(mockOrderListener.acceptedOrders).hasSize(0);
+        assertThat(mockOrderListener.rejectedOrders).hasSize(0);
+        assertThat(redisConnection.sync().get("user:balance"))
+          .isEqualTo("99000");
+        assertThat(mockOrderListener.orderBookRequests).hasSize(1);
+      });
+  }
+
+  @Test
+  void testOrderStreamSellLimitOrder(
+    MockOrderProducer mockOrderProducer,
+    MockOrderListener mockOrderListener,
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    // Given
+    redisConnection.sync().set("user:AAPL", "10");
+    Order order = new Order(
+      "user",
+      "AAPL",
+      7,
+      Side.SELL,
+      Type.LIMIT,
+      100.0,
+      "1"
+    );
+
+    // When
+    mockOrderProducer.sendOrder("user", order);
+
+    // Then
+    await()
+      .pollInterval(Duration.ofSeconds(1))
+      .atMost(Duration.ofSeconds(10))
+      .untilAsserted(() -> {
+        assertThat(mockOrderListener.acceptedOrders).hasSize(0);
+        assertThat(mockOrderListener.rejectedOrders).hasSize(0);
+        assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("3");
+        assertThat(mockOrderListener.orderBookRequests).hasSize(1);
       });
   }
 }

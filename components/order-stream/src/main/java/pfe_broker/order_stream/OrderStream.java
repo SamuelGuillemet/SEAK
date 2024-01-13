@@ -17,7 +17,10 @@ import org.apache.kafka.streams.kstream.Consumed;
 import org.apache.kafka.streams.kstream.KStream;
 import org.apache.kafka.streams.kstream.Produced;
 import pfe_broker.avro.Order;
+import pfe_broker.avro.OrderBookRequest;
+import pfe_broker.avro.OrderBookRequestType;
 import pfe_broker.avro.RejectedOrder;
+import pfe_broker.avro.Type;
 
 @Factory
 public class OrderStream {
@@ -36,6 +39,9 @@ public class OrderStream {
 
   @Property(name = "kafka.topics.rejected-orders")
   private String rejectedOrdersTopic;
+
+  @Property(name = "kafka.topics.order-book-request")
+  private String orderBookRequestTopic;
 
   private final Serdes.StringSerde keySerde = new Serdes.StringSerde();
 
@@ -73,9 +79,22 @@ public class OrderStream {
   private void processAcceptedAndRejectedOrders(
     KStream<String, OrderIntegrityCheckRecord> integrityCheckedOrdersStream
   ) {
-    KStream<String, Order> acceptedOrders = integrityCheckedOrdersStream
-      .filter((key, value) -> value.orderRejectReason() == null)
+    KStream<String, Order> acceptedOrdersMarket = integrityCheckedOrdersStream
+      .filter((key, value) ->
+        value.orderRejectReason() == null &&
+        value.order().getType() == Type.MARKET
+      )
       .mapValues(OrderIntegrityCheckRecord::order);
+
+    KStream<String, OrderBookRequest> acceptedOrdersLimit =
+      integrityCheckedOrdersStream
+        .filter((key, value) ->
+          value.orderRejectReason() == null &&
+          value.order().getType() == Type.LIMIT
+        )
+        .mapValues(value ->
+          new OrderBookRequest(OrderBookRequestType.NEW, value.order(), null)
+        );
 
     KStream<String, RejectedOrder> rejectedOrders = integrityCheckedOrdersStream
       .filter((key, value) -> value.orderRejectReason() != null)
@@ -83,9 +102,13 @@ public class OrderStream {
         new RejectedOrder(value.order(), value.orderRejectReason())
       );
 
-    acceptedOrders.to(
+    acceptedOrdersMarket.to(
       acceptedOrdersTopic,
       Produced.with(keySerde, this.orderAvroSerde())
+    );
+    acceptedOrdersLimit.to(
+      orderBookRequestTopic,
+      Produced.with(keySerde, this.orderBookRequestAvroSerde())
     );
     rejectedOrders.to(
       rejectedOrdersTopic,
@@ -103,6 +126,19 @@ public class OrderStream {
     );
     orderAvroSerde.configure(serdeConfig, false);
     return orderAvroSerde;
+  }
+
+  private SpecificAvroSerde<OrderBookRequest> orderBookRequestAvroSerde() {
+    SpecificAvroSerde<OrderBookRequest> orderBookRequestAvroSerde =
+      new SpecificAvroSerde<>();
+
+    Map<String, String> serdeConfig = new HashMap<>();
+    serdeConfig.put(
+      AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
+      schemaRegistryUrl
+    );
+    orderBookRequestAvroSerde.configure(serdeConfig, false);
+    return orderBookRequestAvroSerde;
   }
 
   private SpecificAvroSerde<RejectedOrder> rejectedOrderAvroSerde() {

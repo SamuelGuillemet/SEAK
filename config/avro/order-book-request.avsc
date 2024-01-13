@@ -1,0 +1,21 @@
+{
+  "namespace": "pfe_broker.avro",
+  "type": "record",
+  "name": "OrderBookRequest",
+  "fields": [
+    {
+      "name": "type",
+      "type": "OrderBookRequestType"
+    },
+    {
+      "name": "order",
+      "type": "Order"
+    },
+    {
+      "name": "origClOrderID",
+      "type": ["null", "string"],
+      "default": null,
+      "doc": "Only used for REPLACE and CANCEL orders"
+    }
+  ]
+}

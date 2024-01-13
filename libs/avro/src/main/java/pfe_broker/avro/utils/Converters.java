@@ -44,27 +44,32 @@ public class Converters {
     private static final Map<pfe_broker.avro.OrderRejectReason, Integer> quickfixReasonMap = new HashMap<>();
 
     static {
-      avroReasonMap.put(quickfix.field.OrdRejReason.BROKER_EXCHANGE_OPTION, pfe_broker.avro.OrderRejectReason.BROKER_EXCHANGE_OPTION);
+      avroReasonMap.put(quickfix.field.OrdRejReason.BROKER_EXCHANGE_OPTION,
+          pfe_broker.avro.OrderRejectReason.BROKER_EXCHANGE_OPTION);
       avroReasonMap.put(quickfix.field.OrdRejReason.UNKNOWN_SYMBOL, pfe_broker.avro.OrderRejectReason.UNKNOWN_SYMBOL);
       avroReasonMap.put(quickfix.field.OrdRejReason.EXCHANGE_CLOSED, pfe_broker.avro.OrderRejectReason.EXCHANGE_CLOSED);
-      avroReasonMap.put(quickfix.field.OrdRejReason.ORDER_EXCEEDS_LIMIT, pfe_broker.avro.OrderRejectReason.ORDER_EXCEEDS_LIMIT);
-      avroReasonMap.put(quickfix.field.OrdRejReason.TOO_LATE_TO_ENTER, pfe_broker.avro.OrderRejectReason.TOO_LATE_TO_ENTER);
+      avroReasonMap.put(quickfix.field.OrdRejReason.ORDER_EXCEEDS_LIMIT,
+          pfe_broker.avro.OrderRejectReason.ORDER_EXCEEDS_LIMIT);
+      avroReasonMap.put(quickfix.field.OrdRejReason.TOO_LATE_TO_ENTER,
+          pfe_broker.avro.OrderRejectReason.TOO_LATE_TO_ENTER);
       avroReasonMap.put(quickfix.field.OrdRejReason.UNKNOWN_ORDER, pfe_broker.avro.OrderRejectReason.UNKNOWN_ORDER);
       avroReasonMap.put(quickfix.field.OrdRejReason.DUPLICATE_ORDER, pfe_broker.avro.OrderRejectReason.DUPLICATE_ORDER);
       avroReasonMap.put(quickfix.field.OrdRejReason.STALE_ORDER, pfe_broker.avro.OrderRejectReason.STALE_ORDER);
-      avroReasonMap.put(quickfix.field.OrdRejReason.INCORRECT_QUANTITY, pfe_broker.avro.OrderRejectReason.INCORRECT_QUANTITY);
+      avroReasonMap.put(quickfix.field.OrdRejReason.INCORRECT_QUANTITY,
+          pfe_broker.avro.OrderRejectReason.INCORRECT_QUANTITY);
       avroReasonMap.put(quickfix.field.OrdRejReason.UNKNOWN_ACCOUNT, pfe_broker.avro.OrderRejectReason.UNKNOWN_ACCOUNT);
-      avroReasonMap.put(quickfix.field.OrdRejReason.PRICE_EXCEEDS_CURRENT_PRICE_BAND, pfe_broker.avro.OrderRejectReason.PRICE_EXCEEDS_CURRENT_PRICE_BAND);
+      avroReasonMap.put(quickfix.field.OrdRejReason.PRICE_EXCEEDS_CURRENT_PRICE_BAND,
+          pfe_broker.avro.OrderRejectReason.PRICE_EXCEEDS_CURRENT_PRICE_BAND);
 
       avroReasonMap.entrySet().forEach(entry -> quickfixReasonMap.put(entry.getValue(), entry.getKey()));
     }
 
-    public static int charFromAvro(pfe_broker.avro.OrderRejectReason reason) {
+    public static int intFromAvro(pfe_broker.avro.OrderRejectReason reason) {
       return quickfixReasonMap.getOrDefault(reason, quickfix.field.OrdRejReason.OTHER);
     }
 
     public static quickfix.field.OrdRejReason fromAvro(pfe_broker.avro.OrderRejectReason reason) {
-      return new quickfix.field.OrdRejReason(charFromAvro(reason));
+      return new quickfix.field.OrdRejReason(intFromAvro(reason));
     }
 
     public static pfe_broker.avro.OrderRejectReason toAvro(int reason) {
@@ -73,6 +78,41 @@ public class Converters {
 
     public static pfe_broker.avro.OrderRejectReason toAvro(quickfix.field.OrdRejReason reason) {
       return toAvro(reason.getValue());
+    }
+  }
+
+  public static class Type {
+
+    private static final Map<Character, pfe_broker.avro.Type> avroTypeMap = new HashMap<>();
+    private static final Map<pfe_broker.avro.Type, Character> quickfixTypeMap = new HashMap<>();
+
+    static {
+      avroTypeMap.put(quickfix.field.OrdType.MARKET, pfe_broker.avro.Type.MARKET);
+      avroTypeMap.put(quickfix.field.OrdType.LIMIT, pfe_broker.avro.Type.LIMIT);
+
+      avroTypeMap.entrySet().forEach(entry -> quickfixTypeMap.put(entry.getValue(), entry.getKey()));
+    }
+
+    public static char charFromAvro(pfe_broker.avro.Type type) {
+      if (!quickfixTypeMap.containsKey(type)) {
+        throw new IllegalArgumentException("Unknown type: " + type);
+      }
+      return quickfixTypeMap.get(type);
+    }
+
+    public static quickfix.field.OrdType fromAvro(pfe_broker.avro.Type type) {
+      return new quickfix.field.OrdType(charFromAvro(type));
+    }
+
+    public static pfe_broker.avro.Type toAvro(char type) {
+      if (!avroTypeMap.containsKey(type)) {
+        throw new IllegalArgumentException("Unknown type: " + type);
+      }
+      return avroTypeMap.get(type);
+    }
+
+    public static pfe_broker.avro.Type toAvro(quickfix.field.OrdType type) {
+      return toAvro(type.getValue());
     }
   }
 }

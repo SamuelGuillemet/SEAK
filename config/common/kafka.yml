@@ -3,18 +3,22 @@ kafka:
   schema.registry.url: http://localhost:8081
   common:
     symbol-topic-prefix: market-data.
+    market-data-thread-pool-size: 3
   topics:
     trades: trades
     accepted-trades: accepted-trades
     orders: orders
-    accepted-orders: accepted-orders
+    accepted-orders: accepted-orders-market
     rejected-orders: rejected-orders
+    order-book-request: order-book-request
+    order-book-response: order-book-response
+    order-book-rejected: order-book-rejected
   producers:
     default:
       value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer
       key.serializer: org.apache.kafka.common.serialization.StringSerializer
   consumers:
-    default:
+    default: &default
       specific.avro.reader: true
       metadata.max.age.ms: 30000 # 30 seconds
       value.deserializer: io.confluent.kafka.serializers.KafkaAvroDeserializer
@@ -22,6 +26,14 @@ kafka:
       fetch.min.bytes: 1
       fetch.max.wait.ms: 10
       allow.auto.create.topics: false
+    market-matcher-market-data:
+      <<: *default
+      fetch.max.wait.ms: 500 # 500ms
+      fetch.min.bytes: 20000 # 20kb ~ 150 entries
+    order-book-market-data:
+      <<: *default
+      fetch.max.wait.ms: 500 # 500ms
+      fetch.min.bytes: 20000 # 20kb ~ 150 entries
 
   streams:
     default:

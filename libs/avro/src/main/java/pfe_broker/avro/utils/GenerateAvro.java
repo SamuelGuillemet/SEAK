@@ -10,11 +10,14 @@ public class GenerateAvro {
   // The order of the files is important
   public static File[] files = new File[] {
     getFileFromRessource("order-rejected-reason.avsc"),
+    getFileFromRessource("type.avsc"),
     getFileFromRessource("side.avsc"),
+    getFileFromRessource("order-book-request-type.avsc"),
     getFileFromRessource("order.avsc"),
     getFileFromRessource("trade.avsc"),
     getFileFromRessource("rejected-order.avsc"),
     getFileFromRessource("market-data.avsc"),
+    getFileFromRessource("order-book-request.avsc"),
   };
 
   public static void main(String[] args) {

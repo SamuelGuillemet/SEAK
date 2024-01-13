@@ -2,11 +2,16 @@ package pfe_broker.market_matcher;
 
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
+import io.micronaut.configuration.kafka.annotation.KafkaListener;
+import io.micronaut.configuration.kafka.annotation.Topic;
 import io.micronaut.context.annotation.Property;
 import io.micronaut.context.env.Environment;
 import jakarta.inject.Singleton;
 import java.time.Duration;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
 import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -27,6 +32,8 @@ public class MarketDataConsumer {
 
   private final Environment environment;
   private final KafkaConsumer<String, MarketData> consumer;
+
+  private Map<String, MarketData> marketDataMap;
 
   @Property(name = "kafka.common.symbol-topic-prefix")
   private String symbolTopicPrefix;
@@ -58,9 +65,33 @@ public class MarketDataConsumer {
   public MarketDataConsumer(Environment environment) {
     this.environment = environment;
     this.consumer = new KafkaConsumer<>(this.buildProperties());
+    this.marketDataMap = Collections.synchronizedMap(new HashMap<>());
+  }
+
+  @KafkaListener(
+    groupId = "market-matcher-market-data",
+    batch = true,
+    threadsValue = "${kafka.common.market-data-thread-pool-size}"
+  )
+  @Topic(patterns = "${kafka.common.symbol-topic-prefix}[A-Z]+")
+  public void receiveMarketData(
+    List<ConsumerRecord<String, MarketData>> records
+  ) {
+    records.forEach(record -> {
+      MarketData marketData = record.value();
+      String symbol = record.topic().substring(symbolTopicPrefix.length());
+      marketDataMap.put(symbol, marketData);
+    });
   }
 
   public MarketData readLastStockData(String symbol) {
+    if (!marketDataMap.containsKey(symbol)) {
+      readLastStockDataBis(symbol);
+    }
+    return marketDataMap.get(symbol);
+  }
+
+  private void readLastStockDataBis(String symbol) {
     LOG.debug("Reading last stock data for {}", symbol);
 
     List<TopicPartition> partitions = consumer
@@ -76,6 +107,9 @@ public class MarketDataConsumer {
 
     for (TopicPartition partition : partitions) {
       long offset = consumer.position(partition) - 1;
+      if (offset < 0) {
+        return;
+      }
       consumer.seek(partition, offset);
     }
 
@@ -90,6 +124,7 @@ public class MarketDataConsumer {
       }
     }
 
-    return stockData == null ? null : stockData.value();
+    MarketData marketData = stockData == null ? null : stockData.value();
+    marketDataMap.put(symbol, marketData);
   }
 }

@@ -11,10 +11,10 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.9.1'
+    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
     // Avro
-    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.1'
-    implementation group: 'org.apache.avro', name: 'avro-compiler', version: '1.11.1'
+    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.3'
+    implementation group: 'org.apache.avro', name: 'avro-compiler', version: '1.11.3'
     // QuickfixJ
     implementation group: 'org.quickfixj', name: 'quickfixj-core', version: '2.3.1'
     implementation group: 'org.quickfixj', name: 'quickfixj-messages-all', version: '2.3.1'

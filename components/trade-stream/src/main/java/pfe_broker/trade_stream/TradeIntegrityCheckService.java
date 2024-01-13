@@ -11,6 +11,7 @@ import org.slf4j.LoggerFactory;
 import pfe_broker.avro.OrderRejectReason;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Trade;
+import pfe_broker.avro.Type;
 import pfe_broker.common.UtilsRunning;
 
 public class TradeIntegrityCheckService {
@@ -36,23 +37,48 @@ public class TradeIntegrityCheckService {
     }
   }
 
-  private OrderRejectReason marketOrderCheckIntegrity(Trade trade) {
-    RedisCommands<String, String> syncCommands = redisConnection.sync();
+  private OrderRejectReason sellVerification(
+    Trade trade,
+    RedisCommands<String, String> syncCommands
+  ) {
+    String username = trade.getOrder().getUsername().toString();
+    Integer quantity = trade.getQuantity();
+    Double price = trade.getPrice();
 
+    Double amount = price * quantity;
+    String balanceKey = username + ":balance";
+
+    syncCommands.incrbyfloat(balanceKey, amount);
+    return null;
+  }
+
+  private OrderRejectReason buyLimitVerification(
+    Trade trade,
+    RedisCommands<String, String> syncCommands
+  ) {
+    String username = trade.getOrder().getUsername().toString();
+    String symbol = trade.getSymbol().toString();
+    Integer quantity = trade.getQuantity();
+
+    String stockKey = username + ":" + symbol;
+
+    syncCommands.incrby(stockKey, quantity);
+    return null;
+  }
+
+  private OrderRejectReason buyMarketVerification(
+    Trade trade,
+    RedisCommands<String, String> syncCommands
+  ) {
     String username = trade.getOrder().getUsername().toString();
     String symbol = trade.getSymbol().toString();
     Integer quantity = trade.getQuantity();
     Double price = trade.getPrice();
-    Side side = trade.getOrder().getSide();
+
     Double amount = price * quantity;
 
     String stockKey = username + ":" + symbol;
     String balanceKey = username + ":balance";
-
-    if (side == Side.SELL) {
-      syncCommands.incrbyfloat(balanceKey, amount);
-      return null;
-    }
 
     syncCommands.watch(balanceKey);
     int countdown = 10;
@@ -85,17 +111,44 @@ public class TradeIntegrityCheckService {
     return OrderRejectReason.INCORRECT_QUANTITY;
   }
 
+  private OrderRejectReason marketOrderCheckIntegrity(Trade trade) {
+    RedisCommands<String, String> syncCommands = redisConnection.sync();
+    Side side = trade.getOrder().getSide();
+
+    if (side == Side.SELL) {
+      return sellVerification(trade, syncCommands);
+    }
+
+    return buyMarketVerification(trade, syncCommands);
+  }
+
+  private OrderRejectReason limitOrderCheckIntegrity(Trade trade) {
+    RedisCommands<String, String> syncCommands = redisConnection.sync();
+    Side side = trade.getOrder().getSide();
+
+    if (side == Side.SELL) {
+      return sellVerification(trade, syncCommands);
+    }
+
+    return buyLimitVerification(trade, syncCommands);
+  }
+
   public OrderRejectReason checkIntegrity(Trade trade) {
     LOG.debug("Checking integrity of trade {}", trade);
+    Type type = trade.getOrder().getType();
 
-    OrderRejectReason marketOrderCheckIntegrityResult =
-      marketOrderCheckIntegrity(trade);
+    OrderRejectReason tradeCheckIntegrityResult = OrderRejectReason.OTHER;
+    if (type == Type.MARKET) {
+      tradeCheckIntegrityResult = marketOrderCheckIntegrity(trade);
+    } else if (type == Type.LIMIT) {
+      tradeCheckIntegrityResult = limitOrderCheckIntegrity(trade);
+    }
 
-    if (marketOrderCheckIntegrityResult == null) {
+    if (tradeCheckIntegrityResult == null) {
       LOG.debug("Trade {} accepted", trade);
     }
 
-    return marketOrderCheckIntegrityResult;
+    return tradeCheckIntegrityResult;
   }
 
   private boolean isRedisRunning() {
