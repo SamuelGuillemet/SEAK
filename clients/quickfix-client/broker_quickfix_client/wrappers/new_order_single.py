@@ -1,20 +1,9 @@
-from dataclasses import dataclass
-
 import quickfix44
 from quickfix import ClOrdID, OrderQty, OrdType, Price, Side, Symbol, TransactTime
 
 from broker_quickfix_client.utils.quickfix import get_message_field
 from broker_quickfix_client.wrappers.enums import OrderTypeEnum, SideEnum
-
-
-@dataclass
-class Order:
-    order_id: int | None
-    client_order_id: int
-    symbol: str
-    side: SideEnum
-    price: float | None
-    quantity: int
+from broker_quickfix_client.wrappers.order import Order
 
 
 class NewOrderSingle(quickfix44.NewOrderSingle):
@@ -47,6 +36,7 @@ class NewOrderSingle(quickfix44.NewOrderSingle):
             client_order_id=int(get_message_field(self, ClOrdID)),
             symbol=get_message_field(self, Symbol),
             side=SideEnum(get_message_field(self, Side)),
+            type=OrderTypeEnum(get_message_field(self, OrdType)),
             price=float(price) if price else None,
             quantity=int(get_message_field(self, OrderQty)),
         )
