@@ -10,7 +10,7 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.junit.jupiter.Container;
@@ -48,7 +48,7 @@ import quickfix.field.OrderID;
 )
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class ReportListenerTest implements TestPropertyProvider {
+class ReportListenerTest implements TestPropertyProvider {
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();
@@ -67,13 +67,13 @@ public class ReportListenerTest implements TestPropertyProvider {
     );
   }
 
-  @AfterEach
+  @BeforeEach
   public void clearMessages(MockMessageSender mockMessageSender) {
     mockMessageSender.messages.clear();
   }
 
   @Test
-  public void testAcceptedTrade(
+  void testAcceptedTrade(
     MockReportProducer mockReportProducer,
     ServerApplication serverApplication,
     MockMessageSender mockMessageSender
@@ -101,7 +101,7 @@ public class ReportListenerTest implements TestPropertyProvider {
   }
 
   @Test
-  public void testRejectedOrder(
+  void testRejectedOrder(
     MockReportProducer mockReportProducer,
     ServerApplication serverApplication,
     MockMessageSender mockMessageSender
@@ -133,7 +133,7 @@ public class ReportListenerTest implements TestPropertyProvider {
   }
 
   @Test
-  public void testOrderBookResponseNew(
+  void testOrderBookResponseNew(
     MockReportProducer mockReportProducer,
     ServerApplication serverApplication,
     MockMessageSender mockMessageSender
@@ -168,7 +168,7 @@ public class ReportListenerTest implements TestPropertyProvider {
   }
 
   @Test
-  public void testOrderBookResponseCancel(
+  void testOrderBookResponseCancel(
     MockReportProducer mockReportProducer,
     ServerApplication serverApplication,
     MockMessageSender mockMessageSender
@@ -203,7 +203,7 @@ public class ReportListenerTest implements TestPropertyProvider {
   }
 
   @Test
-  public void testOrderBookReplace(
+  void testOrderBookReplace(
     MockReportProducer mockReportProducer,
     ServerApplication serverApplication,
     MockMessageSender mockMessageSender
@@ -233,12 +233,12 @@ public class ReportListenerTest implements TestPropertyProvider {
 
     Message message = mockMessageSender.messages.take();
     assertEquals('1', message.getChar(OrderID.FIELD));
-    assertEquals(ExecType.NEW, message.getChar(ExecType.FIELD));
-    assertEquals(OrdStatus.REPLACED, message.getChar(OrdStatus.FIELD));
+    assertEquals(ExecType.REPLACED, message.getChar(ExecType.FIELD));
+    assertEquals(OrdStatus.NEW, message.getChar(OrdStatus.FIELD));
   }
 
   @Test
-  public void testOrderBookRejectedCancel(
+  void testOrderBookRejectedCancel(
     MockReportProducer mockReportProducer,
     ServerApplication serverApplication,
     MockMessageSender mockMessageSender
@@ -276,7 +276,7 @@ public class ReportListenerTest implements TestPropertyProvider {
   }
 
   @Test
-  public void testOrderBookRejectedReplace(
+  void testOrderBookRejectedReplace(
     MockReportProducer mockReportProducer,
     ServerApplication serverApplication,
     MockMessageSender mockMessageSender

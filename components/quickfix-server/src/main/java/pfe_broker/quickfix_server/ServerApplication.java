@@ -332,8 +332,8 @@ public class ServerApplication extends MessageCracker implements Application {
         ordStatus = OrdStatus.CANCELED;
         break;
       case REPLACE:
-        execType = ExecType.NEW;
-        ordStatus = OrdStatus.REPLACED;
+        execType = ExecType.REPLACED;
+        ordStatus = OrdStatus.NEW;
         break;
       default:
         throw new UnsupportedOperationException(
