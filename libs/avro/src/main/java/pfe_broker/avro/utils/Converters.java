@@ -1,13 +1,21 @@
 package pfe_broker.avro.utils;
 
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 
 public class Converters {
+
+  private Converters() {
+  }
+
   public static class Side {
 
     private static final Map<Character, pfe_broker.avro.Side> avroSideMap = new HashMap<>();
-    private static final Map<pfe_broker.avro.Side, Character> quickfixSideMap = new HashMap<>();
+    private static final Map<pfe_broker.avro.Side, Character> quickfixSideMap = new EnumMap<>(pfe_broker.avro.Side.class);
+
+    private Side() {
+    }
 
     static {
       avroSideMap.put(quickfix.field.Side.BUY, pfe_broker.avro.Side.BUY);
@@ -40,8 +48,11 @@ public class Converters {
 
   public static class OrderRejectReason {
 
+    private OrderRejectReason() {
+    }
+
     private static final Map<Integer, pfe_broker.avro.OrderRejectReason> avroReasonMap = new HashMap<>();
-    private static final Map<pfe_broker.avro.OrderRejectReason, Integer> quickfixReasonMap = new HashMap<>();
+    private static final Map<pfe_broker.avro.OrderRejectReason, Integer> quickfixReasonMap = new EnumMap<>(pfe_broker.avro.OrderRejectReason.class);
 
     static {
       avroReasonMap.put(quickfix.field.OrdRejReason.BROKER_EXCHANGE_OPTION,
@@ -83,8 +94,11 @@ public class Converters {
 
   public static class Type {
 
+    private Type() {
+    }
+
     private static final Map<Character, pfe_broker.avro.Type> avroTypeMap = new HashMap<>();
-    private static final Map<pfe_broker.avro.Type, Character> quickfixTypeMap = new HashMap<>();
+    private static final Map<pfe_broker.avro.Type, Character> quickfixTypeMap = new EnumMap<>(pfe_broker.avro.Type.class);
 
     static {
       avroTypeMap.put(quickfix.field.OrdType.MARKET, pfe_broker.avro.Type.MARKET);

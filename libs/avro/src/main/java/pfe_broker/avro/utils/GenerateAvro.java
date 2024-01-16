@@ -8,7 +8,7 @@ import org.apache.avro.compiler.specific.SpecificCompiler;
 public class GenerateAvro {
 
   // The order of the files is important
-  public static File[] files = new File[] {
+  private static final File[] files = new File[] {
     getFileFromRessource("order-rejected-reason.avsc"),
     getFileFromRessource("type.avsc"),
     getFileFromRessource("side.avsc"),
@@ -19,6 +19,10 @@ public class GenerateAvro {
     getFileFromRessource("market-data.avsc"),
     getFileFromRessource("order-book-request.avsc"),
   };
+
+  public static File[] getFiles() {
+    return files;
+  }
 
   public static void main(String[] args) {
     String outputDir = "src/main/java";

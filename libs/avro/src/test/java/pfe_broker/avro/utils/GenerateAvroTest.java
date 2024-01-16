@@ -9,7 +9,7 @@ class GenerateAvroTest {
 
   @Test
   void testFilesExist() {
-    for (File file : GenerateAvro.files) {
+    for (File file : GenerateAvro.getFiles()) {
       assertTrue(file.exists());
     }
   }
