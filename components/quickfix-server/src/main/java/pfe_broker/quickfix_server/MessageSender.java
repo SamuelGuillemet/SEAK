@@ -1,9 +1,11 @@
 package pfe_broker.quickfix_server;
 
-import jakarta.inject.Inject;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.inject.Singleton;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
+import java.util.Queue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pfe_broker.quickfix_server.interfaces.IMessageSender;
@@ -22,6 +24,7 @@ public class MessageSender implements IMessageSender {
   private final Map<String, SessionID> sessionIDMap;
   private final Map<String, Queue<Message>> messageQueueMap;
   private final QuickFixLogger quickFixLogger;
+  private final MeterRegistry meterRegistry;
 
   public MessageSender(
     QuickFixLogger quickFixLogger,
@@ -31,10 +34,11 @@ public class MessageSender implements IMessageSender {
     this.meterRegistry = meterRegistry;
     this.sessionIDMap = new HashMap<>();
     this.messageQueueMap = new HashMap<>();
-  private Map<String, SessionID> sessionIDMap = new HashMap<>();
-
-  @Inject
-  private QuickFixLogger quickFixLogger;
+    meterRegistry.gauge(
+      "quickfix_server_users_connected",
+      sessionIDMap,
+      Map::size
+    );
   }
 
   @Override
@@ -58,6 +62,13 @@ public class MessageSender implements IMessageSender {
   @Override
   public void sendMessage(Message message, String username) {
     quickFixLogger.logQuickFixJMessage(message, "Sending message");
+    meterRegistry
+      .counter(
+        "quickfix_server_messages_sent",
+        "type",
+        message.getClass().getSimpleName()
+      )
+      .increment();
     SessionID sessionID = sessionIDMap.get(username);
     try {
       Session.sendToTarget(message, sessionID);

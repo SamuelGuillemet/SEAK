@@ -1,6 +1,6 @@
 package pfe_broker.quickfix_server;
 
-import jakarta.inject.Inject;
+import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -57,41 +57,88 @@ public class ServerApplication extends MessageCracker implements Application {
     ServerApplication.class
   );
 
-  @Inject
-  private QuickFixLogger quickFixLogger;
+  private final QuickFixLogger quickFixLogger;
+  private final IMessageSender messageSender;
+  private final OrderProducer orderProducer;
+  private final UserRepository userRepository;
+  private final MeterRegistry meterRegistry;
 
-  @Inject
-  private IMessageSender messageSender;
+  private Integer orderKey;
+  private Integer executionKey;
 
-  @Inject
-  private OrderProducer orderProducer;
+  public ServerApplication(
+    QuickFixLogger quickFixLogger,
+    IMessageSender messageSender,
+    OrderProducer orderProducer,
+    UserRepository userRepository,
+    MeterRegistry meterRegistry
+  ) {
+    this.quickFixLogger = quickFixLogger;
+    this.messageSender = messageSender;
+    this.orderProducer = orderProducer;
+    this.userRepository = userRepository;
+    this.meterRegistry = meterRegistry;
 
-  @Inject
-  private UserRepository userRepository;
-
-  private Integer orderKey = 0;
-  private Integer executionKey = 0;
-
-  public Integer getExecutionKey() {
-    return executionKey;
+    this.orderKey = 0;
+    this.executionKey = 0;
   }
 
-  public Integer getOrderKey() {
-    return orderKey;
+  /**
+   * This method is called when a new session is created.
+   *
+   * @param sessionId The ID of the newly created session.
+   */
+  @Override
+  public void onCreate(SessionID sessionId) {
+    // Nothing to do
   }
 
+  /**
+   * Called when a session is successfully logged on.
+   *
+   * @param sessionId The session ID of the logged on session.
+   */
   @Override
-  public void onCreate(SessionID sessionId) {}
+  public void onLogon(SessionID sessionId) {
+    // Nothing to do
+  }
 
+  /**
+   * Called when a session is logged out.
+   * Unregisters the user associated with the session.
+   *
+   * @param sessionId The session ID of the logged out session.
+   */
   @Override
-  public void onLogon(SessionID sessionId) {}
+  public void onLogout(SessionID sessionId) {
+    String username = sessionId.getTargetCompID();
+    messageSender.unregisterUser(username);
+  }
 
+  /**
+   * This method is called when a message needs to be sent to the counterparty.
+   * It allows the application to modify the message before it is sent.
+   *
+   * @param message    the message to be sent
+   * @param sessionId  the session ID of the counterparty
+   */
   @Override
-  public void onLogout(SessionID sessionId) {}
+  public void toAdmin(Message message, SessionID sessionId) {
+    // Nothing to do
+  }
 
-  @Override
-  public void toAdmin(Message message, SessionID sessionId) {}
-
+  /**
+   * Handles the fromAdmin message received by the server.
+   * This method is called when an administrative message is received from the client.
+   * It checks the credentials provided in the Logon message and registers the user if the credentials are valid.
+   *
+   * @param message    The received message.
+   * @param sessionId  The session ID of the client.
+   * @throws FieldNotFound        If a required field is not found in the message.
+   * @throws IncorrectDataFormat  If the data format in the message is incorrect.
+   * @throws IncorrectTagValue    If the tag value in the message is incorrect.
+   * @throws RejectLogon          If the logon is rejected due to invalid credentials.
+   */
   @Override
   public void fromAdmin(Message message, SessionID sessionId)
     throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, RejectLogon {
@@ -105,12 +152,12 @@ public class ServerApplication extends MessageCracker implements Application {
 
         // Check credentials
         if (checkCredentials(username, password)) {
-          LOG.debug("Valid credentials for: " + username);
+          LOG.debug("Valid credentials for: {}", username);
         } else {
-          LOG.debug("Logon rejected for: " + username);
+          LOG.debug("Logon rejected for: {}", username);
           throw new RejectLogon("Invalid username or password");
         }
-
+        LOG.info("Logon received from: {}", sender);
         messageSender.registerNewUser(sender, sessionId);
       } catch (FieldNotFound e) {
         e.printStackTrace();
@@ -119,13 +166,41 @@ public class ServerApplication extends MessageCracker implements Application {
     }
   }
 
+  /**
+   * This method is called when an outgoing message needs to be sent to the counterparty.
+   *
+   * @param message    the outgoing message to be sent
+   * @param sessionId  the session ID of the counterparty
+   * @throws DoNotSend if the message should not be sent
+   */
   @Override
-  public void toApp(Message message, SessionID sessionId) throws DoNotSend {}
+  public void toApp(Message message, SessionID sessionId) throws DoNotSend {
+    // Nothing to do
+  }
 
+  /**
+   * This method is called when a message is received from the FIX engine.
+   * It logs the received message, increments the counter for the received messages,
+   * and delegates the message processing to the crack method.
+   *
+   * @param message    The received message.
+   * @param sessionId  The session ID associated with the message.
+   * @throws FieldNotFound          If a required field is not found in the message.
+   * @throws IncorrectDataFormat    If the message has an incorrect data format.
+   * @throws IncorrectTagValue      If a field in the message has an incorrect value.
+   * @throws UnsupportedMessageType If the message type is not supported.
+   */
   @Override
   public void fromApp(Message message, SessionID sessionId)
     throws FieldNotFound, IncorrectDataFormat, IncorrectTagValue, UnsupportedMessageType {
     quickFixLogger.logQuickFixJMessage(message, "Received message");
+    meterRegistry
+      .counter(
+        "quickfix_server_messages_received",
+        "type",
+        message.getClass().getSimpleName()
+      )
+      .increment();
     crack(message, sessionId);
   }
 
@@ -134,11 +209,10 @@ public class ServerApplication extends MessageCracker implements Application {
    * @param message
    * @param sessionID
    * @throws FieldNotFound
-   * @throws UnsupportedMessageType
    * @throws IncorrectTagValue
    */
   public void onMessage(NewOrderSingle message, SessionID sessionID)
-    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+    throws FieldNotFound, IncorrectTagValue {
     String username = message.getHeader().getString(SenderCompID.FIELD);
     String symbol = message.getString(Symbol.FIELD);
     int quantity = message.getInt(OrderQty.FIELD);
@@ -173,12 +247,11 @@ public class ServerApplication extends MessageCracker implements Application {
    * @param message
    * @param sessionID
    * @throws FieldNotFound
-   * @throws UnsupportedMessageType
    * @throws IncorrectTagValue
    */
 
   public void onMessage(OrderCancelReplaceRequest message, SessionID sessionID)
-    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+    throws FieldNotFound, IncorrectTagValue {
     String username = message.getHeader().getString(SenderCompID.FIELD);
     String symbol = message.getString(Symbol.FIELD);
     int quantity = message.getInt(OrderQty.FIELD);
@@ -218,11 +291,9 @@ public class ServerApplication extends MessageCracker implements Application {
    * @param message
    * @param sessionID
    * @throws FieldNotFound
-   * @throws UnsupportedMessageType
-   * @throws IncorrectTagValue
    */
   public void onMessage(OrderCancelRequest message, SessionID sessionID)
-    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+    throws FieldNotFound {
     String username = message.getHeader().getString(SenderCompID.FIELD);
     String symbol = message.getString(Symbol.FIELD);
     pfe_broker.avro.Side side = Converters.Side.toAvro(message.getSide());
@@ -465,6 +536,6 @@ public class ServerApplication extends MessageCracker implements Application {
     } else {
       user = userMatch;
     }
-    return user != null && user.getPassword().equals(password);
+    return user.getPassword().equals(password);
   }
 }
