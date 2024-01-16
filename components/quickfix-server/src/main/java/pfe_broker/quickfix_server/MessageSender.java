@@ -19,14 +19,40 @@ public class MessageSender implements IMessageSender {
     MessageSender.class
   );
 
+  private final Map<String, SessionID> sessionIDMap;
+  private final Map<String, Queue<Message>> messageQueueMap;
+  private final QuickFixLogger quickFixLogger;
+
+  public MessageSender(
+    QuickFixLogger quickFixLogger,
+    MeterRegistry meterRegistry
+  ) {
+    this.quickFixLogger = quickFixLogger;
+    this.meterRegistry = meterRegistry;
+    this.sessionIDMap = new HashMap<>();
+    this.messageQueueMap = new HashMap<>();
   private Map<String, SessionID> sessionIDMap = new HashMap<>();
 
   @Inject
   private QuickFixLogger quickFixLogger;
+  }
 
   @Override
   public void registerNewUser(String username, SessionID sessionID) {
     sessionIDMap.put(username, sessionID);
+    if (messageQueueMap.containsKey(username)) {
+      Queue<Message> messageQueue = messageQueueMap.get(username);
+      while (!messageQueue.isEmpty()) {
+        Message message = messageQueue.poll();
+        sendMessage(message, username);
+      }
+      messageQueueMap.remove(username);
+    }
+  }
+
+  @Override
+  public void unregisterUser(String username) {
+    sessionIDMap.remove(username);
   }
 
   @Override
@@ -37,6 +63,8 @@ public class MessageSender implements IMessageSender {
       Session.sendToTarget(message, sessionID);
     } catch (SessionNotFound | NullPointerException e) {
       LOG.error("Session not found for user [{}]({})", username, sessionID);
+      messageQueueMap.computeIfAbsent(username, k -> new LinkedList<>());
+      messageQueueMap.get(username).add(message);
     }
   }
 }
