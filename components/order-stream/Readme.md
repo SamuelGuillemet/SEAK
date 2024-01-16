@@ -1,6 +1,6 @@
 # Order Stream
 
-The Order Stream is a component from the exchnage system that is responsible for receiving orders from the client and verifying their integrity. It utilizes Apache Kafka for communication and integrates with Micronaut for Kafka-related annotations and dependencies. This README provides detailed documentation for understanding and using the Order Stream.
+The Order Stream is a component from the exchange system that is responsible for receiving orders from the client and verifying their integrity. It utilizes Apache Kafka for communication and integrates with Micronaut for Kafka-related annotations and dependencies. This README provides detailed documentation for understanding and using the Order Stream.
 
 ## Table of Contents
 
@@ -13,7 +13,7 @@ The Order Stream is a component from the exchnage system that is responsible for
 
 ## Overview
 
-The Order Stream is responsible for receiving orders from the client and verifying their integrity. It uses Kafka Streams to subscribe to a Kafka topic for incoming orders, processes them, and sends the resulting orders to another Kafka topic. The component verify the integrity using a Redis database to check user balances.
+The Order Stream is responsible for receiving orders from the client and verifying their integrity. It uses Kafka Streams to subscribe to a Kafka topic for incoming orders, processes them, and sends the resulting orders to another Kafka topic. The component verify the integrity using a Redis database to check user and stock balances.
 
 ## Dependencies
 
