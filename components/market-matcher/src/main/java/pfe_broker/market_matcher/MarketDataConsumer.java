@@ -1,11 +1,12 @@
 package pfe_broker.market_matcher;
 
+import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.serializers.KafkaAvroDeserializer;
 import io.confluent.kafka.serializers.KafkaAvroDeserializerConfig;
 import io.micronaut.configuration.kafka.annotation.KafkaListener;
 import io.micronaut.configuration.kafka.annotation.Topic;
 import io.micronaut.context.annotation.Property;
-import io.micronaut.context.env.Environment;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
 import java.time.Duration;
 import java.util.Collections;
@@ -30,23 +31,25 @@ public class MarketDataConsumer {
     MarketDataConsumer.class
   );
 
-  private final Environment environment;
-  private final KafkaConsumer<String, MarketData> consumer;
+  private KafkaConsumer<String, MarketData> consumer;
 
-  private Map<String, MarketData> marketDataMap;
+  private final Map<String, MarketData> marketDataMap;
 
   @Property(name = "kafka.common.symbol-topic-prefix")
   private String symbolTopicPrefix;
 
+  @Property(name = "kafka.bootstrap.servers")
+  private String bootstrapServers;
+
+  @Property(name = "kafka.schema.registry.url")
+  private String schemaRegistryUrl;
+
   protected Properties buildProperties() {
     Properties props = new Properties();
+    props.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
     props.put(
-      ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG,
-      environment.get("kafka.bootstrap.servers", String.class).get()
-    );
-    props.put(
-      KafkaAvroDeserializerConfig.SCHEMA_REGISTRY_URL_CONFIG,
-      environment.get("kafka.schema.registry.url", String.class).get()
+      AbstractKafkaSchemaSerDeConfig.SCHEMA_REGISTRY_URL_CONFIG,
+      schemaRegistryUrl
     );
     props.put(ConsumerConfig.GROUP_ID_CONFIG, "market-matcher-market-data");
     props.put(
@@ -62,10 +65,13 @@ public class MarketDataConsumer {
     return props;
   }
 
-  public MarketDataConsumer(Environment environment) {
-    this.environment = environment;
-    this.consumer = new KafkaConsumer<>(this.buildProperties());
+  public MarketDataConsumer() {
     this.marketDataMap = Collections.synchronizedMap(new HashMap<>());
+  }
+
+  @PostConstruct
+  void init() {
+    this.consumer = new KafkaConsumer<>(this.buildProperties());
   }
 
   @KafkaListener(
@@ -77,21 +83,18 @@ public class MarketDataConsumer {
   public void receiveMarketData(
     List<ConsumerRecord<String, MarketData>> records
   ) {
-    records.forEach(record -> {
-      MarketData marketData = record.value();
-      String symbol = record.topic().substring(symbolTopicPrefix.length());
+    records.forEach(item -> {
+      MarketData marketData = item.value();
+      String symbol = item.topic().substring(symbolTopicPrefix.length());
       marketDataMap.put(symbol, marketData);
     });
   }
 
   public MarketData readLastStockData(String symbol) {
-    if (!marketDataMap.containsKey(symbol)) {
-      readLastStockDataBis(symbol);
-    }
-    return marketDataMap.get(symbol);
+    return marketDataMap.computeIfAbsent(symbol, this::readIndividualData);
   }
 
-  private void readLastStockDataBis(String symbol) {
+  private MarketData readIndividualData(String symbol) {
     LOG.debug("Reading last stock data for {}", symbol);
 
     List<TopicPartition> partitions = consumer
@@ -108,7 +111,7 @@ public class MarketDataConsumer {
     for (TopicPartition partition : partitions) {
       long offset = consumer.position(partition) - 1;
       if (offset < 0) {
-        return;
+        continue;
       }
       consumer.seek(partition, offset);
     }
@@ -118,13 +121,12 @@ public class MarketDataConsumer {
     );
 
     ConsumerRecord<String, MarketData> stockData = null;
-    for (ConsumerRecord<String, MarketData> record : records) {
-      if (stockData == null || record.timestamp() > stockData.timestamp()) {
-        stockData = record;
+    for (ConsumerRecord<String, MarketData> item : records) {
+      if (stockData == null || item.timestamp() > stockData.timestamp()) {
+        stockData = item;
       }
     }
 
-    MarketData marketData = stockData == null ? null : stockData.value();
-    marketDataMap.put(symbol, marketData);
+    return stockData == null ? null : stockData.value();
   }
 }
