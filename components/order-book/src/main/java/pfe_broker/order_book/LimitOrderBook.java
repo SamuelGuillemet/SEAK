@@ -1,6 +1,10 @@
 package pfe_broker.order_book;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Timer;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -21,10 +25,31 @@ public class LimitOrderBook {
 
   private final OrderTree sellOrderTree;
 
-  public LimitOrderBook(String symbol) {
+  private final Timer matchOrdersTimer;
+
+  public LimitOrderBook(String symbol, MeterRegistry meterRegistry) {
     this.symbol = symbol;
     this.buyOrderTree = new OrderTree(Side.BUY);
     this.sellOrderTree = new OrderTree(Side.SELL);
+
+    Tag symbolTag = Tag.of("symbol", symbol);
+
+    meterRegistry.gauge(
+      "order_book_volume_order_book",
+      List.of(symbolTag, Tag.of("side", Side.BUY.toString())),
+      buyOrderTree,
+      OrderTree::getTotalVolume
+    );
+
+    meterRegistry.gauge(
+      "order_book_volume_order_book",
+      List.of(symbolTag, Tag.of("side", Side.SELL.toString())),
+      sellOrderTree,
+      OrderTree::getTotalVolume
+    );
+
+    this.matchOrdersTimer =
+      meterRegistry.timer("order_book_match_orders", List.of(symbolTag));
   }
 
   public void addOrder(String id, Order order) {
@@ -69,6 +94,7 @@ public class LimitOrderBook {
   }
 
   public Map<String, Trade> matchOrdersToTrade(MarketData marketData) {
+    Timer.Sample sample = Timer.start();
     LOG.trace(
       "Match orders to trade in order book {} with market data {}",
       symbol,
@@ -77,12 +103,12 @@ public class LimitOrderBook {
     Double low = marketData.getLow();
     Double high = marketData.getHigh();
 
-    Map<String, Order> orders = new HashMap<>();
-    orders.putAll(buyOrderTree.matchOrders(low));
-    orders.putAll(sellOrderTree.matchOrders(high));
+    Map<String, Order> matchedOrders = new HashMap<>();
+    matchedOrders.putAll(buyOrderTree.matchOrders(low));
+    matchedOrders.putAll(sellOrderTree.matchOrders(high));
 
     Map<String, Trade> trades = new HashMap<>();
-    orders.forEach((id, order) -> {
+    matchedOrders.forEach((id, order) -> {
       Trade trade = new Trade(
         order,
         symbol,
@@ -91,6 +117,8 @@ public class LimitOrderBook {
       );
       trades.put(id, trade);
     });
+
+    sample.stop(matchOrdersTimer);
     return trades;
   }
 
