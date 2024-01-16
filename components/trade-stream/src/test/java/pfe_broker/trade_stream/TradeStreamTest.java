@@ -161,4 +161,71 @@ class TradeStreamTest implements TestPropertyProvider {
         assertThat(redisConnection.sync().get("user:APPL")).isNull();
       });
   }
+
+  @Test
+  void testTradeStreamBuyLimitOrder(
+    MockListener mockListener,
+    MockTradeProducer mockTradeProducer,
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    // Given
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.BUY,
+      Type.LIMIT,
+      100.0,
+      "1"
+    );
+    Trade trade = new Trade(order, "APPL", 100.0, 10);
+    redisConnection.sync().set("user:balance", "10000");
+
+    // When
+    mockTradeProducer.sendTrade("user", trade);
+
+    // Then
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .untilAsserted(() -> {
+        assertThat(mockListener.acceptedTrades).hasSize(1);
+        assertThat(mockListener.rejectedOrders).isEmpty();
+        assertThat(redisConnection.sync().get("user:balance"))
+          .isEqualTo("10000");
+        assertThat(redisConnection.sync().get("user:APPL")).isEqualTo("10");
+      });
+  }
+
+  @Test
+  void testTradeStreamSellLimitOrder(
+    MockListener mockListener,
+    MockTradeProducer mockTradeProducer,
+    StatefulRedisConnection<String, String> redisConnection
+  ) {
+    // Given
+    Order order = new Order(
+      "user",
+      "AAPL",
+      10,
+      Side.SELL,
+      Type.LIMIT,
+      100.0,
+      "1"
+    );
+    Trade trade = new Trade(order, "APPL", 100.0, 10);
+    redisConnection.sync().set("user:balance", "10000");
+
+    // When
+    mockTradeProducer.sendTrade("user", trade);
+
+    // Then
+    await()
+      .atMost(Duration.ofSeconds(5))
+      .untilAsserted(() -> {
+        assertThat(mockListener.acceptedTrades).hasSize(1);
+        assertThat(mockListener.rejectedOrders).isEmpty();
+        assertThat(redisConnection.sync().get("user:balance"))
+          .isEqualTo("11000");
+      });
+  }
 }
