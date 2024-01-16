@@ -5,7 +5,6 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Property;
-import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.util.HashMap;
@@ -22,6 +21,8 @@ import pfe_broker.avro.Trade;
 @Factory
 public class TradeStream {
 
+  private final TradeIntegrityCheckService integrityCheckService;
+
   @Property(name = "kafka.schema.registry.url")
   private String schemaRegistryUrl;
 
@@ -34,10 +35,11 @@ public class TradeStream {
   @Property(name = "kafka.topics.rejected-orders")
   private String rejectedOrdersTopic;
 
-  @Inject
-  private TradeIntegrityCheckService integrityCheckService;
-
   private final Serdes.StringSerde keySerde = new Serdes.StringSerde();
+
+  public TradeStream(TradeIntegrityCheckService integrityCheckService) {
+    this.integrityCheckService = integrityCheckService;
+  }
 
   @Singleton
   @Named("trade-stream-integrity")

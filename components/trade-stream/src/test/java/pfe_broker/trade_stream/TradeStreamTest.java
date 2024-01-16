@@ -26,7 +26,7 @@ import pfe_broker.trade_stream.mocks.MockTradeProducer;
 @MicronautTest(transactional = false)
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class TradeStreamTest implements TestPropertyProvider {
+class TradeStreamTest implements TestPropertyProvider {
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();
@@ -89,7 +89,7 @@ public class TradeStreamTest implements TestPropertyProvider {
       .atMost(Duration.ofSeconds(5))
       .untilAsserted(() -> {
         assertThat(mockListener.acceptedTrades).hasSize(1);
-        assertThat(mockListener.rejectedOrders).hasSize(0);
+        assertThat(mockListener.rejectedOrders).isEmpty();
         assertThat(redisConnection.sync().get("user:balance"))
           .isEqualTo("9000");
         assertThat(redisConnection.sync().get("user:APPL")).isEqualTo("10");
@@ -123,7 +123,7 @@ public class TradeStreamTest implements TestPropertyProvider {
       .atMost(Duration.ofSeconds(5))
       .untilAsserted(() -> {
         assertThat(mockListener.acceptedTrades).hasSize(1);
-        assertThat(mockListener.rejectedOrders).hasSize(0);
+        assertThat(mockListener.rejectedOrders).isEmpty();
         assertThat(redisConnection.sync().get("user:balance"))
           .isEqualTo("11000");
       });
@@ -155,7 +155,7 @@ public class TradeStreamTest implements TestPropertyProvider {
     await()
       .atMost(Duration.ofSeconds(5))
       .untilAsserted(() -> {
-        assertThat(mockListener.acceptedTrades).hasSize(0);
+        assertThat(mockListener.acceptedTrades).isEmpty();
         assertThat(mockListener.rejectedOrders).hasSize(1);
         assertThat(redisConnection.sync().get("user:balance")).isEqualTo("100");
         assertThat(redisConnection.sync().get("user:APPL")).isNull();
