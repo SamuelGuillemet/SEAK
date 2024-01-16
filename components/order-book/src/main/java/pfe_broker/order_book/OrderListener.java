@@ -48,7 +48,7 @@ public class OrderListener {
   ) {
     records.forEach(item -> {
       Timer orderBookHandleOrderTimer = meterRegistry.timer(
-        "order-book.handle-order",
+        "order_book_handle_order",
         "symbol",
         item.value().getOrder().getSymbol().toString(),
         "requestType",

@@ -14,6 +14,7 @@ import pfe_broker.avro.Trade;
 public class MessageProducer {
 
   private static final String SYMBOL_TAG = "symbol";
+  private static final String REQUEST_TYPE = "requestType";
 
   private final Producer<String, SpecificRecord> genericProducer;
 
@@ -51,7 +52,9 @@ public class MessageProducer {
       .counter(
         "order_book_responses",
         SYMBOL_TAG,
-        orderBookRequest.getOrder().getSymbol().toString()
+        orderBookRequest.getOrder().getSymbol().toString(),
+        REQUEST_TYPE,
+        orderBookRequest.getType().toString()
       )
       .increment();
     genericProducer.send(
@@ -67,7 +70,9 @@ public class MessageProducer {
       .counter(
         "order_book_rejected",
         SYMBOL_TAG,
-        orderBookRequest.getOrder().getSymbol().toString()
+        orderBookRequest.getOrder().getSymbol().toString(),
+        REQUEST_TYPE,
+        orderBookRequest.getType().toString()
       )
       .increment();
     genericProducer.send(

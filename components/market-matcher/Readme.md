@@ -1,6 +1,6 @@
 # Market Matcher
 
-The Market Matcher is a component of the PFE Broker system designed to match incoming orders with market data and generate trade executions. It utilizes Apache Kafka for communication and integrates with Micronaut for Kafka-related annotations and dependencies. This README provides detailed documentation for understanding and using the Market Matcher.
+The Market Matcher is a component of exchange system designed to match incoming orders with market data and generate trade executions. It utilizes Apache Kafka for communication and integrates with Micronaut for Kafka-related annotations and dependencies. This README provides detailed documentation for understanding and using the Market Matcher.
 
 ## Table of Contents
 
