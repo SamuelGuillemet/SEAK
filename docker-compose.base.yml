@@ -1,0 +1,92 @@
+version: "3"
+
+services:
+  schema-registry:
+    image: confluentinc/cp-schema-registry:7.3.0
+    hostname: schema-registry
+    container_name: schema-registry
+    restart: unless-stopped
+    ports:
+      - 8081:8081
+    environment:
+      SCHEMA_REGISTRY_HOST_NAME: schema-registry
+      SCHEMA_REGISTRY_LOG4J_ROOT_LOGLEVEL: WARN
+
+  console:
+    image: docker.redpanda.com/vectorized/console:v2.3.3
+    container_name: console
+    restart: unless-stopped
+    entrypoint: /bin/sh
+    command: -c "echo \"$$CONSOLE_CONFIG_FILE\" > /tmp/config.yml; \
+      sed -i \"s/KAFKA_BROKERS_PLACEHOLDER/\"$$KAFKA_BROKERS\"/g\" /tmp/config.yml; \
+      sed -i 's/,/\", \"/g' /tmp/config.yml; \
+      /app/console"
+    environment:
+      CONFIG_FILEPATH: /tmp/config.yml
+      CONSOLE_CONFIG_FILE: |
+        kafka:
+          brokers: ["KAFKA_BROKERS_PLACEHOLDER"]
+          schemaRegistry:
+            enabled: true
+            urls: ["http://schema-registry:8081"]
+    ports:
+      - "8080:8080"
+    depends_on:
+      - schema-registry
+
+  redis:
+    image: redis:7.2.3
+    hostname: redis
+    container_name: redis
+    ports:
+      - 6379:6379
+
+  postgres:
+    image: postgres:16.1-alpine
+    hostname: postgres
+    container_name: postgres
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: pfe_broker
+
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    ports:
+      - 9090:9090
+    volumes:
+      - ./monitoring/prometheus/prometheus.yml:/etc/prometheus/prometheus.yml
+      - ./monitoring/prometheus/data:/prometheus
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+      - --storage.tsdb.path=/prometheus
+      - --web.console.libraries=/usr/share/prometheus/console_libraries
+      - --web.console.templates=/usr/share/prometheus/consoles
+      - --web.enable-lifecycle
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+
+  grafana:
+    image: grafana/grafana:latest
+    container_name: grafana
+    environment:
+      - GF_AUTH_ANONYMOUS_ENABLED=true
+      - GF_AUTH_ANONYMOUS_ORG_ROLE=Admin
+    ports:
+      - 3000:3000
+    volumes:
+      - ./monitoring/grafana/provisioning:/etc/grafana/provisioning
+    depends_on:
+      - prometheus
+
+  kminion:
+    image: redpandadata/kminion:latest
+    container_name: kminion
+    restart: unless-stopped
+    environment:
+      EXPORTER_PORT: 8000
+    ports:
+      - 8000:8000
