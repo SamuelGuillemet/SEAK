@@ -69,9 +69,10 @@ class MarketMatcherTest implements TestPropertyProvider {
   }
 
   @BeforeEach
-  void reset(MockTradeListener mockTradeListener) {
+  void reset(MockTradeListener mockTradeListener) throws InterruptedException {
     marketMatcher.retreiveSymbols();
     mockTradeListener.trades.clear();
+    mockTradeListener.rejectedOrders.clear();
   }
 
   @Test
@@ -80,7 +81,7 @@ class MarketMatcherTest implements TestPropertyProvider {
     MockOrderProducer mockOrderProducer
   ) {
     // Assert that AAPL is in the list of symbols of the order consumer
-    assertThat(marketMatcher.symbols).contains("AAPL");
+    assertThat(marketMatcher.getSymbols()).contains("AAPL");
     // Given
     Order order = new Order(
       "user",
@@ -132,6 +133,7 @@ class MarketMatcherTest implements TestPropertyProvider {
       .atMost(Duration.ofSeconds(5))
       .untilAsserted(() -> {
         assertThat(mockTradeListener.trades).isEmpty();
+        assertThat(mockTradeListener.rejectedOrders).hasSize(1);
       });
   }
 }
