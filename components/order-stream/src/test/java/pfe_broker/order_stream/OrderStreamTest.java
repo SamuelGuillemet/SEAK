@@ -26,7 +26,7 @@ import pfe_broker.order_stream.mocks.MockOrderProducer;
 @MicronautTest(transactional = false)
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-public class OrderStreamTest implements TestPropertyProvider {
+class OrderStreamTest implements TestPropertyProvider {
 
   @Container
   static final KafkaTestContainer kafka = new KafkaTestContainer();
@@ -60,7 +60,7 @@ public class OrderStreamTest implements TestPropertyProvider {
   void setup(
     MockOrderListener mockOrderListener,
     StatefulRedisConnection<String, String> redisConnection
-  ) {
+  ) throws InterruptedException {
     orderIntegrityCheckService.retreiveSymbols();
     mockOrderListener.acceptedOrders.clear();
     mockOrderListener.rejectedOrders.clear();
@@ -155,7 +155,7 @@ public class OrderStreamTest implements TestPropertyProvider {
       .pollInterval(Duration.ofSeconds(1))
       .atMost(Duration.ofSeconds(10))
       .untilAsserted(() -> {
-        assertThat(mockOrderListener.acceptedOrders).hasSize(0);
+        assertThat(mockOrderListener.acceptedOrders).isEmpty();
         assertThat(mockOrderListener.rejectedOrders).hasSize(1);
         assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("9");
       });
@@ -186,8 +186,8 @@ public class OrderStreamTest implements TestPropertyProvider {
       .pollInterval(Duration.ofSeconds(1))
       .atMost(Duration.ofSeconds(10))
       .untilAsserted(() -> {
-        assertThat(mockOrderListener.acceptedOrders).hasSize(0);
-        assertThat(mockOrderListener.rejectedOrders).hasSize(0);
+        assertThat(mockOrderListener.acceptedOrders).isEmpty();
+        assertThat(mockOrderListener.rejectedOrders).isEmpty();
         assertThat(redisConnection.sync().get("user:balance"))
           .isEqualTo("99000");
         assertThat(mockOrderListener.orderBookRequests).hasSize(1);
@@ -220,8 +220,8 @@ public class OrderStreamTest implements TestPropertyProvider {
       .pollInterval(Duration.ofSeconds(1))
       .atMost(Duration.ofSeconds(10))
       .untilAsserted(() -> {
-        assertThat(mockOrderListener.acceptedOrders).hasSize(0);
-        assertThat(mockOrderListener.rejectedOrders).hasSize(0);
+        assertThat(mockOrderListener.acceptedOrders).isEmpty();
+        assertThat(mockOrderListener.rejectedOrders).isEmpty();
         assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("3");
         assertThat(mockOrderListener.orderBookRequests).hasSize(1);
       });

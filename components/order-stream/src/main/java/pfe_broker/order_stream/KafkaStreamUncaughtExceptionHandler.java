@@ -24,7 +24,7 @@ public class KafkaStreamUncaughtExceptionHandler
 
   @Override
   public StreamThreadExceptionResponse handle(Throwable exception) {
-    LOG.error("Uncaught exception in Kafka Streams: \n {}", exception);
+    LOG.error("Uncaught exception in Kafka Streams: ", exception);
     return StreamThreadExceptionResponse.REPLACE_THREAD;
   }
 }
