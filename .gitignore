@@ -53,3 +53,7 @@ Thumbs.db
 # Data
 data/*
 !data/.gitkeep
+
+# Monitoring
+monitoring/prometheus/data/**/*
+!monitoring/prometheus/data/.gitkeep
