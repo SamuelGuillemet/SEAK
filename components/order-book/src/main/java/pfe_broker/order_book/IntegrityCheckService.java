@@ -87,7 +87,7 @@ public class IntegrityCheckService {
       }
       syncCommands.multi();
       syncCommands.incrbyfloat(balanceKey, modification);
-      if (syncCommands.exec().size() != 0) {
+      if (syncCommands.exec().size() == 1) {
         return true;
       }
       LOG.debug("Retrying...");
@@ -119,7 +119,7 @@ public class IntegrityCheckService {
       }
       syncCommands.multi();
       syncCommands.incrby(stockKey, modification);
-      if (syncCommands.exec().size() != 0) {
+      if (syncCommands.exec().size() == 1) {
         return true;
       }
       LOG.debug("Retrying...");

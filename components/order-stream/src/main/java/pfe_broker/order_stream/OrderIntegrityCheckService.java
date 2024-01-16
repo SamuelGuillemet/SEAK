@@ -8,6 +8,7 @@ import io.micrometer.core.instrument.Tag;
 import io.micrometer.core.instrument.Tags;
 import io.micrometer.core.instrument.Timer;
 import io.micronaut.context.annotation.Property;
+import jakarta.annotation.PreDestroy;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
@@ -59,6 +60,13 @@ public class OrderIntegrityCheckService {
     } else {
       this.redisConnection = null;
       LOG.error("Redis is not running");
+    }
+  }
+
+  @PreDestroy
+  void close() {
+    if (redisConnection != null) {
+      redisConnection.close();
     }
   }
 
@@ -115,7 +123,7 @@ public class OrderIntegrityCheckService {
       }
       syncCommands.multi();
       syncCommands.decrby(stockKey, quantity);
-      if (syncCommands.exec().size() != 0) {
+      if (syncCommands.exec().size() == 1) {
         return null;
       }
       LOG.debug("Retrying order {}", order);
@@ -146,7 +154,7 @@ public class OrderIntegrityCheckService {
       }
       syncCommands.multi();
       syncCommands.incrbyfloat(balanceKey, -orderTotalPrice);
-      if (syncCommands.exec().size() != 0) {
+      if (syncCommands.exec().size() == 1) {
         return null;
       }
       LOG.debug("Retrying order {}", order);
@@ -193,15 +201,15 @@ public class OrderIntegrityCheckService {
   /**
    * Check the integrity of an order:
    *
-   * What needs to be checked with redis:
+   * What needs to be done with redis:
    *
    * Market order:
    * - BUY: nothing
-   * - SELL: check if the user has enough stocks
+   * - SELL: check if the user has enough stocks / decrement the stock
    *
    * Limit order:
-   * - BUY: check if the user has enough balance
-   * - SELL: check if the user has enough stocks
+   * - BUY: check if the user has enough balance / decrement the balance
+   * - SELL: check if the user has enough stocks / decrement the stock
    *
    */
   private OrderRejectReason checkIntegrityWrapped(Order order) {
@@ -252,7 +260,9 @@ public class OrderIntegrityCheckService {
     );
     Timer timer = meterRegistry.timer("order_stream_check_integrity", tags);
     Timer.Sample sample = Timer.start();
+
     OrderRejectReason orderCheckIntegrityResult = checkIntegrityWrapped(order);
+
     if (orderCheckIntegrityResult != null) {
       Tags tagsWithReason = Tags
         .of(tags)
@@ -264,6 +274,7 @@ public class OrderIntegrityCheckService {
       meterRegistry.counter("order_stream_accepted_order", tags).increment();
     }
     sample.stop(timer);
+
     return orderCheckIntegrityResult;
   }
 

@@ -1,3 +1,5 @@
 micronaut:
   application:
     name: TradeStream
+  server:
+    port: 10005

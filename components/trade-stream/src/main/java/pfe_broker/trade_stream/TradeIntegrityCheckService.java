@@ -3,114 +3,147 @@ package pfe_broker.trade_stream;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Timer;
 import io.micronaut.context.annotation.Property;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
+import jakarta.annotation.PreDestroy;
+import jakarta.inject.Singleton;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pfe_broker.avro.Order;
 import pfe_broker.avro.OrderRejectReason;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Trade;
 import pfe_broker.avro.Type;
 import pfe_broker.common.UtilsRunning;
 
+@Singleton
 public class TradeIntegrityCheckService {
 
   private static final Logger LOG = LoggerFactory.getLogger(
     TradeIntegrityCheckService.class
   );
 
-  @Inject
-  private RedisClient redisClient;
+  private static final String BALANCE_KEY_PATTERN = "%s:balance";
+  private static final String STOCK_KEY_PATTERN = "%s:%s";
 
-  @Property(name = "redis.uri")
-  private String redisUri;
+  private final StatefulRedisConnection<String, String> redisConnection;
 
-  private StatefulRedisConnection<String, String> redisConnection;
+  private final MeterRegistry meterRegistry;
 
-  @PostConstruct
-  void init() {
-    if (this.isRedisRunning()) {
+  public TradeIntegrityCheckService(
+    @Property(name = "redis.uri") String redisUri,
+    RedisClient redisClient,
+    MeterRegistry meterRegistry
+  ) {
+    this.meterRegistry = meterRegistry;
+
+    if (UtilsRunning.isRedisRunning(redisUri)) {
       this.redisConnection = redisClient.connect();
     } else {
+      this.redisConnection = null;
       LOG.error("Redis is not running");
     }
   }
 
+  @PreDestroy
+  void close() {
+    if (redisConnection != null) {
+      redisConnection.close();
+    }
+  }
+
+  private String buildBalanceKey(String username) {
+    return String.format(BALANCE_KEY_PATTERN, username);
+  }
+
+  private String buildStockKey(String username, String symbol) {
+    return String.format(STOCK_KEY_PATTERN, username, symbol);
+  }
+
+  /**
+   * Check the integrity of a sell trade (limit or market)
+   * @param trade The trade to check
+   * @return null if the trade is accepted, the reason of rejection otherwise
+   */
   private OrderRejectReason sellVerification(
     Trade trade,
     RedisCommands<String, String> syncCommands
   ) {
-    String username = trade.getOrder().getUsername().toString();
-    Integer quantity = trade.getQuantity();
-    Double price = trade.getPrice();
-
-    Double amount = price * quantity;
-    String balanceKey = username + ":balance";
+    String balanceKey = buildBalanceKey(
+      trade.getOrder().getUsername().toString()
+    );
+    Double amount = trade.getPrice() * trade.getQuantity();
 
     syncCommands.incrbyfloat(balanceKey, amount);
     return null;
   }
 
+  /**
+   * Check the integrity of a buy limit trade
+   * @param trade The trade to check
+   * @return null if the trade is accepted, the reason of rejection otherwise
+   */
   private OrderRejectReason buyLimitVerification(
     Trade trade,
     RedisCommands<String, String> syncCommands
   ) {
-    String username = trade.getOrder().getUsername().toString();
-    String symbol = trade.getSymbol().toString();
     Integer quantity = trade.getQuantity();
 
-    String stockKey = username + ":" + symbol;
+    String stockKey = buildStockKey(
+      trade.getOrder().getUsername().toString(),
+      trade.getSymbol().toString()
+    );
 
     syncCommands.incrby(stockKey, quantity);
     return null;
   }
 
+  /**
+   * Check the integrity of a buy market trade
+   * @param trade The trade to check
+   * @return null if the trade is accepted, the reason of rejection otherwise
+   */
   private OrderRejectReason buyMarketVerification(
     Trade trade,
     RedisCommands<String, String> syncCommands
   ) {
-    String username = trade.getOrder().getUsername().toString();
-    String symbol = trade.getSymbol().toString();
+    Order order = trade.getOrder();
+    String stockKey = buildStockKey(
+      order.getUsername().toString(),
+      trade.getSymbol().toString()
+    );
+    String balanceKey = buildBalanceKey(order.getUsername().toString());
     Integer quantity = trade.getQuantity();
-    Double price = trade.getPrice();
+    Double amount = trade.getPrice() * trade.getQuantity();
 
-    Double amount = price * quantity;
-
-    String stockKey = username + ":" + symbol;
-    String balanceKey = username + ":balance";
-
-    syncCommands.watch(balanceKey);
     int countdown = 10;
     while (countdown-- > 0) {
+      syncCommands.watch(balanceKey);
       Double balance = Double.parseDouble(syncCommands.get(balanceKey));
       if (balance < amount) {
-        syncCommands.unwatch();
-        LOG.debug(
-          "Order {} rejected because of insufficient funds",
-          trade.getOrder()
-        );
+        LOG.debug("Order {} rejected because of insufficient funds", order);
         return OrderRejectReason.INCORRECT_QUANTITY;
       }
       syncCommands.multi();
       syncCommands.incrbyfloat(balanceKey, -amount);
       syncCommands.incrby(stockKey, quantity);
-
-      try {
-        syncCommands.exec();
+      if (syncCommands.exec().size() == 2) {
         return null;
-      } catch (Exception e) {
-        LOG.debug("Retrying trade {}", trade);
       }
+      LOG.debug("Retrying trade {}", trade);
     }
-    LOG.debug(
-      "Order {} rejected because of insufficient funds",
-      trade.getOrder()
-    );
-    syncCommands.unwatch();
+    LOG.debug("Order {} rejected because of insufficient funds", order);
     return OrderRejectReason.INCORRECT_QUANTITY;
   }
 
+  /**
+   * Check the integrity of a market order
+   * @param trade The trade to check
+   * @return null if the trade is accepted, the reason of rejection otherwise
+   */
   private OrderRejectReason marketOrderCheckIntegrity(Trade trade) {
     RedisCommands<String, String> syncCommands = redisConnection.sync();
     Side side = trade.getOrder().getSide();
@@ -122,6 +155,11 @@ public class TradeIntegrityCheckService {
     return buyMarketVerification(trade, syncCommands);
   }
 
+  /**
+   * Check the integrity of a limit order
+   * @param trade The trade to check
+   * @return null if the trade is accepted, the reason of rejection otherwise
+   */
   private OrderRejectReason limitOrderCheckIntegrity(Trade trade) {
     RedisCommands<String, String> syncCommands = redisConnection.sync();
     Side side = trade.getOrder().getSide();
@@ -133,7 +171,20 @@ public class TradeIntegrityCheckService {
     return buyLimitVerification(trade, syncCommands);
   }
 
-  public OrderRejectReason checkIntegrity(Trade trade) {
+  /**
+   * Check the integrity of an order
+   *
+   * What needs to be done with redis:
+   *
+   * Market order:
+   * - BUY: check if the user has enough funds / increment the stock / decrement the balance
+   * - SELL: increment the balance
+   *
+   * Limit order:
+   * - BUY: increment the stock
+   * - SELL: increment the balance
+   */
+  private OrderRejectReason checkIntegrityWrapped(Trade trade) {
     LOG.debug("Checking integrity of trade {}", trade);
     Type type = trade.getOrder().getType();
 
@@ -151,7 +202,29 @@ public class TradeIntegrityCheckService {
     return tradeCheckIntegrityResult;
   }
 
-  private boolean isRedisRunning() {
-    return UtilsRunning.isRedisRunning(redisUri);
+  public OrderRejectReason checkIntegrity(Trade trade) {
+    Tags tags = Tags.of(
+      Tag.of("type", trade.getOrder().getType().toString()),
+      Tag.of("side", trade.getOrder().getSide().toString()),
+      Tag.of("symbol", trade.getSymbol().toString())
+    );
+    Timer timer = meterRegistry.timer("trade_stream_check_integrity", tags);
+    Timer.Sample sample = Timer.start();
+
+    OrderRejectReason orderCheckIntegrityResult = checkIntegrityWrapped(trade);
+
+    if (orderCheckIntegrityResult != null) {
+      Tags tagsWithReason = Tags
+        .of(tags)
+        .and(Tag.of("orderRejectReason", orderCheckIntegrityResult.toString()));
+      meterRegistry
+        .counter("trade_stream_rejected_order", tagsWithReason)
+        .increment();
+    } else {
+      meterRegistry.counter("trade_stream_accepted_trade", tags).increment();
+    }
+    sample.stop(timer);
+
+    return orderCheckIntegrityResult;
   }
 }
