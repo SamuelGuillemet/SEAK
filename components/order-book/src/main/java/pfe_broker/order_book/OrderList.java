@@ -8,11 +8,12 @@ import pfe_broker.avro.Order;
 public class OrderList {
 
   private Double price;
-  private long volume;
+  private Double volume;
   private Map<String, Order> orders;
 
   public OrderList(Double price) {
     this.price = price;
+    this.volume = 0.0;
     orders = Collections.synchronizedMap(new HashMap<>());
   }
 
@@ -42,7 +43,7 @@ public class OrderList {
     return price;
   }
 
-  public long getVolume() {
+  public Double getVolume() {
     return volume;
   }
 
