@@ -1,6 +1,7 @@
 import datetime
 
 import pandas as pd
+
 from pre_processing.data_completion.generation import complete_data
 
 

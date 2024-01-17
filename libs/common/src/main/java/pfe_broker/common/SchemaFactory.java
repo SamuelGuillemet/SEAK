@@ -40,7 +40,6 @@ public class SchemaFactory {
         .schema()
         .toString()
         .replace("\"", "\\\"");
-      LOG.debug("Registering schema: {}", schemaString);
       String subjectName = schemaRecord.topicName() + "-value";
 
       String contentType = "application/vnd.schemaregistry.v1+json";

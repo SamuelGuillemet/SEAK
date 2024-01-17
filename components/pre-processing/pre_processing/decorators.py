@@ -31,7 +31,7 @@ def performance_timer_decorator(context_args: List[str] | None = None, disable=F
             for arg in context_args or []:
                 context += str(kwargs[arg]) + " "
 
-            if context is not None:
+            if context != "":
                 logger.debug(
                     f"{context} - {func.__name__} took {execution_time:.6f} seconds to execute"
                 )
