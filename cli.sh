@@ -1,9 +1,13 @@
 #!/bin/bash
 
-CONFIG_FILE="./config/common/kafka.yml"
+source cli_autocomplete.sh
 
-function manage_single_node() {
-  base_command=("docker-compose" "-f" "docker-compose.base.yml" "-f" "docker-compose.single.yml")
+CONFIG_FILE="./config/common/kafka.yml"
+JAVA_PROJECTS=("market-matcher" "order-book" "order-stream" "trade-stream" "quickfix-server")
+PYTHON_PROJECTS=("pre-processing")
+
+function docker_single() {
+  base_command=("docker" "compose" "-f" "docker-compose.base.yml" "-f" "docker-compose.single.yml")
 
   if [ "$1" == "start" ]; then
     "${base_command[@]}" up -d
@@ -24,8 +28,8 @@ function manage_single_node() {
   sed -i 's/^\(\s*bootstrap.servers\s*:\s*\).*/\1'"$BOOTSTRAP_SERVERS"'/' "$CONFIG_FILE"
 }
 
-function manage_multiple_nodes() {
-  base_command=("docker-compose" "-f" "docker-compose.base.yml" "-f" "docker-compose.multi.yml")
+function docker_multi() {
+  base_command=("docker" "compose" "-f" "docker-compose.base.yml" "-f" "docker-compose.multi.yml")
 
   if [ "$1" == "start" ]; then
     "${base_command[@]}" up -d
@@ -46,6 +50,52 @@ function manage_multiple_nodes() {
   sed -i 's/^\(\s*bootstrap.servers\s*:\s*\).*/\1'"$BOOTSTRAP_SERVERS"'/' "$CONFIG_FILE"
 }
 
+function project() {
+  project=$1
+  action=$2
+  # If action is not specified, then default to run
+  if [ -z "$action" ]; then
+    action="run"
+  fi
+  args=("$@")
+
+  # Test if project is java
+  if [[ " ${JAVA_PROJECTS[*]} " =~ ${project} ]]; then
+    if [ "$action" == "test" ]; then
+      ./gradlew :components:"$project":test "${args[@]:2}"
+    elif [ "$action" == "run" ]; then
+      ./gradlew :components:"$project":run
+    elif [ "$action" == "build" ]; then
+      ./gradlew :components:"$project":build
+    else
+      echo "Invalid action for project: $action"
+      echo "Valid actions: build, run, test"
+      exit 1
+    fi
+  # Test if project is python
+  elif [[ " ${PYTHON_PROJECTS[*]} " =~ ${project} ]]; then
+    if [ "$action" == "run" ]; then
+      (
+        cd components/"$project" || exit
+        poetry run "$project" "${args[@]:2}"
+      )
+    elif [ "$action" == "test" ]; then
+      (
+        cd components/"$project" || exit
+        poetry run pytest tests/ "${args[@]:2}"
+      )
+    else
+      echo "Invalid action for project: $action"
+      echo "Valid actions: run, test"
+      exit 1
+    fi
+  else
+    echo "Invalid project: $project"
+    echo "Valid projects: ${JAVA_PROJECTS[*]} ${PYTHON_PROJECTS[*]}"
+    exit 1
+  fi
+}
+
 function reload_grafana() {
   curl -X POST "http://admin:admin@localhost:3000/api/admin/provisioning/dashboards/reload"
   echo ""
@@ -59,17 +109,23 @@ function reload_prometheus() {
 help_text="Usage: $0 <command> [options]
 
 Commands:
-  docker <action>        Manage docker containers with kafka having single node
-  docker_multi <action>  Manage docker containers with kafka having multiple nodes
-  reload_grafana         Reload grafana dashboards
-  reload_prometheus      Reload prometheus config
-  help                   Show this help text
+  docker <action>                       Manage docker containers with kafka having single node
+  docker_multi <action>                 Manage docker containers with kafka having multiple nodes
+  reload_grafana                        Reload grafana dashboards
+  reload_prometheus                     Reload prometheus config
+  help                                  Show this help text
+  project <project> <action> [options]  Manage projects
 
-  Actions:
+  Docker actions:
     start                Start containers
     restart              Restart containers
     stop                 Stop containers
-    down                 Stop and remove containers"
+    down                 Stop and remove containers
+
+  Project actions:
+    build                Build project
+    run                  Run project
+    test                 Run tests"
 
 if [ "$#" -lt 1 ]; then
   echo "$help_text"
@@ -81,16 +137,19 @@ shift
 
 case "$command" in
 "docker")
-  manage_single_node "$@"
+  docker_single "$@"
   ;;
 "docker_multi")
-  manage_multiple_nodes "$@"
+  docker_multi "$@"
   ;;
 "reload_grafana")
   reload_grafana
   ;;
 "reload_prometheus")
   reload_prometheus
+  ;;
+"project")
+  project "$@"
   ;;
 "help" | "-h" | "--help")
   echo "$help_text"
