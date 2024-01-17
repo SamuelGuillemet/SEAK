@@ -15,6 +15,7 @@ function manage_single_node() {
     "${base_command[@]}" down
   else
     echo "Invalid action for docker: $1"
+    echo "Valid actions: start, restart, stop, down"
     exit 1
   fi
 
@@ -36,6 +37,7 @@ function manage_multiple_nodes() {
     "${base_command[@]}" down
   else
     echo "Invalid action for docker in kafka multi node: $1"
+    echo "Valid actions: start, restart, stop, down"
     exit 1
   fi
 

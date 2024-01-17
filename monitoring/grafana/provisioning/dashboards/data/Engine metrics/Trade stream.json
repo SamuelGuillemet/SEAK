@@ -241,7 +241,7 @@
           "useBackend": false
         }
       ],
-      "title": "Accepted orders",
+      "title": "Accepted trades",
       "type": "piechart"
     },
     {
@@ -302,7 +302,7 @@
           },
           "disableTextWrap": false,
           "editorMode": "builder",
-          "expr": "trade_stream_rejected_order_total{symbol=\"$Symbol\"}",
+          "expr": "trade_stream_rejected_trade_total{symbol=\"$Symbol\"}",
           "fullMetaSearch": false,
           "includeNullMetadata": true,
           "instant": false,
@@ -312,7 +312,7 @@
           "useBackend": false
         }
       ],
-      "title": "Rejected orders",
+      "title": "Rejected trades",
       "type": "piechart"
     }
   ],

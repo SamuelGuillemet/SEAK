@@ -218,7 +218,7 @@ public class TradeIntegrityCheckService {
         .of(tags)
         .and(Tag.of("orderRejectReason", orderCheckIntegrityResult.toString()));
       meterRegistry
-        .counter("trade_stream_rejected_order", tagsWithReason)
+        .counter("trade_stream_rejected_trade", tagsWithReason)
         .increment();
     } else {
       meterRegistry.counter("trade_stream_accepted_trade", tags).increment();
