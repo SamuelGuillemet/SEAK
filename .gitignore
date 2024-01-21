@@ -4,6 +4,7 @@
 dist
 tmp
 /out-tsc
+quickfix_client_database.db
 
 # dependencies
 node_modules
