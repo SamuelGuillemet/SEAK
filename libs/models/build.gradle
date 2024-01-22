@@ -14,9 +14,9 @@ dependencies {
     runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
 
     // Database dependencies
-    annotationProcessor group: 'io.micronaut.data', name: 'micronaut-data-processor', version: '4.4.1'
-    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.1'
-    implementation group: 'io.micronaut.sql', name: 'micronaut-jdbc-hikari', version: '5.4.0'
+    annotationProcessor group: 'io.micronaut.data', name: 'micronaut-data-processor', version: '4.5.0'
+    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.5.0'
+    implementation group: 'io.micronaut.sql', name: 'micronaut-jdbc-hikari', version: '5.4.1'
     runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.7.1'
 
     // Lombok
