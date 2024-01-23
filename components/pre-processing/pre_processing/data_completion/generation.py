@@ -2,7 +2,6 @@ from typing import List, Tuple, cast
 
 import numpy as np
 import pandas as pd
-
 from pre_processing.data_completion.helpers import fast_round, generate_segments
 from pre_processing.decorators import performance_timer_decorator
 

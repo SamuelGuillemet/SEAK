@@ -1,5 +1,4 @@
 import pandas as pd
-
 from pre_processing.data_completion.generation import complete_data
 from pre_processing.dataframe_extraction import day
 

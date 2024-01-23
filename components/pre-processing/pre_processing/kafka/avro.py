@@ -1,7 +1,6 @@
 import logging
 
 from confluent_kafka.schema_registry import Schema, SchemaRegistryClient
-
 from pre_processing.utils.loader import get_avro_schema, get_kafka_config
 
 logger = logging.getLogger("pre_processing.kafka.avro")
