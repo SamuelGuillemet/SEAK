@@ -27,7 +27,7 @@ jobs:
 
       - name: Store poetry.lock path
         id: poetry-path
-        run: echo "::set-output name=path::./${{ matrix.project }}/poetry.lock"
+        run: echo "path=./${{ matrix.project }}/poetry.lock" >> $GITHUB_OUTPUT
 
       - name: Install poetry
         uses: abatilo/actions-poetry@v3
