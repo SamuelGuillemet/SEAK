@@ -55,5 +55,4 @@ data/*
 !data/.gitkeep
 
 # Monitoring
-monitoring/prometheus/data/**/*
-!monitoring/prometheus/data/.gitkeep
+monitoring/prometheus/data/
