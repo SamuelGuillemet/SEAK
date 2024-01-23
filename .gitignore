@@ -40,8 +40,6 @@ testem.log
 .DS_Store
 Thumbs.db
 
-.nx/cache
-
 # Gradle
 **/.gradle
 **/build/
