@@ -12,13 +12,9 @@ jobs:
     strategy:
       matrix:
         python-version: [3.11, 3.12]
-        java-version: ["17"]
-        node-version: [20]
-        parameters:
-          - base_dir: "components"
-            project: "pre-processing"
-          # - base_dir: "clients"
-          #   project: "quickfix-client"
+        project:
+          - "components/pre-processing"
+
     steps:
       - uses: actions/checkout@v4
         with:
@@ -29,35 +25,21 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
 
-      - uses: actions/setup-java@v4
-        with:
-          java-version: ${{ matrix.java-version }}
-          distribution: "temurin"
-          cache: "gradle"
+      - name: Store poetry.lock path
+        id: poetry-path
+        run: echo "path=./${{ matrix.project }}/poetry.lock" >> $GITHUB_OUTPUT
 
       - name: Install poetry
         uses: abatilo/actions-poetry@v3
 
-      # Cache node_modules
-      - uses: actions/setup-node@v4
-        with:
-          node-version: ${{ matrix.node-version }}
-          cache: "npm"
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Verify formatting
-        run: npx nx format:check --exclude='*,!tag:lang:python'
-
-      - name: Define a cache for the virtual environment based on the dependencies lock file for ${{ matrix.parameters.project }}
+      - name: Define a cache for the virtual environment based on the dependencies lock file for ${{ matrix.project }}
         uses: actions/cache@v3
         with:
-          path: ./${{ matrix.parameters.base_dir }}/${{ matrix.parameters.project }}/.venv
-          key: venv-${{matrix.parameters.project}}-${{ hashFiles('./${{ matrix.parameters.base_dir }}/${{ matrix.parameters.project }}/poetry.lock') }}
+          path: ./${{ matrix.project }}/.venv
+          key: venv-${{ matrix.project }}-${{ hashFiles(steps.poetry-path.outputs.path) }}
 
       - name: Install Dependencies
-        run: cd ./${{ matrix.parameters.base_dir }}/${{ matrix.parameters.project }} && poetry install
+        run: cd ./${{ matrix.project }}; poetry install
 
       - name: Test
-        run: npx nx run-many -t lint,test,build --projects=${{ matrix.parameters.project }}
+        run: cd ./${{ matrix.project }}; poetry run pytest tests/

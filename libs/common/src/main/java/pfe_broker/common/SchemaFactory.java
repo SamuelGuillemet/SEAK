@@ -18,12 +18,12 @@ public class SchemaFactory {
     SchemaFactory.class
   );
 
-  public SchemaFactory(
+  SchemaFactory(
     @NonNull List<SchemaRecord> schemas,
     ApplicationContext applicationContext,
     @Property(name = "kafka.schema.registry.url") String schemaRegistryUrl
   ) {
-    if (schemas == null || schemas.isEmpty()) {
+    if (schemas.isEmpty()) {
       return;
     }
     if (!UtilsRunning.isSchemaRegistryRunning(schemaRegistryUrl)) {
@@ -39,7 +39,7 @@ public class SchemaFactory {
       String schemaString = schemaRecord
         .schema()
         .toString()
-        .replaceAll("\"", "\\\\\"");
+        .replace("\"", "\\\"");
       String subjectName = schemaRecord.topicName() + "-value";
 
       String contentType = "application/vnd.schemaregistry.v1+json";
@@ -69,8 +69,10 @@ public class SchemaFactory {
       try {
         httpClient.toBlocking().retrieve(request);
       } catch (Exception e) {
-        LOG.error("Error while registering schema: " + e.getMessage());
+        LOG.error("Error while registering schema: ", e);
       }
     });
+
+    httpClient.close();
   }
 }

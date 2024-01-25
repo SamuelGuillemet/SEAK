@@ -1,5 +1,4 @@
 import numpy as np
-
 from pre_processing.utils.loader import get_data_path
 
 DATA_PATH = get_data_path()

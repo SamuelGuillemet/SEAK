@@ -2,8 +2,6 @@ package pfe_broker.quickfix_server;
 
 import io.micronaut.context.annotation.Property;
 import io.micronaut.core.io.ResourceLoader;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.Arrays;
 import java.util.List;
@@ -20,26 +18,20 @@ public class QuickFixLogger {
     QuickFixLogger.class
   );
 
-  @Property(name = "quickfix.config.data_dictionary")
-  private String dataDictionaryPath;
+  private final DataDictionary dataDictionary;
 
-  @Inject
-  private ResourceLoader resourceLoader;
-
-  private DataDictionary dataDictionary;
-
-  @PostConstruct
-  public void init() {
-    try {
-      dataDictionary =
-        new DataDictionary(
-          resourceLoader
-            .getResourceAsStream("classpath:" + dataDictionaryPath)
-            .get()
-        );
-    } catch (ConfigError configError) {
-      configError.printStackTrace();
-    }
+  public QuickFixLogger(
+    ResourceLoader resourceLoader,
+    @Property(
+      name = "quickfix.config.data_dictionary"
+    ) String dataDictionaryPath
+  ) throws ConfigError {
+    dataDictionary =
+      new DataDictionary(
+        resourceLoader
+          .getResourceAsStream("classpath:" + dataDictionaryPath)
+          .orElseThrow()
+      );
   }
 
   public void logQuickFixJMessage(Message message, String prefix) {

@@ -3,7 +3,6 @@ package pfe_broker.quickfix_server;
 import io.micronaut.context.annotation.Context;
 import jakarta.annotation.PostConstruct;
 import jakarta.annotation.PreDestroy;
-import jakarta.inject.Inject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import quickfix.Acceptor;
@@ -13,8 +12,11 @@ public class Executor {
 
   private static final Logger LOG = LoggerFactory.getLogger(Executor.class);
 
-  @Inject
-  private Acceptor serverAcceptor;
+  private final Acceptor serverAcceptor;
+
+  public Executor(Acceptor serverAcceptor) {
+    this.serverAcceptor = serverAcceptor;
+  }
 
   @PostConstruct
   public void start() {

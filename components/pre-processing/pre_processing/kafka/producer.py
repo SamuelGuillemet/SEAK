@@ -3,7 +3,6 @@ from typing import Any
 
 from confluent_kafka import SerializingProducer
 from confluent_kafka.schema_registry.avro import AvroSerializer
-
 from pre_processing.kafka.avro import AvroService
 
 logger = logging.getLogger("pre_processing.kafka.producer")
@@ -26,8 +25,6 @@ class AIOProducer:
     def on_delivery(self, err, msg):
         if err:
             logger.error(f"Message delivery failed: {err}")
-        else:
-            pass
 
     def produce(
         self, topic: str, value: Any, key: Any = None, partition: int = -1

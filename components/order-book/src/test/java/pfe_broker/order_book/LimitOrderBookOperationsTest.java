@@ -104,8 +104,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).hasSize(1);
+        assertThat(orderBook.getSellOrders()).isEmpty();
       });
   }
 
@@ -141,8 +141,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).hasSize(1);
+        assertThat(orderBook.getSellOrders()).isEmpty();
       });
 
     Order newOrder = new Order(
@@ -169,8 +169,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).hasSize(1);
+        assertThat(orderBook.getSellOrders()).isEmpty();
         assertThat(redisConnection.sync().get("user:balance")).isEqualTo("0");
       });
   }
@@ -207,8 +207,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).hasSize(1);
+        assertThat(orderBook.getSellOrders()).isEmpty();
       });
 
     Order cancelOrder = new Order(
@@ -235,8 +235,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).isEmpty();
         assertThat(redisConnection.sync().get("user:balance"))
           .isEqualTo("1600");
       });
@@ -270,8 +270,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).hasSize(1);
       });
   }
 
@@ -307,8 +307,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).hasSize(1);
       });
 
     Order newOrder = new Order(
@@ -335,8 +335,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).hasSize(1);
         assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("10");
       });
   }
@@ -373,8 +373,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).hasSize(1);
       });
 
     Order cancelOrder = new Order(
@@ -401,8 +401,8 @@ class LimitOrderBookOperationsTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).isEmpty();
         assertThat(redisConnection.sync().get("user:AAPL")).isEqualTo("30");
       });
   }

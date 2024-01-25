@@ -33,14 +33,8 @@ public class OrderTree {
   public Order addOrder(String id, Order order) {
     LOG.trace("Add order [{}]{} to order tree {}", id, order, this.side);
     Double price = order.getPrice();
-    if (priceMap.containsKey(price)) {
-      OrderList orderList = priceMap.get(price);
-      orderList.addOrder(id, order);
-    } else {
-      OrderList orderList = new OrderList(price);
-      orderList.addOrder(id, order);
-      priceMap.put(price, orderList);
-    }
+    OrderList orderList = priceMap.computeIfAbsent(price, OrderList::new);
+    orderList.addOrder(id, order);
     orders.put(id, price);
     return order;
   }
@@ -53,7 +47,7 @@ public class OrderTree {
     }
     OrderList orderList = priceMap.get(price);
     Order order = orderList.removeOrder(id);
-    if (orderList.getVolume() == 0) {
+    if (orderList.getVolume() <= 0) {
       priceMap.remove(price);
     }
     orders.remove(id);
@@ -74,12 +68,15 @@ public class OrderTree {
       orderList.replaceOrder(id, order);
     } else {
       OrderList oldOrderList = priceMap.get(oldPrice);
-      OrderList newOrderList = priceMap.get(newPrice);
+      OrderList newOrderList = priceMap.computeIfAbsent(
+        newPrice,
+        OrderList::new
+      );
 
       oldOrderList.removeOrder(id);
       newOrderList.addOrder(id, order);
 
-      if (oldOrderList.getVolume() == 0) {
+      if (oldOrderList.getVolume() <= 0) {
         priceMap.remove(oldPrice);
       }
     }
@@ -94,14 +91,14 @@ public class OrderTree {
    */
   public Map<String, Order> matchOrders(Double price) {
     LOG.trace("Match orders in order tree {} with price {}", this.side, price);
-    Map<String, Order> ordersMap = null;
+    Map<String, Order> matchedOrders = null;
     if (side == Side.BUY) {
-      ordersMap = matchBuyOrders(price);
+      matchedOrders = matchBuyOrders(price);
     } else {
-      ordersMap = matchSellOrders(price);
+      matchedOrders = matchSellOrders(price);
     }
-    ordersMap.forEach((id, order) -> removeOrder(id));
-    return ordersMap;
+    matchedOrders.forEach((id, order) -> removeOrder(id));
+    return matchedOrders;
   }
 
   /**
@@ -156,8 +153,8 @@ public class OrderTree {
     return orders.containsKey(id);
   }
 
-  public Side getSide() {
-    return side;
+  public Double getTotalVolume() {
+    return priceMap.values().stream().mapToDouble(OrderList::getVolume).sum();
   }
 
   public String toString() {

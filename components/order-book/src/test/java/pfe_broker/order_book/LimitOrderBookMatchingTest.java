@@ -97,8 +97,8 @@ class LimitOrderBookMatchingTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).hasSize(1);
+        assertThat(orderBook.getSellOrders()).isEmpty();
       });
 
     MarketData marketData = new MarketData(
@@ -116,8 +116,8 @@ class LimitOrderBookMatchingTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).hasSize(1);
+        assertThat(orderBook.getSellOrders()).isEmpty();
       });
   }
 
@@ -149,8 +149,8 @@ class LimitOrderBookMatchingTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(1);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).hasSize(1);
+        assertThat(orderBook.getSellOrders()).isEmpty();
       });
 
     MarketData marketData = new MarketData(
@@ -168,8 +168,8 @@ class LimitOrderBookMatchingTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).isEmpty();
         assertThat(mockTradeListener.trades).hasSize(1);
         assertThat(mockTradeListener.trades.get(0).getOrder()).isEqualTo(order);
         assertThat(mockTradeListener.trades.get(0).getPrice())
@@ -205,8 +205,8 @@ class LimitOrderBookMatchingTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).hasSize(1);
       });
 
     MarketData marketData = new MarketData(
@@ -224,8 +224,8 @@ class LimitOrderBookMatchingTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).hasSize(1);
       });
   }
 
@@ -257,8 +257,8 @@ class LimitOrderBookMatchingTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(1);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).hasSize(1);
       });
 
     MarketData marketData = new MarketData(
@@ -276,8 +276,8 @@ class LimitOrderBookMatchingTest implements TestPropertyProvider {
       .untilAsserted(() -> {
         LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
         assertThat(orderBook).isNotNull();
-        assertThat(orderBook.getBuyOrders().size()).isEqualTo(0);
-        assertThat(orderBook.getSellOrders().size()).isEqualTo(0);
+        assertThat(orderBook.getBuyOrders()).isEmpty();
+        assertThat(orderBook.getSellOrders()).isEmpty();
         assertThat(mockTradeListener.trades).hasSize(1);
         assertThat(mockTradeListener.trades.get(0).getOrder()).isEqualTo(order);
         assertThat(mockTradeListener.trades.get(0).getPrice())

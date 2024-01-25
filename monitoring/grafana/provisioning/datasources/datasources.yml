@@ -1,0 +1,12 @@
+apiVersion: 1
+
+datasources:
+  - name: prometheus
+    type: prometheus
+    access: proxy
+    # Access mode - proxy (server in the UI) or direct (browser in the UI).
+    url: http://prometheus:9090
+    uid: ff6aa439-acc0-4aaa-8ea6-d110d7fb6a48
+    jsonData:
+      httpMethod: POST
+      timeInterval: "1s"

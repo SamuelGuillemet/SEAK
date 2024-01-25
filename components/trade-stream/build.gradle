@@ -1,10 +1,11 @@
 plugins {
     id "com.github.johnrengelman.shadow"
     id "io.micronaut.application"
+    id "jacoco"
 }
 
 ext {
-    configFiles = "classpath:application.yml,classpath:kafka.yml,classpath:redis.yml"
+    configFiles = "classpath:application.yml,classpath:kafka.yml,classpath:redis.yml,classpath:monitoring.yml"
 }
 
 version = "${version}"
@@ -21,8 +22,14 @@ dependencies {
     implementation project(":libs:common")
 
     runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
-    implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka-streams', version: '5.2.0'
+    implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka-streams', version: '5.3.0'
     implementation group: 'io.micronaut.redis', name: 'micronaut-redis-lettuce', version: '6.2.0'
+
+    // Micrometer
+    implementation group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-registry-prometheus', version: '5.2.0'
+    annotationProcessor group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-annotation', version: '5.2.0'
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-management")
 
     // Test dependencies
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
@@ -63,6 +70,7 @@ sourceSets {
 graalvmNative.toolchainDetection = false
 
 micronaut {
+    runtime("netty")
     testRuntime("junit5")
     processing {
         incremental(true)
@@ -78,5 +86,20 @@ test {
 [Test, JavaExec].each { targetType ->
     tasks.withType(targetType) { task ->
         task.systemProperty "micronaut.config.files", configFiles
+    }
+}
+
+jacocoTestReport {
+	dependsOn test
+	reports {
+		xml.required = false
+		csv.required = false
+	}
+    afterEvaluate {
+        classDirectories.setFrom(files(classDirectories.files.collect {
+            fileTree(dir: it, exclude: [
+                    '**/Application.class',
+            ])
+        }))
     }
 }

@@ -1,9 +1,10 @@
 package pfe_broker.order_book;
 
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Timer;
 import io.micronaut.configuration.kafka.annotation.KafkaListener;
 import io.micronaut.configuration.kafka.annotation.OffsetReset;
 import io.micronaut.configuration.kafka.annotation.Topic;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.List;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -18,14 +19,22 @@ public class OrderListener {
     OrderListener.class
   );
 
-  @Inject
-  private OrderBookCatalog orderBookCatalog;
+  private final OrderBookCatalog orderBookCatalog;
+  private final IntegrityCheckService integrityCheckService;
+  private final MessageProducer messageProducer;
+  private final MeterRegistry meterRegistry;
 
-  @Inject
-  private IntegrityCheckService integrityCheckService;
-
-  @Inject
-  private TradeProducer tradeProducer;
+  public OrderListener(
+    OrderBookCatalog orderBookCatalog,
+    IntegrityCheckService integrityCheckService,
+    MessageProducer messageProducer,
+    MeterRegistry meterRegistry
+  ) {
+    this.orderBookCatalog = orderBookCatalog;
+    this.integrityCheckService = integrityCheckService;
+    this.messageProducer = messageProducer;
+    this.meterRegistry = meterRegistry;
+  }
 
   @KafkaListener(
     groupId = "order-book-orders",
@@ -37,8 +46,17 @@ public class OrderListener {
   public void receiveOrder(
     List<ConsumerRecord<String, OrderBookRequest>> records
   ) {
-    records.forEach(record -> {
-      handleOrderBookRequest(record.key(), record.value());
+    records.forEach(item -> {
+      Timer orderBookHandleOrderTimer = meterRegistry.timer(
+        "order_book_handle_order",
+        "symbol",
+        item.value().getOrder().getSymbol().toString(),
+        "requestType",
+        item.value().getType().toString()
+      );
+      Timer.Sample sample = Timer.start();
+      handleOrderBookRequest(item.key(), item.value());
+      sample.stop(orderBookHandleOrderTimer);
     });
   }
 
@@ -62,7 +80,7 @@ public class OrderListener {
 
     if (orderBookRequest.getType() == OrderBookRequestType.NEW) {
       orderBook.addOrder(key, order);
-      tradeProducer.sendOrderBookResponse(key, orderBookRequest);
+      messageProducer.sendOrderBookResponse(key, orderBookRequest);
       return;
     }
 
@@ -74,62 +92,61 @@ public class OrderListener {
         oldOrder,
         order
       );
-      tradeProducer.sendOrderBookRejected(key, orderBookRequest);
+      messageProducer.sendOrderBookRejected(key, orderBookRequest);
       return;
     }
     if (
       !oldOrder.getClOrderID().equals((orderBookRequest.getOrigClOrderID()))
     ) {
       LOG.error("Matching of the clOrderID is wrong");
-      tradeProducer.sendOrderBookRejected(key, orderBookRequest);
+      messageProducer.sendOrderBookRejected(key, orderBookRequest);
       return;
     }
 
     if (orderBookRequest.getType() == OrderBookRequestType.CANCEL) {
-      Boolean integrityCheck = integrityCheckService.replaceCancelOrder(
+      boolean integrityCheck = integrityCheckService.replaceCancelOrder(
         oldOrder,
         order
       );
 
       if (!integrityCheck) {
         LOG.error("Order {} could not be cancelled by {}", oldOrder, order);
-        tradeProducer.sendOrderBookRejected(key, orderBookRequest);
+        messageProducer.sendOrderBookRejected(key, orderBookRequest);
         return;
       }
 
       LOG.debug("Order {} cancelled by {}", oldOrder, order);
       orderBook.removeOrder(key);
-      tradeProducer.sendOrderBookResponse(key, orderBookRequest);
+      messageProducer.sendOrderBookResponse(key, orderBookRequest);
       return;
     }
 
     if (orderBookRequest.getType() == OrderBookRequestType.REPLACE) {
       if (oldOrder.getSide() != order.getSide()) {
         LOG.error("Modifification of the side is not allowed");
-        tradeProducer.sendOrderBookRejected(key, orderBookRequest);
+        messageProducer.sendOrderBookRejected(key, orderBookRequest);
         return;
       }
       if (oldOrder.getType() != order.getType()) {
         LOG.error("Modifification of the type is not allowed");
-        tradeProducer.sendOrderBookRejected(key, orderBookRequest);
+        messageProducer.sendOrderBookRejected(key, orderBookRequest);
         return;
       }
 
-      Boolean integrityCheck = integrityCheckService.replaceCancelOrder(
+      boolean integrityCheck = integrityCheckService.replaceCancelOrder(
         oldOrder,
         order
       );
 
       if (!integrityCheck) {
         LOG.error("Order {} could not be replaced by {}", oldOrder, order);
-        tradeProducer.sendOrderBookRejected(key, orderBookRequest);
+        messageProducer.sendOrderBookRejected(key, orderBookRequest);
         return;
       }
 
       LOG.debug("Order {} replaced by {}", oldOrder, order);
       orderBook.replaceOrder(key, order);
-      tradeProducer.sendOrderBookResponse(key, orderBookRequest);
-      return;
+      messageProducer.sendOrderBookResponse(key, orderBookRequest);
     }
   }
 }

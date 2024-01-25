@@ -1,3 +1,5 @@
 micronaut:
   application:
     name: OrderStream
+  server:
+    port: 10003

@@ -1,3 +1,5 @@
 micronaut:
   application:
     name: MarketMatcher
+  server:
+    port: 10001

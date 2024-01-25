@@ -3,7 +3,6 @@ package pfe_broker.order_book;
 import io.micronaut.configuration.kafka.annotation.KafkaListener;
 import io.micronaut.configuration.kafka.annotation.Topic;
 import io.micronaut.context.annotation.Property;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.List;
 import java.util.Map;
@@ -23,11 +22,16 @@ public class MarketDataListener {
   @Property(name = "kafka.common.symbol-topic-prefix")
   private String symbolTopicPrefix;
 
-  @Inject
-  private OrderBookCatalog orderBooks;
+  private final OrderBookCatalog orderBooks;
+  private final MessageProducer tradeProducer;
 
-  @Inject
-  private TradeProducer tradeProducer;
+  public MarketDataListener(
+    OrderBookCatalog orderBooks,
+    MessageProducer tradeProducer
+  ) {
+    this.orderBooks = orderBooks;
+    this.tradeProducer = tradeProducer;
+  }
 
   @KafkaListener(
     groupId = "order-book-market-data",
@@ -38,9 +42,9 @@ public class MarketDataListener {
   public void receiveMarketData(
     List<ConsumerRecord<String, MarketData>> records
   ) {
-    records.forEach(record -> {
-      MarketData marketData = record.value();
-      String symbol = record.topic().substring(symbolTopicPrefix.length());
+    records.forEach(item -> {
+      MarketData marketData = item.value();
+      String symbol = item.topic().substring(symbolTopicPrefix.length());
       LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
       if (orderBook == null) {
         return;
@@ -51,9 +55,7 @@ public class MarketDataListener {
         return;
       }
       LOG.debug("Sending {} trades to Kafka", trades.size());
-      trades.forEach((key, trade) -> {
-        tradeProducer.sendTrade(key, trade);
-      });
+      trades.forEach(tradeProducer::sendTrade);
     });
   }
 }

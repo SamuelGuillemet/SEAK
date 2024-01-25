@@ -1,0 +1,66 @@
+version: "3"
+
+name: pfe-broker-singlenode
+
+services:
+  kafka1:
+    image: confluentinc/cp-kafka:7.4.1
+    hostname: kafka1
+    container_name: sn_kafka1
+    restart: unless-stopped
+    ports:
+      - 9092:9092
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: PLAINTEXT:PLAINTEXT,PLAINTEXT_HOST:PLAINTEXT,CONTROLLER:PLAINTEXT
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka1:29092,PLAINTEXT_HOST://localhost:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+      KAFKA_PROCESS_ROLES: "broker,controller"
+      KAFKA_NODE_ID: 1
+      KAFKA_CONTROLLER_QUORUM_VOTERS: "1@kafka1:29093"
+      KAFKA_LISTENERS: PLAINTEXT://kafka1:29092,CONTROLLER://kafka1:29093,PLAINTEXT_HOST://0.0.0.0:9092
+      KAFKA_INTER_BROKER_LISTENER_NAME: PLAINTEXT
+      KAFKA_CONTROLLER_LISTENER_NAMES: CONTROLLER
+      KAFKA_LOG_DIRS: "/tmp/kraft-combined-logs"
+      CLUSTER_ID: MkU3OEVBNTcwNTJENDM2Qk
+    volumes:
+      - kafka1-data:/var/lib/kafka/data
+
+  schema-registry:
+    container_name: sn_schema-registry
+    environment:
+      SCHEMA_REGISTRY_KAFKASTORE_BOOTSTRAP_SERVERS: kafka1:29092
+    depends_on:
+      - kafka1
+
+  console:
+    container_name: sn_console
+    environment:
+      KAFKA_BROKERS: kafka1:29092
+    depends_on:
+      - kafka1
+
+  redis:
+    container_name: sn_redis
+
+  postgres:
+    container_name: sn_postgres
+
+  prometheus:
+    container_name: sn_prometheus
+
+  grafana:
+    container_name: sn_grafana
+
+  kminion:
+    container_name: sn_kminion
+    environment:
+      KAFKA_BROKERS: kafka1:29092
+    depends_on:
+      - kafka1
+
+volumes:
+  kafka1-data:

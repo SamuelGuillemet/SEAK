@@ -5,7 +5,7 @@ plugins {
 }
 
 ext {
-    configFiles = "classpath:application.yml,classpath:kafka.yml,classpath:redis.yml"
+    configFiles = "classpath:application.yml,classpath:kafka.yml,classpath:redis.yml,classpath:monitoring.yml"
 }
 
 version = "${version}"
@@ -22,8 +22,14 @@ dependencies {
     implementation project(":libs:common")
 
     runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
-    implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.2.0'
+    implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.3.0'
     implementation group: 'io.micronaut.redis', name: 'micronaut-redis-lettuce', version: '6.2.0'
+
+    // Micrometer
+    implementation group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-registry-prometheus', version: '5.2.0'
+    annotationProcessor group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-annotation', version: '5.2.0'
+    implementation("io.micronaut:micronaut-http-client")
+    implementation("io.micronaut:micronaut-management")
 
     // Test dependencies
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
@@ -64,6 +70,7 @@ java {
 graalvmNative.toolchainDetection = false
 
 micronaut {
+    runtime("netty")
     testRuntime("junit5")
     processing {
         incremental(true)

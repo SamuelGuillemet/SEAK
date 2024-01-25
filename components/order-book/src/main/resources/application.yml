@@ -1,3 +1,5 @@
 micronaut:
   application:
     name: OrderBook
+  server:
+    port: 10002

@@ -3,9 +3,12 @@ package pfe_broker.order_stream;
 import io.lettuce.core.RedisClient;
 import io.lettuce.core.api.StatefulRedisConnection;
 import io.lettuce.core.api.sync.RedisCommands;
+import io.micrometer.core.instrument.MeterRegistry;
+import io.micrometer.core.instrument.Tag;
+import io.micrometer.core.instrument.Tags;
+import io.micrometer.core.instrument.Timer;
 import io.micronaut.context.annotation.Property;
-import jakarta.annotation.PostConstruct;
-import jakarta.inject.Inject;
+import jakarta.annotation.PreDestroy;
 import jakarta.inject.Singleton;
 import java.util.ArrayList;
 import java.util.List;
@@ -25,43 +28,66 @@ public class OrderIntegrityCheckService {
     OrderIntegrityCheckService.class
   );
 
-  @Inject
-  private SymbolReader symbolReader;
+  private static final String BALANCE_KEY_PATTERN = "%s:balance";
+  private static final String STOCK_KEY_PATTERN = "%s:%s";
 
-  @Inject
-  private RedisClient redisClient;
+  private final SymbolReader symbolReader;
 
-  @Property(name = "redis.uri")
-  private String redisUri;
+  private final StatefulRedisConnection<String, String> redisConnection;
 
-  private StatefulRedisConnection<String, String> redisConnection;
+  private final List<String> symbols;
 
-  private List<String> symbols = new ArrayList<>();
+  private final MeterRegistry meterRegistry;
 
-  @PostConstruct
-  void init() {
+  public OrderIntegrityCheckService(
+    @Property(name = "redis.uri") String redisUri,
+    SymbolReader symbolReader,
+    RedisClient redisClient,
+    MeterRegistry meterRegistry
+  ) throws InterruptedException {
+    this.symbolReader = symbolReader;
+    this.symbols = new ArrayList<>();
+    this.meterRegistry = meterRegistry;
+
     if (this.symbolReader.isKafkaRunning()) {
       this.retreiveSymbols();
     } else {
       LOG.error("Kafka is not running");
     }
-    if (this.isRedisRunning()) {
+
+    if (UtilsRunning.isRedisRunning(redisUri)) {
       this.redisConnection = redisClient.connect();
     } else {
+      this.redisConnection = null;
       LOG.error("Redis is not running");
     }
   }
 
+  @PreDestroy
+  void close() {
+    if (redisConnection != null) {
+      redisConnection.close();
+    }
+  }
+
+  private String buildBalanceKey(String username) {
+    return String.format(BALANCE_KEY_PATTERN, username);
+  }
+
+  private String buildStockKey(String username, String symbol) {
+    return String.format(STOCK_KEY_PATTERN, username, symbol);
+  }
+
   private boolean verifyUserExistInRedis(String username) {
-    Boolean userExists =
-      redisConnection.sync().exists(username + ":balance") == 1;
+    boolean userExists =
+      redisConnection.sync().exists(buildBalanceKey(username)) == 1;
     if (userExists) {
       return true;
     } else {
       // Create the user in redis
-      redisConnection.sync().set(username + ":balance", "10000");
+      redisConnection.sync().set(buildBalanceKey(username), "10000");
     }
-    return redisConnection.sync().exists(username + ":balance") == 1;
+    return redisConnection.sync().exists(buildBalanceKey(username)) == 1;
   }
 
   /**
@@ -73,42 +99,36 @@ public class OrderIntegrityCheckService {
     Order order,
     RedisCommands<String, String> syncCommands
   ) {
-    String username = order.getUsername().toString();
-    String symbol = order.getSymbol().toString();
+    String stockKey = buildStockKey(
+      order.getUsername().toString(),
+      order.getSymbol().toString()
+    );
     Integer quantity = order.getQuantity();
 
-    String stockKey = username + ":" + symbol;
-
-    syncCommands.watch(stockKey);
     int countdown = 10;
     while (countdown-- > 0) {
+      syncCommands.watch(stockKey);
       String stockQuantityString = syncCommands.get(stockKey);
       if (stockQuantityString == null || stockQuantityString.isEmpty()) {
         LOG.debug(
           "Order {} rejected because of insufficient stocks (entry does not exist)",
           order
         );
-        syncCommands.unwatch();
         return OrderRejectReason.INCORRECT_QUANTITY;
       }
       Integer stockQuantity = Integer.parseInt(stockQuantityString);
       if (stockQuantity < quantity) {
         LOG.debug("Order {} rejected because of insufficient stocks", order);
-        syncCommands.unwatch();
         return OrderRejectReason.INCORRECT_QUANTITY;
       }
       syncCommands.multi();
       syncCommands.decrby(stockKey, quantity);
-      try {
-        syncCommands.exec();
-        syncCommands.unwatch();
+      if (syncCommands.exec().size() == 1) {
         return null;
-      } catch (Exception e) {
-        LOG.debug("Retrying order {}", order);
       }
+      LOG.debug("Retrying order {}", order);
     }
     LOG.debug("Order {} rejected because of insufficient stocks", order);
-    syncCommands.unwatch();
     return OrderRejectReason.INCORRECT_QUANTITY;
   }
 
@@ -121,35 +141,25 @@ public class OrderIntegrityCheckService {
     Order order,
     RedisCommands<String, String> syncCommands
   ) {
-    String username = order.getUsername().toString();
-    Integer quantity = order.getQuantity();
-    Double price = order.getPrice();
+    String balanceKey = buildBalanceKey(order.getUsername().toString());
+    Double orderTotalPrice = order.getQuantity() * order.getPrice();
 
-    Double orderTotalPrice = quantity * price;
-
-    String balanceKey = username + ":balance";
-
-    syncCommands.watch(balanceKey);
     int countdown = 10;
     while (countdown-- > 0) {
+      syncCommands.watch(balanceKey);
       Double balance = Double.parseDouble(syncCommands.get(balanceKey));
       if (balance < orderTotalPrice) {
         LOG.debug("Order {} rejected because of insufficient balance", order);
-        syncCommands.unwatch();
         return OrderRejectReason.INCORRECT_QUANTITY;
       }
       syncCommands.multi();
       syncCommands.incrbyfloat(balanceKey, -orderTotalPrice);
-      try {
-        syncCommands.exec();
-        syncCommands.unwatch();
+      if (syncCommands.exec().size() == 1) {
         return null;
-      } catch (Exception e) {
-        LOG.debug("Retrying order {}", order);
       }
+      LOG.debug("Retrying order {}", order);
     }
-    LOG.debug("Order {} rejected because of insufficient stocks", order);
-    syncCommands.unwatch();
+    LOG.debug("Order {} rejected because of insufficient balance", order);
     return OrderRejectReason.INCORRECT_QUANTITY;
   }
 
@@ -191,18 +201,18 @@ public class OrderIntegrityCheckService {
   /**
    * Check the integrity of an order:
    *
-   * What needs to be checked with redis:
+   * What needs to be done with redis:
    *
    * Market order:
    * - BUY: nothing
-   * - SELL: check if the user has enough stocks
+   * - SELL: check if the user has enough stocks / decrement the stock
    *
    * Limit order:
-   * - BUY: check if the user has enough balance
-   * - SELL: check if the user has enough stocks
+   * - BUY: check if the user has enough balance / decrement the balance
+   * - SELL: check if the user has enough stocks / decrement the stock
    *
    */
-  public OrderRejectReason checkIntegrity(Order order) {
+  private OrderRejectReason checkIntegrityWrapped(Order order) {
     LOG.debug("Checking integrity of order {}", order);
 
     String username = order.getUsername().toString();
@@ -242,18 +252,41 @@ public class OrderIntegrityCheckService {
     return orderCheckIntegrityResult;
   }
 
+  public OrderRejectReason checkIntegrity(Order order) {
+    Tags tags = Tags.of(
+      Tag.of("type", order.getType().toString()),
+      Tag.of("side", order.getSide().toString()),
+      Tag.of("symbol", order.getSymbol().toString())
+    );
+    Timer timer = meterRegistry.timer("order_stream_check_integrity", tags);
+    Timer.Sample sample = Timer.start();
+
+    OrderRejectReason orderCheckIntegrityResult = checkIntegrityWrapped(order);
+
+    if (orderCheckIntegrityResult != null) {
+      Tags tagsWithReason = Tags
+        .of(tags)
+        .and(Tag.of("orderRejectReason", orderCheckIntegrityResult.toString()));
+      meterRegistry
+        .counter("order_stream_rejected_order", tagsWithReason)
+        .increment();
+    } else {
+      meterRegistry.counter("order_stream_accepted_order", tags).increment();
+    }
+    sample.stop(timer);
+
+    return orderCheckIntegrityResult;
+  }
+
   /**
    * Expose this public method to be able to call it from the test
    */
-  public void retreiveSymbols() {
-    try {
-      this.symbols = symbolReader.getSymbols();
-    } catch (Exception e) {
-      LOG.error("Error while retreiving symbols: {}", e.getMessage());
-    }
+  public void retreiveSymbols() throws InterruptedException {
+    this.symbols.clear();
+    this.symbols.addAll(this.symbolReader.getSymbols());
   }
 
-  public boolean isRedisRunning() {
-    return UtilsRunning.isRedisRunning(redisUri);
+  public List<String> getSymbols() {
+    return symbols;
   }
 }

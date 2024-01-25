@@ -5,7 +5,6 @@ import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 import io.micronaut.configuration.kafka.streams.ConfiguredStreamBuilder;
 import io.micronaut.context.annotation.Factory;
 import io.micronaut.context.annotation.Property;
-import jakarta.inject.Inject;
 import jakarta.inject.Named;
 import jakarta.inject.Singleton;
 import java.util.HashMap;
@@ -25,8 +24,7 @@ import pfe_broker.avro.Type;
 @Factory
 public class OrderStream {
 
-  @Inject
-  private OrderIntegrityCheckService integrityCheckService;
+  private final OrderIntegrityCheckService integrityCheckService;
 
   @Property(name = "kafka.schema.registry.url")
   private String schemaRegistryUrl;
@@ -44,6 +42,10 @@ public class OrderStream {
   private String orderBookRequestTopic;
 
   private final Serdes.StringSerde keySerde = new Serdes.StringSerde();
+
+  public OrderStream(OrderIntegrityCheckService integrityCheckService) {
+    this.integrityCheckService = integrityCheckService;
+  }
 
   @Singleton
   @Named("order-stream-integrity")

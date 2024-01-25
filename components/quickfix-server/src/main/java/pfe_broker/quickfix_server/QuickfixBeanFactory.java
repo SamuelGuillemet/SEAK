@@ -34,7 +34,7 @@ import quickfix.MessageStoreFactory;
 import quickfix.SLF4JLogFactory;
 import quickfix.SessionID;
 import quickfix.SessionSettings;
-import quickfix.SocketAcceptor;
+import quickfix.ThreadedSocketAcceptor;
 import quickfix.mina.acceptor.DynamicAcceptorSessionProvider;
 import quickfix.mina.acceptor.DynamicAcceptorSessionProvider.TemplateMapping;
 
@@ -81,7 +81,7 @@ public class QuickfixBeanFactory {
     LogFactory serverLogFactory,
     MessageFactory serverMessageFactory
   ) throws ConfigError, FieldConvertError, JMException {
-    SocketAcceptor socketAcceptor = new SocketAcceptor(
+    ThreadedSocketAcceptor socketAcceptor = new ThreadedSocketAcceptor(
       serverApplication,
       serverMessageStoreFactory,
       serverSessionSettings,
@@ -118,7 +118,7 @@ public class QuickfixBeanFactory {
       }
     }
 
-    dynamicSessionMappings.forEach((key, value) -> {
+    dynamicSessionMappings.forEach((key, value) ->
       socketAcceptor.setSessionProvider(
         key,
         new DynamicAcceptorSessionProvider(
@@ -129,8 +129,8 @@ public class QuickfixBeanFactory {
           serverLogFactory,
           serverMessageFactory
         )
-      );
-    });
+      )
+    );
 
     JmxExporter jmxExporter = new JmxExporter();
     ObjectName connectorObjectName = jmxExporter.register(socketAcceptor);

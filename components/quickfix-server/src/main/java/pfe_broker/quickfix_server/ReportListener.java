@@ -3,7 +3,6 @@ package pfe_broker.quickfix_server;
 import io.micronaut.configuration.kafka.annotation.KafkaKey;
 import io.micronaut.configuration.kafka.annotation.KafkaListener;
 import io.micronaut.configuration.kafka.annotation.Topic;
-import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.List;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
@@ -14,8 +13,11 @@ import pfe_broker.avro.Trade;
 @Singleton
 public class ReportListener {
 
-  @Inject
-  private ServerApplication serverApplication;
+  private final ServerApplication serverApplication;
+
+  public ReportListener(ServerApplication serverApplication) {
+    this.serverApplication = serverApplication;
+  }
 
   @KafkaListener(
     groupId = "quickfix-accepted-trades-consumer",
@@ -24,9 +26,9 @@ public class ReportListener {
   )
   @Topic("${kafka.topics.accepted-trades}")
   void receiveAcceptedTrade(List<ConsumerRecord<String, Trade>> records) {
-    records.forEach(record -> {
-      serverApplication.sendTradeReport(record.key(), record.value());
-    });
+    records.forEach(item ->
+      serverApplication.sendTradeReport(item.key(), item.value())
+    );
   }
 
   @KafkaListener("quickfix-rejected-orders-consumer")

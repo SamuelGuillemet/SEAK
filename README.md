@@ -21,14 +21,3 @@ The goal of this project is to emulate a financial market with a broker which al
 
 ### Run the project
 
-TODO
-
-## Add java projects :
-
-```bash
-$ npx nx g @jnxplus/nx-gradle:app app-name --dir components --simpleName --simplePackageName
-```
-
-```bash	
-$ npx nx g @jnxplus/nx-gradle:lib lib-name --dir libs --simpleName --simplePackageName
-```

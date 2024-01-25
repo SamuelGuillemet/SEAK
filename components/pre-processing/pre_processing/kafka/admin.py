@@ -2,7 +2,6 @@ import logging
 
 from confluent_kafka.admin import AdminClient as _AdminClient
 from confluent_kafka.admin import NewTopic
-
 from pre_processing.constant import MARKET_DATA_PARTIONS
 
 logger = logging.getLogger("pre_processing.kafka.admin")

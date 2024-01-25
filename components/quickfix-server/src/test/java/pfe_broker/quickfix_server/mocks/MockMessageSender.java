@@ -5,8 +5,6 @@ import jakarta.inject.Inject;
 import jakarta.inject.Singleton;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.LinkedBlockingQueue;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import pfe_broker.quickfix_server.MessageSender;
 import pfe_broker.quickfix_server.QuickFixLogger;
 import pfe_broker.quickfix_server.interfaces.IMessageSender;
@@ -30,4 +28,7 @@ public class MockMessageSender implements IMessageSender {
 
   @Override
   public void registerNewUser(String username, SessionID sessionID) {}
+
+  @Override
+  public void unregisterUser(String username) {}
 }
