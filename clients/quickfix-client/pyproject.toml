@@ -9,9 +9,8 @@ packages = [{ include = "broker_quickfix_client" }]
 [tool.poetry.dependencies]
 python = "~3.11"
 quickfix = "^1.15.1"
+pillow = "^10.2.0"
 sqlalchemy = "^2.0.25"
-tk = "^8.6.0"
-Pillow = "^9.5.0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
