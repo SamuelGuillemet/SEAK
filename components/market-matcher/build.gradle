@@ -27,14 +27,14 @@ dependencies {
     implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.3.0'
 
     // Micrometer
-    implementation group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-registry-prometheus', version: '5.2.0'
-    annotationProcessor group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-annotation', version: '5.2.0'
+    implementation group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-registry-prometheus', version: '5.3.0'
+    annotationProcessor group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-annotation', version: '5.3.0'
     implementation("io.micronaut:micronaut-http-client")
     implementation("io.micronaut:micronaut-management")
 
     // Test dependencies
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.1'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.2'
     testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
 
     // Log4J
