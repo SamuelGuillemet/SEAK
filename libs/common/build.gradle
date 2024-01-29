@@ -16,12 +16,12 @@ dependencies {
     runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
     implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.3.0'
 
-    implementation group: 'io.micronaut', name: 'micronaut-http-client-jdk', version: '4.2.3'
-    implementation group: 'io.micronaut.serde', name: 'micronaut-serde-jackson', version: '2.7.0'
+    implementation group: 'io.micronaut', name: 'micronaut-http-client-jdk', version: '4.3.1'
+    implementation group: 'io.micronaut.serde', name: 'micronaut-serde-jackson', version: '2.7.1'
 
-    implementation group: 'org.testcontainers', name: 'kafka', version: '1.19.3'
-    implementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
-    implementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+    implementation group: 'org.testcontainers', name: 'kafka', version: '1.19.4'
+    implementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.4'
+    implementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.4'
 
     // Test dependencies
     testImplementation "io.micronaut.test:micronaut-test-junit5"
