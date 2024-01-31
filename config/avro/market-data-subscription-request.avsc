@@ -1,0 +1,6 @@
+{
+  "namespace": "pfe_broker.avro",
+  "type": "enum",
+  "name": "MarketDataSubscriptionRequest",
+  "symbols": ["SNAPSHOT", "SUBSCRIBE", "UNSUBSCRIBE"]
+}

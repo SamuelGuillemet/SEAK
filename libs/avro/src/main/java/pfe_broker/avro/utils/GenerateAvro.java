@@ -9,15 +9,21 @@ public class GenerateAvro {
 
   // The order of the files is important
   private static final File[] files = new File[] {
-    getFileFromRessource("order-rejected-reason.avsc"),
-    getFileFromRessource("type.avsc"),
-    getFileFromRessource("side.avsc"),
-    getFileFromRessource("order-book-request-type.avsc"),
-    getFileFromRessource("order.avsc"),
-    getFileFromRessource("trade.avsc"),
-    getFileFromRessource("rejected-order.avsc"),
-    getFileFromRessource("market-data.avsc"),
-    getFileFromRessource("order-book-request.avsc"),
+      getFileFromRessource("market-data-entry.avsc"),
+      getFileFromRessource("market-data-subscription-request.avsc"),
+      getFileFromRessource("market-data-rejected-reason.avsc"),
+      getFileFromRessource("order-rejected-reason.avsc"),
+      getFileFromRessource("type.avsc"),
+      getFileFromRessource("side.avsc"),
+      getFileFromRessource("order-book-request-type.avsc"),
+      getFileFromRessource("order.avsc"),
+      getFileFromRessource("trade.avsc"),
+      getFileFromRessource("rejected-order.avsc"),
+      getFileFromRessource("market-data.avsc"),
+      getFileFromRessource("order-book-request.avsc"),
+      getFileFromRessource("market-data-request.avsc"),
+      getFileFromRessource("market-data-response.avsc"),
+      getFileFromRessource("market-data-rejected.avsc"),
   };
 
   public static File[] getFiles() {

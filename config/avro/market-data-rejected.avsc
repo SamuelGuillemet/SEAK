@@ -1,0 +1,19 @@
+{
+  "namespace": "pfe_broker.avro",
+  "type": "record",
+  "name": "MarketDataRejected",
+  "fields": [
+    {
+      "name": "username",
+      "type": "string"
+    },
+    {
+      "name": "requestId",
+      "type": "string"
+    },
+    {
+      "name": "reason",
+      "type": "MarketDataRejectedReason"
+    }
+  ]
+}

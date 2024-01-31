@@ -1,0 +1,33 @@
+{
+  "namespace": "pfe_broker.avro",
+  "type": "record",
+  "name": "MarketDataResponse",
+  "fields": [
+    {
+      "name": "username",
+      "type": "string"
+    },
+    {
+      "name": "symbol",
+      "type": "string"
+    },
+    {
+      "name": "data",
+      "type": {
+        "type": "array",
+        "items": "MarketData"
+      }
+    },
+    {
+      "name": "requestId",
+      "type": "string"
+    },
+    {
+      "name": "marketDataEntries",
+      "type": {
+        "type": "array",
+        "items": "MarketDataEntry"
+      }
+    }
+  ]
+}
