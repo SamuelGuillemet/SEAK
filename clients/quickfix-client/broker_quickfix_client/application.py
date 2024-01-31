@@ -55,6 +55,19 @@ class ClientApplication(Application):
     ):
         self.order_cancel_reject_handler = order_cancel_reject_handler
 
+    def set_market_data_request_reject_handler(
+        self, market_data_request_reject_handler: MarketDataRequestRejectHandler
+    ):
+        self.market_data_request_reject_handler = market_data_request_reject_handler
+
+    def set_market_data_snapshot_full_refresh_handler(
+        self,
+        market_data_snapshot_full_refresh_handler: MarketDataSnapshotFullRefreshHandler,
+    ):
+        self.market_data_snapshot_full_refresh_handler = (
+            market_data_snapshot_full_refresh_handler
+        )
+
     def onCreate(self, sessionId: SessionID):
         pass
 

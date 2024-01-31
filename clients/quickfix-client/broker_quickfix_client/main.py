@@ -4,6 +4,7 @@ import logging
 
 from broker_quickfix_client.application import setup
 from broker_quickfix_client.runners.latency import latency_test
+from broker_quickfix_client.runners.market_data import market_data_test
 from broker_quickfix_client.runners.order_book import order_book_test
 
 logger = logging.getLogger("client")
@@ -15,6 +16,7 @@ def main(username: str, password: str):
     application, initiator = setup(username, password)
     latency_test(username, application)
     order_book_test(application)
+    market_data_test(application)
     initiator.stop()
 
 
