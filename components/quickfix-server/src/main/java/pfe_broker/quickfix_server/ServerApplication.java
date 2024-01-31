@@ -2,8 +2,16 @@ package pfe_broker.quickfix_server;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.inject.Singleton;
+import java.util.ArrayList;
+import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import pfe_broker.avro.MarketData;
+import pfe_broker.avro.MarketDataEntry;
+import pfe_broker.avro.MarketDataRejected;
+import pfe_broker.avro.MarketDataRejectedReason;
+import pfe_broker.avro.MarketDataResponse;
+import pfe_broker.avro.MarketDataSubscriptionRequest;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.OrderBookRequestType;
@@ -17,6 +25,7 @@ import pfe_broker.quickfix_server.interfaces.IMessageSender;
 import quickfix.Application;
 import quickfix.DoNotSend;
 import quickfix.FieldNotFound;
+import quickfix.Group;
 import quickfix.IncorrectDataFormat;
 import quickfix.IncorrectTagValue;
 import quickfix.Message;
@@ -31,6 +40,8 @@ import quickfix.field.CxlRejResponseTo;
 import quickfix.field.ExecID;
 import quickfix.field.ExecType;
 import quickfix.field.LeavesQty;
+import quickfix.field.MDEntryType;
+import quickfix.field.MDReqID;
 import quickfix.field.OrdRejReason;
 import quickfix.field.OrdStatus;
 import quickfix.field.OrdType;
@@ -45,6 +56,8 @@ import quickfix.field.Username;
 import quickfix.fix44.ExecutionReport;
 import quickfix.fix44.Logon;
 import quickfix.fix44.MarketDataRequest;
+import quickfix.fix44.MarketDataRequestReject;
+import quickfix.fix44.MarketDataSnapshotFullRefresh;
 import quickfix.fix44.NewOrderSingle;
 import quickfix.fix44.OrderCancelReject;
 import quickfix.fix44.OrderCancelReplaceRequest;
@@ -59,17 +72,18 @@ public class ServerApplication extends MessageCracker implements Application {
 
   private final QuickFixLogger quickFixLogger;
   private final IMessageSender messageSender;
-  private final OrderProducer orderProducer;
+  private final KafkaProducer orderProducer;
   private final UserRepository userRepository;
   private final MeterRegistry meterRegistry;
 
   private Integer orderKey;
   private Integer executionKey;
+  private Integer marketDataRequestKey;
 
   public ServerApplication(
     QuickFixLogger quickFixLogger,
     IMessageSender messageSender,
-    OrderProducer orderProducer,
+    KafkaProducer orderProducer,
     UserRepository userRepository,
     MeterRegistry meterRegistry
   ) {
@@ -81,6 +95,7 @@ public class ServerApplication extends MessageCracker implements Application {
 
     this.orderKey = 0;
     this.executionKey = 0;
+    this.marketDataRequestKey = 0;
   }
 
   /**
@@ -113,6 +128,21 @@ public class ServerApplication extends MessageCracker implements Application {
   public void onLogout(SessionID sessionId) {
     String username = sessionId.getTargetCompID();
     messageSender.unregisterUser(username);
+
+    // Send logout market data request
+    String key = username + ":" + marketDataRequestKey.toString();
+    this.orderProducer.sendMarketDataRequest(
+        key,
+        new pfe_broker.avro.MarketDataRequest(
+          username,
+          new ArrayList<>(),
+          0,
+          new ArrayList<>(),
+          MarketDataSubscriptionRequest.UNSUBSCRIBE,
+          "logout"
+        )
+      );
+    marketDataRequestKey++;
   }
 
   /**
@@ -291,9 +321,10 @@ public class ServerApplication extends MessageCracker implements Application {
    * @param message
    * @param sessionID
    * @throws FieldNotFound
+   * @throws IncorrectTagValue
    */
   public void onMessage(OrderCancelRequest message, SessionID sessionID)
-    throws FieldNotFound {
+    throws FieldNotFound, IncorrectTagValue {
     String username = message.getHeader().getString(SenderCompID.FIELD);
     String symbol = message.getString(Symbol.FIELD);
     pfe_broker.avro.Side side = Converters.Side.toAvro(message.getSide());
@@ -325,11 +356,60 @@ public class ServerApplication extends MessageCracker implements Application {
    * This method is called when a MarketDataRequest message is received
    * @param message
    * @param sessionID
+   * @throws FieldNotFound
+   * @throws IncorrectTagValue
    */
-  public void onMessage(MarketDataRequest message, SessionID sessionID) {
-    throw new UnsupportedOperationException(
-      "Unimplemented method 'onMessage(MarketDataRequest message, SessionID sessionID)'"
-    );
+  public void onMessage(MarketDataRequest message, SessionID sessionID)
+    throws FieldNotFound, IncorrectTagValue {
+    String mdReqID = message.getMDReqID().getValue();
+    String username = message.getHeader().getString(SenderCompID.FIELD);
+    String key = username + ":" + marketDataRequestKey.toString();
+
+    List<CharSequence> symbols = new ArrayList<>();
+    for (Group group : message.getGroups(quickfix.field.NoRelatedSym.FIELD)) {
+      symbols.add(group.getString(Symbol.FIELD));
+    }
+
+    List<MarketDataEntry> mdEntryTypes = new ArrayList<>();
+    try {
+      for (Group group : message.getGroups(
+        quickfix.field.NoMDEntryTypes.FIELD
+      )) {
+        mdEntryTypes.add(
+          Converters.MarketDataEntry.toAvro(group.getChar(MDEntryType.FIELD))
+        );
+      }
+    } catch (IncorrectTagValue e) {
+      sendMarketDataRequestReject(
+        new MarketDataRejected(
+          username,
+          mdReqID,
+          MarketDataRejectedReason.UNSUPPORTED_MD_ENTRY_TYPE
+        )
+      );
+      return;
+    }
+
+    MarketDataSubscriptionRequest marketDataSubscriptionRequest =
+      Converters.MarketDataSubscriptionRequest.toAvro(
+        message.getSubscriptionRequestType()
+      );
+
+    Integer marketDepth = message.getMarketDepth().getValue();
+
+    pfe_broker.avro.MarketDataRequest marketDataRequest =
+      new pfe_broker.avro.MarketDataRequest(
+        username,
+        symbols,
+        marketDepth,
+        mdEntryTypes,
+        marketDataSubscriptionRequest,
+        mdReqID
+      );
+
+    marketDataRequestKey++;
+
+    orderProducer.sendMarketDataRequest(key, marketDataRequest);
   }
 
   /**
@@ -474,6 +554,78 @@ public class ServerApplication extends MessageCracker implements Application {
       orderCancelReject,
       order.getUsername().toString()
     );
+  }
+
+  public void sendMarketDataSnapshot(MarketDataResponse marketDataResponse) {
+    String username = marketDataResponse.getUsername().toString();
+    List<MarketData> marketDataList = marketDataResponse.getData();
+    List<MarketDataEntry> mdEntryTypes =
+      marketDataResponse.getMarketDataEntries();
+    String mdReqID = marketDataResponse.getRequestId().toString();
+    String symbol = marketDataResponse.getSymbol().toString();
+
+    MarketDataSnapshotFullRefresh marketDataSnapshotFullRefresh =
+      new MarketDataSnapshotFullRefresh();
+    marketDataSnapshotFullRefresh.set(new MDReqID(mdReqID));
+    marketDataSnapshotFullRefresh.set(new Symbol(symbol));
+
+    Integer marketDepth = marketDataList.size();
+    for (MarketData marketData : marketDataList) {
+      for (MarketDataEntry mdEntryType : mdEntryTypes) {
+        MarketDataSnapshotFullRefresh.NoMDEntries noMDEntries =
+          new MarketDataSnapshotFullRefresh.NoMDEntries();
+
+        noMDEntries.set(Converters.MarketDataEntry.fromAvro(mdEntryType));
+        noMDEntries.set(new quickfix.field.MDEntryPositionNo(marketDepth));
+        noMDEntries.set(
+          new quickfix.field.OpenCloseSettlFlag(
+            String.valueOf(
+              quickfix.field.OpenCloseSettlFlag.THEORETICAL_PRICE_VALUE
+            )
+          )
+        );
+
+        switch (mdEntryType) {
+          case CLOSE:
+            noMDEntries.set(
+              new quickfix.field.MDEntryPx(marketData.getClose())
+            );
+            break;
+          case HIGH:
+            noMDEntries.set(new quickfix.field.MDEntryPx(marketData.getHigh()));
+            break;
+          case LOW:
+            noMDEntries.set(new quickfix.field.MDEntryPx(marketData.getLow()));
+            break;
+          case OPEN:
+            noMDEntries.set(new quickfix.field.MDEntryPx(marketData.getOpen()));
+            break;
+          default:
+            break;
+        }
+
+        marketDataSnapshotFullRefresh.addGroup(noMDEntries);
+      }
+
+      marketDepth--;
+    }
+    messageSender.sendMessage(marketDataSnapshotFullRefresh, username);
+  }
+
+  public void sendMarketDataRequestReject(
+    MarketDataRejected marketDataRejected
+  ) {
+    String username = marketDataRejected.getUsername().toString();
+    String mdReqID = marketDataRejected.getRequestId().toString();
+    MarketDataRejectedReason reason = marketDataRejected.getReason();
+
+    MarketDataRequestReject marketDataRequestReject =
+      new MarketDataRequestReject(new MDReqID(mdReqID));
+    marketDataRequestReject.set(
+      Converters.MarketDataRejectedReason.fromAvro(reason)
+    );
+
+    messageSender.sendMessage(marketDataRequestReject, username);
   }
 
   /**
