@@ -7,6 +7,7 @@ group = "pfe_broker"
 
 repositories {
     mavenCentral()
+    maven { url confluentUrl }
 }
 
 dependencies {
@@ -24,14 +25,16 @@ dependencies {
     implementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
 
     // Test dependencies
-    testImplementation "io.micronaut.test:micronaut-test-junit5"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
+    testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
+    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.1'
+    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
 
     // Log4J
     implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
 
     // Avro
     implementation group: 'org.apache.avro', name: 'avro', version: '1.11.3'
+    implementation group: 'io.confluent', name: 'kafka-avro-serializer', version: '7.5.1'
 }
 
 java {
