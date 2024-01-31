@@ -10,7 +10,7 @@ _cli_autocomplete() {
   docker_actions="start restart stop down"
   java_projects="market-matcher order-book order-stream trade-stream quickfix-server"
   python_projects="pre-processing"
-  java_actions="build run test"
+  java_actions="build run test coverage"
   python_actions="run test"
 
   case "$prev" in
