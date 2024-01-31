@@ -1,4 +1,4 @@
-package pfe_broker.order_book;
+package pfe_broker.order_book.order_book;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import jakarta.inject.Singleton;
