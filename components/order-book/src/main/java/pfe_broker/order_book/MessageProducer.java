@@ -7,6 +7,8 @@ import jakarta.inject.Singleton;
 import org.apache.avro.specific.SpecificRecord;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerRecord;
+import pfe_broker.avro.MarketDataRejected;
+import pfe_broker.avro.MarketDataResponse;
 import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.Trade;
 
@@ -15,6 +17,7 @@ public class MessageProducer {
 
   private static final String SYMBOL_TAG = "symbol";
   private static final String REQUEST_TYPE = "requestType";
+  private static final String REASON = "reason";
 
   private final Producer<String, SpecificRecord> genericProducer;
 
@@ -28,6 +31,12 @@ public class MessageProducer {
 
   @Property(name = "kafka.topics.order-book-rejected")
   private String orderBookRejectedTopic;
+
+  @Property(name = "kafka.topics.market-data-response")
+  private String marketDataResponseTopic;
+
+  @Property(name = "kafka.topics.market-data-rejected")
+  private String marketDataRejectedTopic;
 
   public MessageProducer(
     @KafkaClient Producer<String, SpecificRecord> genericProducer,
@@ -77,6 +86,40 @@ public class MessageProducer {
       .increment();
     genericProducer.send(
       new ProducerRecord<>(orderBookRejectedTopic, key, orderBookRequest)
+    );
+  }
+
+  public void sendMarketDataResponse(
+    String key,
+    MarketDataResponse marketDataResponse
+  ) {
+    meterRegistry
+      .counter(
+        "order_book_market_data_responses",
+        SYMBOL_TAG,
+        marketDataResponse.getSymbol().toString()
+      )
+      .increment();
+    genericProducer.send(
+      new ProducerRecord<>(marketDataResponseTopic, key, marketDataResponse)
+    );
+  }
+
+  public void sendMarketDataRejected(
+    String key,
+    MarketDataRejected marketDataRejected
+  ) {
+    meterRegistry
+      .counter(
+        "order_book_market_data_rejected",
+        SYMBOL_TAG,
+        marketDataRejected.getReason().toString(),
+        REASON,
+        marketDataRejected.getReason().toString()
+      )
+      .increment();
+    genericProducer.send(
+      new ProducerRecord<>(marketDataRejectedTopic, key, marketDataRejected)
     );
   }
 }
