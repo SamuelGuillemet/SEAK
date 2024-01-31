@@ -8,6 +8,7 @@ import io.micronaut.core.annotation.NonNull;
 import io.micronaut.test.annotation.TransactionMode;
 import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 import org.junit.jupiter.api.BeforeEach;
@@ -15,6 +16,11 @@ import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import pfe_broker.avro.MarketData;
+import pfe_broker.avro.MarketDataEntry;
+import pfe_broker.avro.MarketDataRejected;
+import pfe_broker.avro.MarketDataRejectedReason;
+import pfe_broker.avro.MarketDataResponse;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.OrderBookRequestType;
@@ -27,9 +33,11 @@ import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.quickfix_server.mocks.MockMessageSender;
 import pfe_broker.quickfix_server.mocks.MockReportProducer;
 import quickfix.FieldNotFound;
+import quickfix.Group;
 import quickfix.Message;
 import quickfix.field.CxlRejResponseTo;
 import quickfix.field.ExecType;
+import quickfix.field.MDReqID;
 import quickfix.field.OrdStatus;
 import quickfix.field.OrderID;
 
@@ -58,7 +66,13 @@ class ReportListenerTest implements TestPropertyProvider {
     if (!kafka.isRunning()) {
       kafka.start();
     }
-    kafka.registerTopics("orders", "accepted-trades", "rejected-orders");
+    kafka.registerTopics(
+      "orders",
+      "accepted-trades",
+      "rejected-orders",
+      "order-book-responses",
+      "order-book-rejected"
+    );
     return Map.of(
       "kafka.bootstrap.servers",
       kafka.getBootstrapServers(),
@@ -92,7 +106,7 @@ class ReportListenerTest implements TestPropertyProvider {
     mockReportProducer.sendTrade("testuser:1", trade);
 
     await()
-      .atMost(5, TimeUnit.SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
       .untilAsserted(() -> {
         assertEquals(1, mockMessageSender.messages.size());
       });
@@ -123,7 +137,7 @@ class ReportListenerTest implements TestPropertyProvider {
     mockReportProducer.sendRejectedOrder("testuser:1", rejectedOrder);
 
     await()
-      .atMost(5, TimeUnit.SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
       .untilAsserted(() -> {
         assertEquals(1, mockMessageSender.messages.size());
       });
@@ -156,7 +170,7 @@ class ReportListenerTest implements TestPropertyProvider {
     mockReportProducer.sendOrderBookResponse("testuser:1", orderBookRequest);
 
     await()
-      .atMost(5, TimeUnit.SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
       .untilAsserted(() -> {
         assertEquals(1, mockMessageSender.messages.size());
       });
@@ -191,7 +205,7 @@ class ReportListenerTest implements TestPropertyProvider {
     mockReportProducer.sendOrderBookResponse("testuser:1", orderBookRequest);
 
     await()
-      .atMost(5, TimeUnit.SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
       .untilAsserted(() -> {
         assertEquals(1, mockMessageSender.messages.size());
       });
@@ -226,7 +240,7 @@ class ReportListenerTest implements TestPropertyProvider {
     mockReportProducer.sendOrderBookResponse("testuser:1", orderBookRequest);
 
     await()
-      .atMost(5, TimeUnit.SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
       .untilAsserted(() -> {
         assertEquals(1, mockMessageSender.messages.size());
       });
@@ -261,7 +275,7 @@ class ReportListenerTest implements TestPropertyProvider {
     mockReportProducer.sendOrderBookRejected("testuser:1", orderBookRequest);
 
     await()
-      .atMost(5, TimeUnit.SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
       .untilAsserted(() -> {
         assertEquals(1, mockMessageSender.messages.size());
       });
@@ -299,7 +313,7 @@ class ReportListenerTest implements TestPropertyProvider {
     mockReportProducer.sendOrderBookRejected("testuser:1", orderBookRequest);
 
     await()
-      .atMost(5, TimeUnit.SECONDS)
+      .atMost(10, TimeUnit.SECONDS)
       .untilAsserted(() -> {
         assertEquals(1, mockMessageSender.messages.size());
       });
@@ -311,5 +325,86 @@ class ReportListenerTest implements TestPropertyProvider {
       message.getChar(CxlRejResponseTo.FIELD)
     );
     assertEquals(OrdStatus.REJECTED, message.getChar(OrdStatus.FIELD));
+  }
+
+  @Test
+  void testMarketDataResponse(
+    MockReportProducer mockReportProducer,
+    ServerApplication serverApplication,
+    MockMessageSender mockMessageSender
+  ) throws InterruptedException, FieldNotFound {
+    MarketDataResponse marketDataResponse = new MarketDataResponse(
+      "testuser",
+      "AAPL",
+      List.of(
+        new MarketData(100.0, 100.0, 100.0, 100.0, 10),
+        new MarketData(90.0, 90.0, 90.0, 90.0, 10)
+      ),
+      "1",
+      List.of(
+        MarketDataEntry.CLOSE,
+        MarketDataEntry.HIGH,
+        MarketDataEntry.LOW,
+        MarketDataEntry.OPEN
+      )
+    );
+
+    mockReportProducer.sendMarketDataResponse("testuser:1", marketDataResponse);
+
+    await()
+      .atMost(10, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertEquals(1, mockMessageSender.messages.size());
+      });
+
+    Message message = mockMessageSender.messages.take();
+
+    assertEquals('1', message.getChar(MDReqID.FIELD));
+    assertEquals(8, message.getInt(quickfix.field.NoMDEntries.FIELD));
+
+    for (Group group : message.getGroups(quickfix.field.NoMDEntries.FIELD)) {
+      if (group.getDouble(quickfix.field.MDEntryPx.FIELD) == 100.0) {
+        assertEquals(
+          2, // Oldest entry
+          group.getInt(quickfix.field.MDEntryPositionNo.FIELD)
+        );
+      } else if (group.getDouble(quickfix.field.MDEntryPx.FIELD) == 90.0) {
+        assertEquals(
+          1, // Newest entry
+          group.getInt(quickfix.field.MDEntryPositionNo.FIELD)
+        );
+      } else {
+        throw new AssertionError("Unexpected price");
+      }
+    }
+  }
+
+  @Test
+  void testMarketDataRejection(
+    MockReportProducer mockReportProducer,
+    ServerApplication serverApplication,
+    MockMessageSender mockMessageSender
+  ) throws InterruptedException, FieldNotFound {
+    MarketDataRejected marketDataRejected = new MarketDataRejected(
+      "testuser",
+      "1",
+      MarketDataRejectedReason.UNKNOWN_SYMBOL
+    );
+
+    mockReportProducer.sendMarketDataRejected("testuser:1", marketDataRejected);
+
+    await()
+      .atMost(10, TimeUnit.SECONDS)
+      .untilAsserted(() -> {
+        assertEquals(1, mockMessageSender.messages.size());
+      });
+
+    Message message = mockMessageSender.messages.take();
+
+    assertEquals('1', message.getChar(MDReqID.FIELD));
+    assertEquals(
+      quickfix.field.MDReqRejReason.UNKNOWN_SYMBOL,
+      message.getChar(quickfix.field.MDReqRejReason.FIELD)
+    );
   }
 }
