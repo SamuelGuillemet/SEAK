@@ -4,6 +4,8 @@ from quickfix import (
     DataDictionary,
     Dictionary,
     FieldBase,
+    FieldMap,
+    Group,
     Message,
     MsgType,
     MsgType_Heartbeat,
@@ -59,10 +61,25 @@ def is_heartbeat(message: Message) -> bool:
 
 
 @default_return_value_decorator(None)
-def get_message_field(message: Message, field_type: type[FieldBase]) -> str:
+def get_message_field(message: FieldMap, field_type: type[FieldBase]) -> str:
     field = field_type()
     message.getField(field)
     return field.getString()
+
+
+def extract_group_field(
+    message: Message,
+    field_type: type[FieldBase],
+    group_type: type[FieldBase],
+    group_field: type[Group],
+) -> list[str]:
+    res = []
+    for i in range(int(get_message_field(message, group_type))):
+        group = group_field()
+        message.getGroup(i + 1, group)
+        res.append(get_message_field(group, field_type))
+
+    return res
 
 
 def set_settings(username: str):
