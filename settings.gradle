@@ -9,6 +9,7 @@ pluginManagement {
 }
 
 rootProject.name = 'pfe-broker'
+
 include('components:order-book')
 include('components:quickfix-server')
 include('components:trade-stream')
@@ -18,3 +19,4 @@ include('libs:models')
 include('libs:log')
 include('libs:common')
 include('libs:avro')
+

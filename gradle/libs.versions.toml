@@ -1,0 +1,63 @@
+[versions]
+log4j = "2.22.1"
+fasterxml-jackson = "2.16.1"
+snakeyaml = "2.2"
+
+micronaut = "4.2.4"
+
+avro = "1.11.3"
+confluent-avro = "7.5.1"
+quickfixj = "2.3.1"
+lombok = "1.18.30"
+postgresql = "42.7.1"
+
+awaitility = "4.2.0"
+assertj-core = "3.25.1"
+junit-jupiter = "5.10.1"
+testcontainers = "1.19.3"
+
+plugin-lombok = "8.4"
+plugin-shadow = "8.1.1"
+
+[libraries]
+log4j-api = { group = "org.apache.logging.log4j", name = "log4j-api", version.ref = "log4j" }
+log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4j" }
+log4j-slf4j2-impl = { group = "org.apache.logging.log4j", name = "log4j-slf4j2-impl", version.ref = "log4j" }
+
+jackson-dataformat-yaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "fasterxml-jackson" }
+jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "fasterxml-jackson" }
+snakeyaml = { group = "org.yaml", name = "snakeyaml", version.ref = "snakeyaml" }
+
+micronaut-kafka = { group = "io.micronaut.kafka", name = "micronaut-kafka" }
+micronaut-kafka-streams = { group = "io.micronaut.kafka", name = "micronaut-kafka-streams" }
+micronaut-micrometer-registry-prometheus = { group = "io.micronaut.micrometer", name = "micronaut-micrometer-registry-prometheus" }
+micronaut-micrometer-annotation = { group = "io.micronaut.micrometer", name = "micronaut-micrometer-annotation" }
+micronaut-http-client = { group = "io.micronaut", name = "micronaut-http-client" }
+micronaut-management = { group = "io.micronaut", name = "micronaut-management" }
+micronaut-redis-lettuce = { group = "io.micronaut.redis", name = "micronaut-redis-lettuce" }
+micronaut-data-hibernate-jpa = { group = "io.micronaut.data", name = "micronaut-data-hibernate-jpa" }
+micronaut-data-processor = { group = "io.micronaut.data", name = "micronaut-data-processor" }
+micronaut-jdbc-hikari = { group = "io.micronaut.sql", name = "micronaut-jdbc-hikari" }
+micronaut-http-client-jdk = { group = "io.micronaut", name = "micronaut-http-client-jdk" }
+micronaut-serde-jackson = { group = "io.micronaut.serde", name = "micronaut-serde-jackson" }
+micronaut-test-junit5 = { group = "io.micronaut.test", name = "micronaut-test-junit5" }
+
+avro = { group = "org.apache.avro", name = "avro", version.ref = "avro" }
+avro-compiler = { group = "org.apache.avro", name = "avro-compiler", version.ref = "avro" }
+kafka-streams-avro-serde = { group = "io.confluent", name = "kafka-streams-avro-serde", version.ref = "confluent-avro" }
+kafka-avro-serializer = { group = "io.confluent", name = "kafka-avro-serializer", version.ref = "confluent-avro" }
+
+quickfixj-core = { group = "org.quickfixj", name = "quickfixj-core", version.ref = "quickfixj" }
+quickfixj-messages-all = { group = "org.quickfixj", name = "quickfixj-messages-all", version.ref = "quickfixj" }
+
+lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
+
+postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
+
+awaitility = { group = "org.awaitility", name = "awaitility", version.ref = "awaitility" }
+assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj-core" }
+junit-jupiter = { group = "org.junit.jupiter", name = "junit-jupiter", version.ref = "junit-jupiter" }
+testcontainers-junit-jupiter = { group = "org.testcontainers", name = "junit-jupiter", version.ref = "testcontainers" }
+testcontainers-postgresql = { group = "org.testcontainers", name = "postgresql", version.ref = "testcontainers" }
+testcontainers-kafka = { group = "org.testcontainers", name = "kafka", version.ref = "testcontainers" }
+testcontainers-testcontainers = { group = "org.testcontainers", name = "testcontainers", version.ref = "testcontainers" }

@@ -19,7 +19,7 @@
     "**/reports": true,
     "**/.nx": true,
     "**/.gradle": true,
-    "**/gradle": true
+    "**/gradle": false
   },
   "python.analysis.autoImportCompletions": true,
   "python.analysis.typeCheckingMode": "basic",
