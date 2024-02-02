@@ -3,6 +3,10 @@ plugins {
   id 'io.freefair.lombok'
 }
 
+ext {
+    configFiles = "classpath:data.yml"
+}
+
 group = 'pfe_broker'
 version = "${version}"
 
@@ -20,9 +24,17 @@ dependencies {
     implementation libs.micronaut.jdbc.hikari
     runtimeOnly libs.postgresql
 
+    // Authentication dependencies
+    implementation libs.spring.security.crypto
+
     // Lombok
     compileOnly libs.lombok
     annotationProcessor libs.lombok
+
+    // Log4j2
+    runtimeOnly libs.log4j.api
+    runtimeOnly libs.log4j.slf4j2.impl
+    runtimeOnly libs.jcl.over.slf4j
 
     // Test dependencies
     testImplementation libs.micronaut.test.junit5
@@ -50,4 +62,10 @@ micronaut {
     incremental(true)
     annotations("pfe_broker.models.*")
   }
+}
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+    systemProperty 'micronaut.config.files', configFiles
 }
