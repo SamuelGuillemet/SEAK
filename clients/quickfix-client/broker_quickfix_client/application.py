@@ -126,5 +126,4 @@ def setup(
         application.set_order_cancel_reject_handler(order_cancel_reject_handler)
 
     initiator = build_initiator(username, application)
-    start_initiator(initiator, application)
     return application, initiator
