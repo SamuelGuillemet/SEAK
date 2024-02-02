@@ -41,6 +41,8 @@ def validate_password(password: str | None, info: ValidationInfo) -> str | None:
 
 class AccountBase(DefaultModel):
     username: str = Field(..., min_length=3, max_length=32)
+    last_name: str
+    first_name: str
     password: str
 
     _validate_password = field_validator("password", mode="after")(validate_password)
@@ -66,6 +68,8 @@ class AccountCreate(AccountBase):
 class AccountUpdate(AccountBase):
     username: str | None = Field(default=None, min_length=3, max_length=32)
     password: str | None = None
+    last_name: str | None = None
+    first_name: str | None = None
     scope: SecurityScopes | None = None
     enabled: bool | None = None
     balance: float | None = Field(default=None, ge=0)
@@ -74,6 +78,8 @@ class AccountUpdate(AccountBase):
 class OwnAccountUpdate(AccountBase):
     username: str | None = Field(default=None, min_length=3, max_length=32)
     password: str | None = None
+    last_name: str | None = None
+    first_name: str | None = None
 
     model_config = ConfigDict(extra="forbid")
 

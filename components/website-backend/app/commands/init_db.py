@@ -20,6 +20,8 @@ async def init_db() -> None:
             obj_in=account_schema.AccountCreate(
                 username=settings.BASE_ACCOUNT_USERNAME,
                 password=settings.BASE_ACCOUNT_PASSWORD,
+                first_name="Admin",
+                last_name="Admin",
             ),
         )
         logger.info("Base account created")

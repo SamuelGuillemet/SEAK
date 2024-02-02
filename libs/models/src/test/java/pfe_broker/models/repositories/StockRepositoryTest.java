@@ -41,7 +41,16 @@ class StockRepositoryTest {
 
   @BeforeAll
   void setup() {
-    account = new Account("testuser", "testpassword", Scope.USER, true, 1000.0);
+    account =
+      new Account(
+        "testuser",
+        "testpassword",
+        "Test",
+        "User",
+        Scope.USER,
+        true,
+        1000.0
+      );
     auccountRepository.save(account);
   }
 

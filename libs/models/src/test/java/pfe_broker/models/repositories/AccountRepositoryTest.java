@@ -38,6 +38,8 @@ class AccountRepositoryTest {
     Account user = new Account(
       "testuser",
       "testpassword",
+      "Test",
+      "User",
       Scope.USER,
       true,
       1000.0

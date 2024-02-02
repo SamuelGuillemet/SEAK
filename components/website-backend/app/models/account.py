@@ -12,6 +12,8 @@ if TYPE_CHECKING:  # pragma: no cover
 class Account(Base):
     username: Mapped[Str256]
     password: Mapped[Str512]
+    first_name: Mapped[Str256]
+    last_name: Mapped[Str256]
     scope: Mapped[SecurityScopes]
     enabled: Mapped[bool]
     balance: Mapped[float]

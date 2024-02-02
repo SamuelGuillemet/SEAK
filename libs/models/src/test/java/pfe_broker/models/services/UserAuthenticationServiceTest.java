@@ -63,6 +63,8 @@ class UserAuthenticationServiceTest {
     Account user = new Account(
       "testuser",
       userAuthenticationService.encode("testpassword"),
+      "Test",
+      "User",
       Scope.USER,
       true,
       1000.0
@@ -82,6 +84,8 @@ class UserAuthenticationServiceTest {
     Account user = new Account(
       "testuser",
       userAuthenticationService.encode("testpassword"),
+      "Test",
+      "User",
       Scope.USER,
       true,
       1000.0

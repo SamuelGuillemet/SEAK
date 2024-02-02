@@ -12,6 +12,8 @@ class TestAccount(BaseTest):
 
         self.account_create = AccountCreate(
             username="testuser",
+            last_name="test",
+            first_name="user",
             password=settings.BASE_ACCOUNT_PASSWORD,
         )
 
@@ -55,6 +57,8 @@ class TestAccount(BaseTest):
         # Arrange
         new_account_create = AccountCreate(
             username="testuser2",
+            last_name="test",
+            first_name="user",
             password=settings.BASE_ACCOUNT_PASSWORD,
         )
         # Act
@@ -74,6 +78,8 @@ class TestAccount(BaseTest):
         # Arrange
         new_account_create = AccountCreate(
             username="testuser",
+            last_name="test",
+            first_name="user",
             password=settings.BASE_ACCOUNT_PASSWORD,
         )
         # Act
@@ -87,7 +93,7 @@ class TestAccount(BaseTest):
 
     async def test_update_account(self):
         # Arrange
-        account_update = AccountUpdate(username="changed")
+        account_update = AccountUpdate(last_name="changed")
         # Act
         response = self._client.put(
             f"/api/v1/account/{self.account_db.id}",
@@ -98,13 +104,13 @@ class TestAccount(BaseTest):
 
         # Assert
         assert response.status_code == 200
-        assert response.json().get("username") == account_update.username
+        assert response.json().get("lastName") == account_update.last_name
         assert account_in_db is not None
-        assert account_in_db.username == account_update.username
+        assert account_in_db.last_name == account_update.last_name
 
     def test_update_account_not_found(self):
         # Arrange
-        account_update = AccountUpdate(username="changed")
+        account_update = AccountUpdate(last_name="changed")
         # Act
         response = self._client.put(
             "/api/v1/account/0", json=account_update.model_dump(by_alias=True)
@@ -118,6 +124,8 @@ class TestAccount(BaseTest):
         # Arrange
         new_account_create = AccountCreate(
             username="testuser2",
+            last_name="test",
+            first_name="user",
             password=settings.BASE_ACCOUNT_PASSWORD,
         )
         async with get_db.get_session() as session:

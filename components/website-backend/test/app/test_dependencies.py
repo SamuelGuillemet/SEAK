@@ -18,6 +18,8 @@ class TestGetCurrentAccount(BaseTest):
         self.account_create = AccountCreate(
             username="testuser",
             password=settings.BASE_ACCOUNT_PASSWORD,
+            first_name="test",
+            last_name="user",
         )
 
         async with get_db.get_session() as session:

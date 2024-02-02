@@ -44,9 +44,11 @@ def test_account_create():
     # Test valid account creation
     account_dict = {
         "username": "johndoe",
+        "last_name": "Doe",
+        "first_name": "John",
         "password": strong_password,
         "enabled": True,
-        "scope": "president",
+        "scope": "admin",
     }
     account = AccountCreate(**account_dict)
     assert account.model_dump() == {
@@ -60,6 +62,8 @@ def test_account_create():
     # Test invalid account creation
     account_dict = {
         "username": "johndoe",
+        "last_name": "Doe",
+        "first_name": "John",
         "password": "password",
     }
     try:
@@ -76,6 +80,8 @@ def test_account_update():
     account_dict = {
         "username": "johndoe",
         "balance": 100,
+        "last_name": "Doe",
+        "first_name": "John",
     }
     account = AccountUpdate(**account_dict)
     assert account.model_dump() == {
@@ -88,6 +94,8 @@ def test_account_update():
     # Test invalid account update
     account_dict: dict[str, Any] = {
         "username": "jd",
+        "last_name": "Doe",
+        "first_name": "John",
     }
     with pytest.raises(ValidationError) as exc_info:
         AccountUpdate(**account_dict)
@@ -102,7 +110,11 @@ def test_account_update():
 
 def test_own_account_update():
     # Test valid own account update
-    account_dict = {"username": "johndoe"}
+    account_dict = {
+        "username": "johndoe",
+        "last_name": "Doe",
+        "first_name": "John",
+    }
     account = OwnAccountUpdate(**account_dict)
     assert account.model_dump() == {
         **account_dict,
@@ -112,6 +124,8 @@ def test_own_account_update():
     # Test invalid own account update
     account_dict = {
         "username": "johndoe",
+        "last_name": "Doe",
+        "first_name": "John",
         "enabled": True,
     }
     with pytest.raises(ValidationError) as exc_info:

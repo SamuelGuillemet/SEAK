@@ -30,6 +30,12 @@ public class Account {
   @Column(nullable = false, unique = true)
   private String username;
 
+  @Column(nullable = false, name = "first_name")
+  private String firstName;
+
+  @Column(nullable = false, name = "last_name")
+  private String lastName;
+
   @Enumerated(EnumType.STRING)
   private Scope scope;
 
@@ -53,6 +59,8 @@ public class Account {
   public Account(
     @NonNull String username,
     @NonNull String password,
+    @NonNull String firstName,
+    @NonNull String lastName,
     @NonNull Scope scope,
     @NonNull boolean enabled,
     Double balance
@@ -62,6 +70,8 @@ public class Account {
     }
     this.username = username;
     this.password = password;
+    this.firstName = firstName;
+    this.lastName = lastName;
     this.scope = scope;
     this.enabled = enabled;
     this.balance = balance;
