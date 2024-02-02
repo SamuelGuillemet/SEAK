@@ -12,6 +12,8 @@ from app.db.databases.database_interface import DatabaseInterface
 
 
 class PostgresDatabase(DatabaseInterface):
+    __name__ = "Postgres"
+
     def setup(self) -> async_sessionmaker[AsyncSession]:
         """
         Create a new SQLAlchemy engine and sessionmaker.

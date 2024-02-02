@@ -12,6 +12,8 @@ from app.db.databases.database_interface import DatabaseInterface
 
 
 class SqliteDatabase(DatabaseInterface):
+    __name__ = "SQLite"
+
     ERROR_MESSAGE = "Don't use SQLite in production"
 
     def setup(

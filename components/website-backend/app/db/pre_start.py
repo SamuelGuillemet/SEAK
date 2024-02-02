@@ -42,7 +42,7 @@ async def pre_start() -> None:
         async with get_db.get_session() as db:
             await db.execute(select(1))
 
-        logger.info("Database is ready to accept connections")
+        logger.info(f"Database {get_db.__name__} is ready to accept connections")
         signal.signal(signal.SIGINT, signal.SIG_DFL)
     except Exception as e:
         global RAISED_EXCEPTION
