@@ -4,12 +4,12 @@ import io.micronaut.data.annotation.Id;
 import io.micronaut.data.annotation.Repository;
 import io.micronaut.data.jpa.repository.JpaRepository;
 import java.util.Optional;
+import pfe_broker.models.domains.Account;
 import pfe_broker.models.domains.Stock;
-import pfe_broker.models.domains.User;
 
 @Repository
 public interface StockRepository extends JpaRepository<Stock, Long> {
-  Optional<Stock> findBySymbolAndUser(String symbol, User user);
+  Optional<Stock> findBySymbolAndUser(String symbol, Account user);
 
   void updateQuantity(@Id long id, int quantity);
 }

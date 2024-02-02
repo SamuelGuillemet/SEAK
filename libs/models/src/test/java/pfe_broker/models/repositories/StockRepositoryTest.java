@@ -10,8 +10,9 @@ import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.junit.jupiter.Testcontainers;
+import pfe_broker.models.domains.Account;
+import pfe_broker.models.domains.Scope;
 import pfe_broker.models.domains.Stock;
-import pfe_broker.models.domains.User;
 
 @MicronautTest(
   rollback = false,
@@ -29,21 +30,18 @@ import pfe_broker.models.domains.User;
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
 class StockRepositoryTest {
-  static {
-    System.setProperty("micronaut.config.files", "classpath:data.yml");
-  }
 
   @Inject
-  private UserRepository userRepository;
+  private AccountRepository userRepository;
 
   @Inject
   private StockRepository stockRepository;
 
-  User user;
+  Account user;
 
   @BeforeAll
   void setup() {
-    user = new User("testuser", "testpassword", 1000.0);
+    user = new Account("testuser", "testpassword", Scope.USER, true, 1000.0);
     userRepository.save(user);
   }
 

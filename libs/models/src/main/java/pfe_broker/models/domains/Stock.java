@@ -35,11 +35,11 @@ public class Stock {
   @Column(nullable = false)
   private int quantity;
 
-  @ManyToOne(targetEntity = User.class, fetch = FetchType.EAGER)
+  @ManyToOne(targetEntity = Account.class, fetch = FetchType.EAGER)
   @ToString.Exclude
-  private User user;
+  private Account user;
 
-  public Stock(@NonNull String symbol, int quantity, @NonNull User user) {
+  public Stock(@NonNull String symbol, int quantity, @NonNull Account user) {
     if (quantity < 0) {
       throw new IllegalArgumentException("Quantity cannot be negative");
     }

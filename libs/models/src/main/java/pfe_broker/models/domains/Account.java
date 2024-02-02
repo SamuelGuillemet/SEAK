@@ -4,6 +4,8 @@ import io.micronaut.core.annotation.NonNull;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import jakarta.persistence.FetchType;
 import jakarta.persistence.GeneratedValue;
 import jakarta.persistence.GenerationType;
@@ -18,8 +20,8 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "users")
-public class User {
+@Table(name = "account")
+public class Account {
 
   @Id
   @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -27,6 +29,12 @@ public class User {
 
   @Column(nullable = false, unique = true)
   private String username;
+
+  @Enumerated(EnumType.STRING)
+  private Scope scope;
+
+  @Column(nullable = false)
+  private boolean enabled;
 
   @Column(nullable = false)
   private String password;
@@ -42,9 +50,11 @@ public class User {
   )
   private List<Stock> stocks = new ArrayList<>();
 
-  public User(
+  public Account(
     @NonNull String username,
     @NonNull String password,
+    @NonNull Scope scope,
+    @NonNull boolean enabled,
     Double balance
   ) {
     if (balance < 0) {
@@ -52,10 +62,8 @@ public class User {
     }
     this.username = username;
     this.password = password;
+    this.scope = scope;
+    this.enabled = enabled;
     this.balance = balance;
-  }
-
-  public boolean checkPassword(String password) {
-    return this.password.equals(password);
   }
 }

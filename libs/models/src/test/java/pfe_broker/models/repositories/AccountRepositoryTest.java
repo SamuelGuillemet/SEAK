@@ -6,11 +6,11 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import jakarta.inject.Inject;
 import java.util.Optional;
 import org.junit.jupiter.api.Assertions;
-import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.junit.jupiter.Testcontainers;
-import pfe_broker.models.domains.User;
+import pfe_broker.models.domains.Account;
+import pfe_broker.models.domains.Scope;
 
 @MicronautTest(
   rollback = false,
@@ -27,27 +27,25 @@ import pfe_broker.models.domains.User;
 )
 @Testcontainers(disabledWithoutDocker = true)
 @TestInstance(TestInstance.Lifecycle.PER_CLASS)
-class UserRepositoryTest {
-  static {
-    System.setProperty("micronaut.config.files", "classpath:data.yml");
-  }
+class AccountRepositoryTest {
 
   @Inject
-  private UserRepository userRepository;
-
-  User user;
-
-  @BeforeAll
-  void setup() {}
+  private AccountRepository userRepository;
 
   @Test
   void testFindByUsername() {
     // Create a sample user
-    User user = new User("testuser", "testpassword", 1000.0);
+    Account user = new Account(
+      "testuser",
+      "testpassword",
+      Scope.USER,
+      true,
+      1000.0
+    );
     userRepository.save(user);
 
     // Call the repository method
-    Optional<User> foundUser = userRepository.findByUsername("testuser");
+    Optional<Account> foundUser = userRepository.findByUsername("testuser");
 
     // Assert that the stock is found
     Assertions.assertTrue(foundUser.isPresent());
