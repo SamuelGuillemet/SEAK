@@ -10,6 +10,7 @@ from quickfix import (
     MsgType,
     MsgType_ExecutionReport,
     MsgType_Logon,
+    MsgType_Logout,
     MsgType_MarketDataRequestReject,
     MsgType_MarketDataSnapshotFullRefresh,
     MsgType_OrderCancelReject,
@@ -84,13 +85,20 @@ class ClientApplication(Application):
             message.setField(Password(self.password))
 
     def toApp(self, message: Message, sessionId: SessionID):
-        log_quick_fix_message(message, "Sending", logging.INFO)
+        log_quick_fix_message(message, "Sending")
 
     def fromAdmin(self, message: Message, sessionId: SessionID):
         log_quick_fix_message(message, "Received")
+        msg_type = message.getHeader().getField(MsgType()).getString()
+
+        if msg_type == MsgType_Logout:
+            logger.warning("Received logout message")
+            self.session_id = None
+        elif msg_type == MsgType_Logon:
+            logger.info("User connected to the server")
 
     def fromApp(self, message: Message, sessionId: SessionID):
-        log_quick_fix_message(message, "Received", logging.INFO)
+        log_quick_fix_message(message, "Received")
 
         msg_type = message.getHeader().getField(MsgType()).getString()
 
@@ -144,7 +152,7 @@ def setup(
     order_cancel_reject_handler: OrderCancelRejectHandler | None = None,
 ):
     setup_logs("client")
-    setup_logs("quickfix")
+    setup_logs("quickfix", level=logging.INFO)
     application = ClientApplication()
 
     application.set_credentials(username, password)

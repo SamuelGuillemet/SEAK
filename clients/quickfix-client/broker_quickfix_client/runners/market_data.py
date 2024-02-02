@@ -18,7 +18,7 @@ def market_data_test(application: ClientApplication):
     ):
         logger.info(f"Market data for {market_data_response.symbol}:")
         sorted_dict = dict(sorted(market_data_response.market_data.items()))
-        for entry in sorted(sorted_dict.values()):
+        for entry in sorted_dict.values():
             string = "\t"
             for element in entry:
                 string += f"{element.md_entry_type.name}= {element.md_entry_px} "
@@ -40,6 +40,7 @@ def market_data_test(application: ClientApplication):
             MarketDataEntryTypeEnum.LOW,
         ],
     )
+    logger.info("Requesting market data snapshot")
     application.send(market_data_request_snapshot)
     sleep(5)
 
@@ -53,13 +54,15 @@ def market_data_test(application: ClientApplication):
             MarketDataEntryTypeEnum.LOW,
         ],
     )
+    logger.info("Requesting market data subscription")
     application.send(market_data_request_subscribe)
 
-    sleep(2)
+    sleep(10)
 
     market_data_request_unsubscribe = MarketDataRequest.new_unsubscribe_request(
         market_data_request_subscribe.get_market_data_request()
     )
+    logger.info("Requesting market data unsubscription")
     application.send(market_data_request_unsubscribe)
 
-    sleep(5)
+    sleep(2)
