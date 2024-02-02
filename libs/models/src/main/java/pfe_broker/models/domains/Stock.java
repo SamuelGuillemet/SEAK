@@ -18,9 +18,9 @@ import lombok.ToString;
 @NoArgsConstructor
 @Entity
 @Table(
-  name = "stocks",
+  name = "stock",
   uniqueConstraints = {
-    @UniqueConstraint(columnNames = { "symbol", "user_id" }),
+    @UniqueConstraint(columnNames = { "symbol", "account_id" }),
   }
 )
 public class Stock {
@@ -37,14 +37,14 @@ public class Stock {
 
   @ManyToOne(targetEntity = Account.class, fetch = FetchType.EAGER)
   @ToString.Exclude
-  private Account user;
+  private Account account;
 
-  public Stock(@NonNull String symbol, int quantity, @NonNull Account user) {
+  public Stock(@NonNull String symbol, int quantity, @NonNull Account account) {
     if (quantity < 0) {
       throw new IllegalArgumentException("Quantity cannot be negative");
     }
     this.symbol = symbol;
     this.quantity = quantity;
-    this.user = user;
+    this.account = account;
   }
 }

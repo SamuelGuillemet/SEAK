@@ -32,29 +32,29 @@ import pfe_broker.models.domains.Stock;
 class StockRepositoryTest {
 
   @Inject
-  private AccountRepository userRepository;
+  private AccountRepository auccountRepository;
 
   @Inject
   private StockRepository stockRepository;
 
-  Account user;
+  private Account account;
 
   @BeforeAll
   void setup() {
-    user = new Account("testuser", "testpassword", Scope.USER, true, 1000.0);
-    userRepository.save(user);
+    account = new Account("testuser", "testpassword", Scope.USER, true, 1000.0);
+    auccountRepository.save(account);
   }
 
   @Test
   void testFindBySymbolAndUser() {
     // Create a sample stock
-    Stock stock = new Stock("AAPL", 10, user);
+    Stock stock = new Stock("AAPL", 10, account);
     stockRepository.save(stock);
 
     // Call the repository method
-    Optional<Stock> foundStock = stockRepository.findBySymbolAndUser(
+    Optional<Stock> foundStock = stockRepository.findBySymbolAndAccount(
       "AAPL",
-      user
+      account
     );
 
     // Assert that the stock is found
@@ -65,7 +65,7 @@ class StockRepositoryTest {
   @Test
   void testUpdateQuantity() {
     // Create a sample stock
-    Stock stock = new Stock("GOOGL", 10, user);
+    Stock stock = new Stock("GOOGL", 10, account);
     Long id = stockRepository.save(stock).getId();
 
     // Call the repository method

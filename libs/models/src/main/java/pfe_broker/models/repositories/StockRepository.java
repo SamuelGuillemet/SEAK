@@ -9,7 +9,7 @@ import pfe_broker.models.domains.Stock;
 
 @Repository
 public interface StockRepository extends JpaRepository<Stock, Long> {
-  Optional<Stock> findBySymbolAndUser(String symbol, Account user);
+  Optional<Stock> findBySymbolAndAccount(String symbol, Account account);
 
   void updateQuantity(@Id long id, int quantity);
 }

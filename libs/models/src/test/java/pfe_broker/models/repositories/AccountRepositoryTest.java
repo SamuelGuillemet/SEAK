@@ -30,7 +30,7 @@ import pfe_broker.models.domains.Scope;
 class AccountRepositoryTest {
 
   @Inject
-  private AccountRepository userRepository;
+  private AccountRepository accountRepository;
 
   @Test
   void testFindByUsername() {
@@ -42,10 +42,10 @@ class AccountRepositoryTest {
       true,
       1000.0
     );
-    userRepository.save(user);
+    accountRepository.save(user);
 
     // Call the repository method
-    Optional<Account> foundUser = userRepository.findByUsername("testuser");
+    Optional<Account> foundUser = accountRepository.findByUsername("testuser");
 
     // Assert that the stock is found
     Assertions.assertTrue(foundUser.isPresent());

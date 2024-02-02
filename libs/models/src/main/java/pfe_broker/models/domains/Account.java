@@ -43,7 +43,7 @@ public class Account {
   private Double balance;
 
   @OneToMany(
-    mappedBy = "user",
+    mappedBy = "account",
     targetEntity = Stock.class,
     fetch = FetchType.EAGER,
     cascade = CascadeType.ALL
