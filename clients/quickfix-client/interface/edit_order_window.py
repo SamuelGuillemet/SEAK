@@ -2,7 +2,9 @@ import tkinter as tk
 from tkinter import *
 from tkinter.ttk import *
 import tkinter.font
-# from broker_quickfix_client.wrappers.order import Order
+from broker_quickfix_client.wrappers.order import Order as QuickfixOrder
+from broker_quickfix_client.wrappers.enums import *
+from broker_quickfix_client.wrappers.order_cancel_replace_request import OrderCancelReplaceRequest
  
 class editOrderWindow(Toplevel):
      
@@ -51,16 +53,16 @@ class editOrderWindow(Toplevel):
         current_values = self.master.order_tree.item(self.item_id, 'values')
         cl_ord_id = current_values[0]
         order = self.master.database_manager.edit_order(self.master.username, cl_ord_id, shares, price)
-        # order = Order(order_id=order.order_id,
-        # client_order_id=order.cl_ord_id,
-        # symbol=order.symbol,
-        # side=SideEnum.BUY if order.side=="BUY" else SideEnum.SELL,
-        # type=OrdTypeEnum.LIMIT if order.type=="LIMIT" else OrdTypeEnum.STOP,
-        # price=order.price,
-        # quantity=order.quantity,
-        # )
-        # replaced_order = OrderCancelReplaceRequest.new_replace_order(cl_ord_id, order, price, shares)
-        # self.master.application.send(replaced_order)
+        order = QuickfixOrder(order_id=order.order_id,
+        client_order_id=order.cl_ord_id,
+        symbol=order.symbol,
+        side=SideEnum.BUY if order.side=="BUY" else SideEnum.SELL,
+        type=OrderTypeEnum.LIMIT if order.type=="LIMIT" else OrderTypeEnum.STOP,
+        price=order.price,
+        quantity=order.quantity,
+        )
+        replaced_order = OrderCancelReplaceRequest.new_replace_order(cl_ord_id, order, float(price), int(shares))
+        self.master.application.send(replaced_order)
         
         message = f"Edited order {cl_ord_id} from {current_values[4]} shares at price {float(current_values[5])/float(current_values[4])} to {shares} shares at price {price} "
         self.master.display_message(message)
