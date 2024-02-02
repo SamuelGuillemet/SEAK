@@ -25,8 +25,19 @@ public class MarketDataSubscriptionCatalog {
     meterRegistry.gauge(
       "order_book_market_data_subscription",
       marketDataSubscription,
-      Map::size
+      k -> countMarketDataRequests()
     );
+  }
+
+  private long countMarketDataRequests() {
+    long total = 0;
+    for (Map<
+      String,
+      MarketDataRequest
+    > requests : marketDataSubscription.values()) {
+      total += requests.size();
+    }
+    return total;
   }
 
   public void subscribe(MarketDataRequest marketDataRequest)
