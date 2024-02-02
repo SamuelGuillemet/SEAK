@@ -7,6 +7,7 @@ from typing import Any, Dict
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.middleware.trustedhost import TrustedHostMiddleware
+from fastapi.routing import APIRoute
 
 from app.api.utils.endpoints import base_router
 from app.api.v1.api import api_v1_router
@@ -16,6 +17,7 @@ from app.core.utils.backend.alert_backend import alert_backend
 from app.db.pre_start import pre_start
 from app.dependencies import get_db
 from app.schemas.base import HTTPError
+from app.utils.custom_openapi import generate_custom_openapi
 from app.utils.get_version import get_version
 from app.utils.logger import setup_logs
 
@@ -27,6 +29,18 @@ logging.getLogger("passlib").setLevel(logging.ERROR)
 
 
 logger = logging.getLogger("app.main")
+
+
+def custom_generate_unique_id(route: APIRoute) -> str:
+    """
+    Generate a unique id for each request, using the route name.
+    Prefix with the version of the API if the route is deprecated.
+    """
+    route_name = route.name
+    if route.deprecated:
+        route_version = route.path.split("/")[2]
+        route_name = f"{route_version}_{route_name}"
+    return route_name
 
 
 @asynccontextmanager
@@ -64,6 +78,7 @@ app = FastAPI(
     version=get_version(),
     lifespan=lifespan,
     responses=responses,
+    generate_unique_id_function=custom_generate_unique_id,
 )
 
 app.add_middleware(ExceptionMonitorMiddleware, alert_backend=alert_backend())
@@ -79,3 +94,5 @@ app.add_middleware(
 
 app.include_router(base_router, prefix=settings.API_V1_PREFIX)
 app.include_router(api_v1_router, prefix=settings.API_V1_PREFIX)
+
+app.openapi = generate_custom_openapi(app)
