@@ -65,8 +65,8 @@ class DatabaseManager:
             self.session.commit()
             
             # Add example orders
-            order1 = Order(user=user1, side="Buy", type="Limit", symbol="AAPL", quantity=50, price=150, status="Pending")
-            order2 = Order(user=user1, side="Sell", type="Market", symbol="GOOGL", quantity=20, price=200, status="Filled")
+            order1 = Order(order_id=1, user=user1, side="Buy", type="LIMIT", symbol="AAPL", quantity=50, price=150, status="Pending")
+            order2 = Order(order_id=2, user=user1, side="Sell", type="MARKET", symbol="GOOGL", quantity=20, price=200, status="Filled")
 
             self.session.add_all([order1, order2])
             self.session.commit()
@@ -180,6 +180,7 @@ class DatabaseManager:
             self.session.commit()
             return order
         else:
+            print("Cannot cancel order")
             return order
 
     def edit_order(self, username, cl_ord_id, shares_quantity, price):
@@ -192,6 +193,17 @@ class DatabaseManager:
             self.session.commit()
             return order
         else:
+            print("Cannot edit order")
+            return order 
+        
+    def get_order(self, username,cl_ord_id):
+        user = self.session.query(User).filter_by(username=username).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=cl_ord_id, user=user).first()
+
+        if user and order:
+            return order
+        else:
+            print("Order not found")
             return order 
     
     def get_all_orders(self, username):
