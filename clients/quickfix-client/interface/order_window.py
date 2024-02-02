@@ -2,8 +2,8 @@ import tkinter as tk
 from tkinter import *
 from tkinter.ttk import *
 from tkinter import messagebox
-#from broker_quickfix_client.wrappers.new_order_single import NewOrderSingle
-#from broker_quickfix_client.wrappers.enums import *
+from broker_quickfix_client.wrappers.new_order_single import NewOrderSingle
+from broker_quickfix_client.wrappers.enums import *
 class orderWindow(Toplevel):
     def __init__(self, master):
         super().__init__(master=master)
@@ -100,8 +100,8 @@ class orderWindow(Toplevel):
             # Update the local DB
             cl_ord_id = self.master.database_manager.place_order(side, order_type, symbol, price, self.master.username, shares)
             # Send the order to the broker
-            # order = NewOrderSingle.new_limit_order(cl_ord_id, SideEnum.BUY if side=="BUY" else SideEnum.SELL , shares, symbol, price)
-            # self.master.application.send(order)
+            order = NewOrderSingle.new_limit_order(cl_ord_id, SideEnum.BUY if side=="BUY" else SideEnum.SELL , shares, symbol, price)
+            self.master.application.send(order)
             message = f"Placed {order_type} {side} order for {shares} shares of {symbol} at Price {price}"
             self.master.display_message(message)
             self.master.refresh_main_interface()
@@ -110,8 +110,8 @@ class orderWindow(Toplevel):
             # Update the local DB
             cl_ord_id = self.master.database_manager.place_order(side, order_type, symbol, price, self.master.username, shares)
             # Send the order to the broker
-            # order = NewOrderSingle.new_stop_order(cl_ord_id, SideEnum.BUY if side=="BUY" else SideEnum.SELL , shares, symbol, price)
-            # self.master.application.send(order)
+            order = NewOrderSingle.new_stop_order(cl_ord_id, SideEnum.BUY if side=="BUY" else SideEnum.SELL , shares, symbol, price)
+            self.master.application.send(order)
             message = f"Placed {order_type} {side} order for {shares} shares of {symbol} at Price {price}"
             self.master.display_message(message)
             self.master.refresh_main_interface()
@@ -119,8 +119,8 @@ class orderWindow(Toplevel):
         elif order_type == "MARKET" and shares!=0:
             # Update the local DB
             cl_ord_id = self.master.database_manager.place_order(side, order_type, symbol, price, self.master.username, shares)
-            # order = NewOrderSingle.new_market_order(cl_ord_id, SideEnum.BUY if side=="BUY" else SideEnum.SELL , shares, symbol)
-            # self.master.application.send(order)
+            order = NewOrderSingle.new_market_order(cl_ord_id, SideEnum.BUY if side=="BUY" else SideEnum.SELL , shares, symbol)
+            self.master.application.send(order)
             self.master.refresh_main_interface()
             message = f"Placed {order_type} {side} order for {shares} shares of {symbol}"
             self.master.display_message(message)
