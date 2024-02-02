@@ -3,8 +3,9 @@ from tkinter.ttk import *
 from interface.main_interface import MainInterface
 import tkinter as tk
 from tkinter import messagebox
-# from broker_quickfix_client.application import setup
-# from time import sleep
+from broker_quickfix_client.application import setup, start_initiator
+from time import sleep
+from threading import Thread
 
 class LoginWindow(tk.Tk):
     def __init__(self):
@@ -38,18 +39,22 @@ class LoginWindow(tk.Tk):
         password = self.password_entry.get()
         if username == "user1" and password == "password":
             self.destroy()
-            MainInterface(username)
+            application, initiator = setup(username, password)
+            Thread(target=start_initiator, args=(initiator,application)).start()
+            MainInterface(username, application, initiator)
             return True
         else:
-            # # Attempt logon
-            # application, initiator = setup(username, password)
-            # sleep(3)
-            # # Check if logon was successful
-            # if application.get_session_id():
-            #     self.destroy()
-            #     MainInterface(username,application,initiator) # add those to the init
-            #     return True
-            # else:
+            # Attempt logon
+            
+            application, initiator = setup(username, password)
+            Thread(target=start_initiator, args=(initiator,application)).start()
+            sleep(3)
+            # Check if logon was successful
+            if application.get_session_id():
+                self.destroy()
+                MainInterface(username,application,initiator) # add those to the init
+                return True
+            else:
                 messagebox.showerror("Error","Wrong username or password")
                 return False
     def on_close(self):
