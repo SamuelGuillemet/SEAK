@@ -1,10 +1,10 @@
 from app.crud.base import CRUDBase
-from app.models.users import Users
+from app.models.account import Account
 from app.schemas.account import AccountCreate, AccountUpdate
 
 
-class CRUDAccount(CRUDBase[Users, AccountCreate, AccountUpdate]):
+class CRUDAccount(CRUDBase[Account, AccountCreate, AccountUpdate]):
     ...
 
 
-account = CRUDAccount(Users)
+account = CRUDAccount(Account)

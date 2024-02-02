@@ -4,7 +4,7 @@ from app.core.config import settings
 from app.core.types import SecurityScopes
 from app.crud.crud_account import account as accounts
 from app.dependencies import get_db
-from app.models.users import Users
+from app.models.account import Account
 from app.schemas import account as account_schema
 
 logger = logging.getLogger("app.command")
@@ -24,7 +24,7 @@ async def init_db() -> None:
         )
         logger.info("Base account created")
         # Activate account
-        db_obj: Users | None = await accounts.read(
+        db_obj: Account | None = await accounts.read(
             db=session, id=1
         )  # First account to be created
         assert db_obj is not None

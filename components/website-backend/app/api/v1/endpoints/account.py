@@ -23,19 +23,15 @@ logger = logging.getLogger("app.api.v1.account")
 )
 async def read_accounts(
     db=Depends(get_db),
-    # query=Depends(to_query_parameters(account_schema.Account)),
 ):
     """
     Retrieve a list of accounts.
 
     This endpoint requires authentication with the "admin" scope.
     """
-    # query_parameters = process_query_parameters(query)
-    # logger.debug(f"Query parameters: {query_parameters}")
     return await accounts.query(
         db,
         limit=None,
-        # **query_parameters,
     )
 
 
