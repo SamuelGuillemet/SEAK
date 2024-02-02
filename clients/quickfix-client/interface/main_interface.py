@@ -5,12 +5,14 @@ from interface.edit_order_window import editOrderWindow
 from interface.account_window import AccountWindow
 from db.db_utils import *
 from PIL import Image, ImageTk
-#from broker_quickfix_client.application import *
-#from broker_quickfix_client.wrappers.order_cancel_request import OrderCancelRequest
+from broker_quickfix_client.application import *
+from broker_quickfix_client.wrappers.order import Order as QuickfixOrder
+from broker_quickfix_client.wrappers.enums import *
+from broker_quickfix_client.wrappers.order_cancel_request import OrderCancelRequest
 
 class MainInterface(tk.Tk):
-    # def __init__(self,username,application, initiator):
-    def __init__(self,username):
+    def __init__(self,username,application, initiator):
+    #def __init__(self,username):
         super().__init__()
 
         # Set up window dimensions and position
@@ -25,7 +27,7 @@ class MainInterface(tk.Tk):
         self.username = username
         self.account_balance = self.database_manager.get_user_balance(self.username)
         self.owned_shares = self.database_manager.get_user_shares(self.username)
-        #self.application, self.initiator = application, initiator
+        self.application, self.initiator = application, initiator
 
         # Create main widgets
         self.create_widgets()
@@ -135,21 +137,22 @@ class MainInterface(tk.Tk):
 
     def cancel_order(self):
         # Cancel selected order
-        selected_item = self.order_tree.selection()
-        if selected_item:
-            cl_ord_id = self.order_tree.item(selected_item, 'values')[0]
+        selected_item_id = self.order_tree.selection()
+        if selected_item_id:
+            cl_ord_id = self.order_tree.item(selected_item_id, 'values')[0]
             self.display_message(f"Cancelling order {cl_ord_id}")
             order = self.database_manager.cancel_order(cl_ord_id)
-            # order = Order(order_id=order.order_id,
-            # client_order_id=order.cl_ord_id,
-            # symbol=order.symbol,
-            # side=SideEnum.BUY if order.side=="BUY" else SideEnum.SELL,
-            # type=OrdTypeEnum.LIMIT if order.type=="LIMIT" else OrdTypeEnum.STOP,
-            # price=order.price,
-            # quantity=order.quantity,
-            # )
-            # canceled_order = OrderCancelRequest.new_cancel_order(cl_ord_id, order)
-            # self.application.send(canceled_order)
+            order = QuickfixOrder(order_id=order.order_id,
+            client_order_id=order.cl_ord_id,
+            symbol=order.symbol,
+            side=SideEnum.BUY if order.side=="BUY" else SideEnum.SELL,
+            type=OrderTypeEnum.LIMIT if order.type=="LIMIT" else OrderTypeEnum.STOP,
+            price=order.price,
+            quantity=order.quantity,
+            )
+            print(order)
+            canceled_order = OrderCancelRequest.new_cancel_order(cl_ord_id, order)
+            self.application.send(canceled_order)
             self.refresh_main_interface()
         else:
             message = "Please select an order to cancel."
@@ -158,10 +161,14 @@ class MainInterface(tk.Tk):
     
     def edit_order(self):
         # Edit selected order
-        selected_item = self.order_tree.selection()
-        if selected_item:
-            self.order_tree.set(selected_item, 'Status', 'Editing')
-            editOrderWindow(self,selected_item)
+        selected_item_id = self.order_tree.selection()
+        if selected_item_id:
+            current_values = self.order_tree.item(selected_item_id, 'values')
+            cl_ord_id = current_values[0]
+            order = self.database_manager.get_order(self.username, cl_ord_id)
+            if order and order.order_id:
+                self.order_tree.set(selected_item_id, 'Status', 'Editing')
+                editOrderWindow(self,selected_item_id)
         else:
             message = "Please select an order to Edit."
             self.display_message(message)
@@ -169,7 +176,7 @@ class MainInterface(tk.Tk):
         pass
 
     def on_close(self):
-        #self.initiator.stop()
+        self.initiator.stop()
         self.destroy()
         
 if __name__ == "__main__":
