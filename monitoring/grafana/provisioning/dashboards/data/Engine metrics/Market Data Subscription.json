@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 11,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -242,9 +241,9 @@
       "options": {
         "legend": {
           "calcs": [],
-          "displayMode": "hidden",
-          "placement": "right",
-          "showLegend": false
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -305,10 +304,10 @@
         "displayLabels": ["percent"],
         "legend": {
           "calcs": [],
-          "displayMode": "hidden",
-          "placement": "right",
-          "showLegend": false,
-          "values": []
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": true,
+          "values": ["value"]
         },
         "pieType": "donut",
         "reduceOptions": {
@@ -447,6 +446,6 @@
   "timezone": "",
   "title": "Market Data Subscription",
   "uid": "65e9ea4a-c08e-11ee-acee-18c04dece852",
-  "version": 5,
+  "version": 1,
   "weekStart": ""
 }

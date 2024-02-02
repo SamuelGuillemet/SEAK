@@ -238,7 +238,7 @@
           "fields": "",
           "values": false
         },
-        "textMode": "auto",
+        "textMode": "value_and_name",
         "wideLayout": true
       },
       "pluginVersion": "10.2.3",
@@ -365,6 +365,6 @@
   "timezone": "",
   "title": "Quickfix server",
   "uid": "cc4cd0ef-e492-44dc-a3d9-c814c8f290d3",
-  "version": 2,
+  "version": 1,
   "weekStart": ""
 }
