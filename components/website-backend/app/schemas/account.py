@@ -3,7 +3,9 @@ from zxcvbn import zxcvbn
 
 from app.core.security import get_password_hash, is_hashed_password
 from app.core.types import SecurityScopes
+from app.schemas.balance import Balance
 from app.schemas.base import DefaultModel, ExcludedField
+from app.schemas.stock import AccountStock
 
 
 def validate_password(password: str | None, info: ValidationInfo) -> str | None:
@@ -51,11 +53,6 @@ class AccountBase(DefaultModel):
 class AccountCreate(AccountBase):
     @computed_field  # type: ignore[misc]
     @property
-    def balance(self) -> float:
-        return 0
-
-    @computed_field  # type: ignore[misc]
-    @property
     def enabled(self) -> bool:
         return False
 
@@ -72,7 +69,6 @@ class AccountUpdate(AccountBase):
     first_name: str | None = None
     scope: SecurityScopes | None = None
     enabled: bool | None = None
-    balance: float | None = Field(default=None, ge=0)
 
 
 class OwnAccountUpdate(AccountBase):
@@ -84,7 +80,7 @@ class OwnAccountUpdate(AccountBase):
     model_config = ConfigDict(extra="forbid")
 
 
-class Account(AccountBase):
+class Account(AccountBase, Balance, AccountStock):
     """This this the account model that is linked to the database and used by the API.
 
     Args:
@@ -95,6 +91,5 @@ class Account(AccountBase):
     password: str | None = ExcludedField
     scope: SecurityScopes
     enabled: bool
-    balance: float
 
     model_config = ConfigDict(from_attributes=True)

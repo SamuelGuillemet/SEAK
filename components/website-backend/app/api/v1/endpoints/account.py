@@ -1,11 +1,11 @@
 import logging
 
-from fastapi import APIRouter, Depends, HTTPException, Security, status
+from fastapi import APIRouter, HTTPException, Security, status
 
 from app.core.translation import Translator
 from app.core.types import SecurityScopes
 from app.crud.crud_account import account as accounts
-from app.dependencies import get_current_active_account, get_db
+from app.dependencies import DBDependency, RedisDependency, get_current_active_account
 from app.schemas import account as account_schema
 
 router = APIRouter(tags=["account"], prefix="/account")
@@ -22,21 +22,23 @@ logger = logging.getLogger("app.api.v1.account")
     ],
 )
 async def read_accounts(
-    db=Depends(get_db),
+    db: DBDependency,
+    redis: RedisDependency,
 ):
     """
     Retrieve a list of accounts.
 
     This endpoint requires authentication with the "admin" scope.
     """
-    return await accounts.query(
+    return await accounts.query_redis(
         db,
+        redis,
         limit=None,
     )
 
 
 @router.post("/", response_model=account_schema.Account)
-async def create_account(account: account_schema.AccountCreate, db=Depends(get_db)):
+async def create_account(account: account_schema.AccountCreate, db: DBDependency):
     """
     Create a new account.
     """
@@ -56,13 +58,13 @@ async def create_account(account: account_schema.AccountCreate, db=Depends(get_d
         Security(get_current_active_account, scopes=[SecurityScopes.ADMIN.value])
     ],
 )
-async def read_account(account_id: int, db=Depends(get_db)):
+async def read_account(account_id: int, db: DBDependency, redis: RedisDependency):
     """
     Retrieve an account by ID.
 
     This endpoint requires authentication with the "admin" scope.
     """
-    account = await accounts.read(db, account_id)
+    account = await accounts.read_redis(db, redis, account_id)
     if account is None:
         logger.debug(f"Account {account_id} not found")
         raise HTTPException(
@@ -71,7 +73,7 @@ async def read_account(account_id: int, db=Depends(get_db)):
     return account
 
 
-@router.put(
+@router.patch(
     "/{account_id}",
     response_model=account_schema.Account,
     dependencies=[
@@ -79,7 +81,10 @@ async def read_account(account_id: int, db=Depends(get_db)):
     ],
 )
 async def update_account(
-    account_id: int, account: account_schema.AccountUpdate, db=Depends(get_db)
+    account_id: int,
+    account: account_schema.AccountUpdate,
+    db: DBDependency,
+    redis: RedisDependency,
 ):
     """
     Update an account by ID.
@@ -99,7 +104,7 @@ async def update_account(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail=translator.USERNAME_UNAVAILABLE,
         )
-    return await accounts.update(db, db_obj=old_account, obj_in=account)
+    return await accounts.update_redis(db, redis, db_obj=old_account, obj_in=account)
 
 
 @router.delete(
@@ -109,7 +114,7 @@ async def update_account(
         Security(get_current_active_account, scopes=[SecurityScopes.ADMIN.value])
     ],
 )
-async def delete_account(account_id: int, db=Depends(get_db)):
+async def delete_account(account_id: int, db: DBDependency):
     """
     Delete an account by ID.
 
