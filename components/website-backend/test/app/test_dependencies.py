@@ -124,7 +124,6 @@ class TestGetCurrentAccount(BaseTest):
         assert account.username == self.account_db.username
         assert account.scope == self.account_db.scope
         assert account.enabled == self.account_db.enabled
-        assert account.balance == self.account_db.balance
 
     async def test_get_current_active_account_inactive(self):
         # Arrange
@@ -159,4 +158,3 @@ class TestGetCurrentAccount(BaseTest):
         assert account.username == self.account_db.username
         assert account.scope == self.account_db.scope
         assert account.enabled == self.account_db.enabled
-        assert account.balance == self.account_db.balance

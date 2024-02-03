@@ -56,7 +56,6 @@ def test_account_create():
         "enabled": False,
         "scope": "user",
         "password": account.password,
-        "balance": 0,
     }
 
     # Test invalid account creation
@@ -77,9 +76,8 @@ def test_account_create():
 
 def test_account_update():
     # Test valid account update
-    account_dict = {
+    account_dict: dict[str, Any] = {
         "username": "johndoe",
-        "balance": 100,
         "last_name": "Doe",
         "first_name": "John",
     }
