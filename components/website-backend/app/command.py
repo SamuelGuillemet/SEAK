@@ -11,7 +11,7 @@ from app.commands.migrate_db import migrate_db
 from app.commands.open_api import open_api
 from app.commands.reset_db import reset_db
 from app.db.pre_start import pre_start
-from app.dependencies import get_db
+from app.dependencies import get_db, get_redis
 from app.utils.logger import setup_logs
 
 logger = logging.getLogger("app.command")
@@ -131,6 +131,7 @@ async def main(command: str) -> None:
         return
 
     get_db.setup()
+    get_redis.setup()
     await pre_start()
 
     match command:

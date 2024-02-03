@@ -15,7 +15,7 @@ from app.core.config import settings
 from app.core.middleware import ExceptionMonitorMiddleware
 from app.core.utils.backend.alert_backend import alert_backend
 from app.db.pre_start import pre_start
-from app.dependencies import get_db
+from app.dependencies import get_db, get_redis
 from app.schemas.base import HTTPError
 from app.utils.custom_openapi import generate_custom_openapi
 from app.utils.get_version import get_version
@@ -50,6 +50,7 @@ async def lifespan(_app: FastAPI):  # pragma: no cover
     """
     logger.info("Initializing database connection...")
     get_db.setup()
+    get_redis.setup()
     await pre_start()
     logger.info("Database connection established.")
     yield

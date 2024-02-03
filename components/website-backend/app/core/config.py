@@ -46,6 +46,13 @@ class Settings(BaseSettings):
     def DATABASE_URI(self) -> str:
         """The URI for the database."""
 
+    REDIS_HOST: str
+    REDIS_PORT: int
+
+    @property
+    def REDIS_URI(self) -> str:
+        return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
+
 
 class ConfigDevelopment(Settings):
     LOCALE: SupportedLocales = "fr"
@@ -94,6 +101,9 @@ class ConfigDevelopment(Settings):
 
         return self.SQLITE_DATABASE_URI
 
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
+
 
 class ConfigProduction(Settings):
     LOCALE: SupportedLocales = "en"
@@ -130,6 +140,9 @@ class ConfigProduction(Settings):
             db=self.POSTGRES_DB,
         )
 
+    REDIS_HOST: str = Field(...)
+    REDIS_PORT: int = Field(...)
+
 
 class ConfigTest(Settings):
     LOCALE: SupportedLocales = "en"
@@ -157,6 +170,9 @@ class ConfigTest(Settings):
     @property
     def DATABASE_URI(self) -> str:
         return "sqlite+aiosqlite:///./test_pfe_broker.db"
+
+    REDIS_HOST: str = "localhost"
+    REDIS_PORT: int = 6379
 
 
 env = os.getenv("ENVIRONMENT", "development")

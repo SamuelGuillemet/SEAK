@@ -1,7 +1,9 @@
 import logging
+from typing import Annotated
 
 from fastapi import Depends, HTTPException, Security, security, status
 from jose import JWTError, jwt
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.auth import check_scopes, oauth2_scheme
@@ -9,6 +11,7 @@ from app.core.config import settings
 from app.core.translation import Translator
 from app.core.types import SecurityScopes
 from app.crud.crud_account import account as accounts
+from app.db.redis.redis import RedisDB
 from app.db.select_db import select_db
 from app.models.account import Account
 from app.schemas import token as token_schema
@@ -19,6 +22,13 @@ logger = logging.getLogger("app.dependencies")
 
 # Create a database session (dependency injected)
 get_db = select_db()
+
+DBDependency = Annotated[AsyncSession, Depends(get_db)]
+
+# Create a redis client (dependency injected)
+get_redis = RedisDB()
+
+RedisDependency = Annotated[Redis, Depends(get_redis)]
 
 
 async def get_current_account(

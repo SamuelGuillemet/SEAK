@@ -6,7 +6,7 @@ import traceback
 from sqlalchemy import select
 from tenacity import after_log, before_log, retry, stop_after_attempt, wait_fixed
 
-from app.dependencies import get_db
+from app.dependencies import get_db, get_redis
 
 MAX_TRIES = 30  # 30 seconds
 WAIT_SECONDS = 1
@@ -42,7 +42,11 @@ async def pre_start() -> None:
         async with get_db.get_session() as db:
             await db.execute(select(1))
 
+        async with get_redis.get_client() as redis:
+            await redis.ping()
+
         logger.info(f"Database {get_db.__name__} is ready to accept connections")
+        logger.info("Redis is ready to accept connections")
         signal.signal(signal.SIGINT, signal.SIG_DFL)
     except Exception as e:
         global RAISED_EXCEPTION
