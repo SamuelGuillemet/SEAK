@@ -1,0 +1,37 @@
+{
+  "namespace": "pfe_broker.avro",
+  "type": "record",
+  "name": "MarketDataRequest",
+  "fields": [
+    {
+      "name": "username",
+      "type": "string"
+    },
+    {
+      "name": "symbols",
+      "type": {
+        "type": "array",
+        "items": "string"
+      }
+    },
+    {
+      "name": "depth",
+      "type": "int"
+    },
+    {
+      "name": "marketDataEntries",
+      "type": {
+        "type": "array",
+        "items": "MarketDataEntry"
+      }
+    },
+    {
+      "name": "marketDataSubscriptionRequest",
+      "type": "MarketDataSubscriptionRequest"
+    },
+    {
+      "name": "requestId",
+      "type": "string"
+    }
+  ]
+}

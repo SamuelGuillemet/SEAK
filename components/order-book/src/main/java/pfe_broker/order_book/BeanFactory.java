@@ -8,6 +8,9 @@ import org.apache.avro.Schema;
 import org.apache.kafka.clients.admin.AdminClient;
 import org.apache.kafka.clients.admin.CreateTopicsOptions;
 import org.apache.kafka.clients.admin.NewTopic;
+import pfe_broker.avro.MarketDataRejected;
+import pfe_broker.avro.MarketDataRequest;
+import pfe_broker.avro.MarketDataResponse;
 import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.utils.SchemaRecord;
 
@@ -53,6 +56,27 @@ public class BeanFactory {
     ) {
       return createTopic(topicName);
     }
+
+    @Bean
+    NewTopic marketDataRequestTopic(
+      @Property(name = "kafka.topics.market-data-request") String topicName
+    ) {
+      return createTopic(topicName);
+    }
+
+    @Bean
+    NewTopic marketDataResponseTopic(
+      @Property(name = "kafka.topics.market-data-response") String topicName
+    ) {
+      return createTopic(topicName);
+    }
+
+    @Bean
+    NewTopic marketDataRejectedTopic(
+      @Property(name = "kafka.topics.market-data-rejected") String topicName
+    ) {
+      return createTopic(topicName);
+    }
   }
 
   @Factory
@@ -74,6 +98,27 @@ public class BeanFactory {
       @Property(name = "kafka.topics.order-book-rejected") String topicName
     ) {
       return createSchemaRecord(OrderBookRequest.getClassSchema(), topicName);
+    }
+
+    @Bean
+    SchemaRecord marketDataRequestSchema(
+      @Property(name = "kafka.topics.market-data-request") String topicName
+    ) {
+      return createSchemaRecord(MarketDataRequest.getClassSchema(), topicName);
+    }
+
+    @Bean
+    SchemaRecord marketDataResponseSchema(
+      @Property(name = "kafka.topics.market-data-response") String topicName
+    ) {
+      return createSchemaRecord(MarketDataResponse.getClassSchema(), topicName);
+    }
+
+    @Bean
+    SchemaRecord marketDataRejectedSchema(
+      @Property(name = "kafka.topics.market-data-rejected") String topicName
+    ) {
+      return createSchemaRecord(MarketDataRejected.getClassSchema(), topicName);
     }
   }
 }

@@ -6,6 +6,8 @@ import io.micronaut.configuration.kafka.annotation.Topic;
 import jakarta.inject.Singleton;
 import java.util.List;
 import org.apache.kafka.clients.consumer.ConsumerRecord;
+import pfe_broker.avro.MarketDataRejected;
+import pfe_broker.avro.MarketDataResponse;
 import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
@@ -53,5 +55,20 @@ public class ReportListener {
     OrderBookRequest orderBookRequest
   ) {
     serverApplication.sendOrderBookRejected(key, orderBookRequest);
+  }
+
+  @KafkaListener(groupId = "quickfix-market-data-response", batch = true)
+  @Topic("${kafka.topics.market-data-response}")
+  void receiveMarketDataResponse(List<MarketDataResponse> marketDataResponses) {
+    marketDataResponses.forEach(serverApplication::sendMarketDataSnapshot);
+  }
+
+  @KafkaListener("quickfix-market-data-rejected")
+  @Topic("${kafka.topics.market-data-rejected}")
+  void receiveMarketDataRejected(
+    @KafkaKey String key,
+    MarketDataRejected marketDataRejected
+  ) {
+    serverApplication.sendMarketDataRequestReject(marketDataRejected);
   }
 }

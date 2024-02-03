@@ -22,35 +22,36 @@ dependencies {
     implementation project(":libs:models")
     implementation project(":libs:common")
 
-    runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
-    implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.3.0'
+    // Micronaut
+    runtimeOnly libs.snakeyaml
+    implementation libs.micronaut.kafka
 
     // Micrometer
-    implementation group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-registry-prometheus', version: '5.2.0'
-    annotationProcessor group: 'io.micronaut.micrometer', name: 'micronaut-micrometer-annotation', version: '5.2.0'
-    implementation("io.micronaut:micronaut-http-client")
-    implementation("io.micronaut:micronaut-management")
+    implementation libs.micronaut.micrometer.registry.prometheus
+    annotationProcessor libs.micronaut.micrometer.annotation
+    implementation libs.micronaut.http.client
+    implementation libs.micronaut.management
 
     // Database
-    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.1'
-
-    // Log4J
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.1'
-    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
-    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.22.1'
-
-    // Avro
-    implementation group: 'io.confluent', name: 'kafka-avro-serializer', version: '7.5.1'
+    implementation libs.micronaut.data.hibernate.jpa
 
     // QuickFixJ
-    implementation group: 'org.quickfixj', name: 'quickfixj-core', version: '2.3.1'
-    implementation group: 'org.quickfixj', name: 'quickfixj-messages-all', version: '2.3.1'
+    implementation libs.quickfixj.core
+    implementation libs.quickfixj.messages.all
 
-    // Test implementation
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.1'
-    testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
-    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
-    testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
+    // Avro
+    implementation libs.kafka.avro.serializer
+
+    // Log4J
+    implementation libs.log4j.core
+    runtimeOnly libs.log4j.api
+    runtimeOnly libs.log4j.slf4j2.impl
+
+    // Test dependencies
+    testImplementation libs.awaitility
+    testImplementation libs.assertj.core
+    testImplementation libs.testcontainers.junit.jupiter
+    testImplementation libs.testcontainers.postgresql
 }
 
 application {

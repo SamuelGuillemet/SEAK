@@ -10,7 +10,6 @@ import io.micrometer.core.instrument.Timer;
 import io.micronaut.context.annotation.Property;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Singleton;
-import java.util.ArrayList;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -35,8 +34,6 @@ public class OrderIntegrityCheckService {
 
   private final StatefulRedisConnection<String, String> redisConnection;
 
-  private final List<String> symbols;
-
   private final MeterRegistry meterRegistry;
 
   public OrderIntegrityCheckService(
@@ -44,16 +41,9 @@ public class OrderIntegrityCheckService {
     SymbolReader symbolReader,
     RedisClient redisClient,
     MeterRegistry meterRegistry
-  ) throws InterruptedException {
+  ) {
     this.symbolReader = symbolReader;
-    this.symbols = new ArrayList<>();
     this.meterRegistry = meterRegistry;
-
-    if (this.symbolReader.isKafkaRunning()) {
-      this.retreiveSymbols();
-    } else {
-      LOG.error("Kafka is not running");
-    }
 
     if (UtilsRunning.isRedisRunning(redisUri)) {
       this.redisConnection = redisClient.connect();
@@ -224,7 +214,11 @@ public class OrderIntegrityCheckService {
       LOG.debug("Order {} rejected because of empty username", order);
       return OrderRejectReason.UNKNOWN_ACCOUNT;
     }
-    if (symbol == null || symbol.isEmpty() || !symbols.contains(symbol)) {
+    if (
+      symbol == null ||
+      symbol.isEmpty() ||
+      !symbolReader.getSymbolsCached().contains(symbol)
+    ) {
       LOG.debug("Order {} rejected because of unknown symbol", order);
       return OrderRejectReason.UNKNOWN_SYMBOL;
     }
@@ -282,11 +276,10 @@ public class OrderIntegrityCheckService {
    * Expose this public method to be able to call it from the test
    */
   public void retreiveSymbols() throws InterruptedException {
-    this.symbols.clear();
-    this.symbols.addAll(this.symbolReader.getSymbols());
+    this.symbolReader.retrieveSymbols();
   }
 
   public List<String> getSymbols() {
-    return symbols;
+    return this.symbolReader.getSymbolsCached();
   }
 }

@@ -20,7 +20,7 @@ import pfe_broker.avro.Order;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Type;
 import pfe_broker.common.utils.KafkaTestContainer;
-import pfe_broker.market_matcher.mocks.MockMarketDataProducer;
+import pfe_broker.common.utils.mocks.MockMarketDataProducer;
 import pfe_broker.market_matcher.mocks.MockOrderProducer;
 import pfe_broker.market_matcher.mocks.MockTradeListener;
 

@@ -1,4 +1,4 @@
-package pfe_broker.order_book;
+package pfe_broker.order_book.order_book;
 
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.Timer;
@@ -11,6 +11,7 @@ import org.apache.kafka.clients.consumer.ConsumerRecord;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.OrderBookRequestType;
+import pfe_broker.order_book.MessageProducer;
 
 @Singleton
 public class OrderListener {
@@ -39,8 +40,7 @@ public class OrderListener {
   @KafkaListener(
     groupId = "order-book-orders",
     batch = true,
-    offsetReset = OffsetReset.EARLIEST,
-    pollTimeout = "0ms"
+    offsetReset = OffsetReset.EARLIEST
   )
   @Topic(patterns = "${kafka.topics.order-book-request}")
   public void receiveOrder(
@@ -88,8 +88,7 @@ public class OrderListener {
 
     if (oldOrder == null) {
       LOG.error(
-        "Order {} could not be replaced/cancelled by {} because it does not exist",
-        oldOrder,
+        "Order could not be replaced/cancelled by {} because it does not exist",
         order
       );
       messageProducer.sendOrderBookRejected(key, orderBookRequest);

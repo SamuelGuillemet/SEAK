@@ -10,6 +10,7 @@ import io.micronaut.test.extensions.junit5.annotation.MicronautTest;
 import io.micronaut.test.support.TestPropertyProvider;
 import jakarta.inject.Inject;
 import java.time.Duration;
+import java.util.List;
 import java.util.Map;
 import org.junit.jupiter.api.AfterEach;
 import org.junit.jupiter.api.Test;
@@ -17,12 +18,14 @@ import org.junit.jupiter.api.TestInstance;
 import org.testcontainers.junit.jupiter.Container;
 import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.common.utils.KafkaTestContainer;
-import pfe_broker.quickfix_server.mocks.MockOrderListener;
+import pfe_broker.quickfix_server.mocks.MockKafkaListener;
 import quickfix.FieldNotFound;
+import quickfix.IncorrectDataFormat;
 import quickfix.IncorrectTagValue;
 import quickfix.SessionID;
 import quickfix.UnsupportedMessageType;
 import quickfix.field.SenderCompID;
+import quickfix.fix44.MarketDataRequest;
 import quickfix.fix44.NewOrderSingle;
 import quickfix.fix44.OrderCancelReplaceRequest;
 import quickfix.fix44.OrderCancelRequest;
@@ -55,7 +58,13 @@ class ServerApplicationTest implements TestPropertyProvider {
     if (!kafka.isRunning()) {
       kafka.start();
     }
-    kafka.registerTopics("orders", "accepted-trades", "rejected-orders");
+    kafka.registerTopics(
+      "orders",
+      "accepted-trades",
+      "rejected-orders",
+      "order-book-request",
+      "market-data-request"
+    );
     return Map.of(
       "kafka.bootstrap.servers",
       kafka.getBootstrapServers(),
@@ -65,14 +74,14 @@ class ServerApplicationTest implements TestPropertyProvider {
   }
 
   @AfterEach
-  void cleanup(MockOrderListener mockOrderListener) {
-    mockOrderListener.receivedOrders.clear();
-    mockOrderListener.receivedOrderBookRequests.clear();
+  void cleanup(MockKafkaListener mockKafkaListener) {
+    mockKafkaListener.receivedOrders.clear();
+    mockKafkaListener.receivedOrderBookRequests.clear();
   }
 
   @Test
-  void testOnMessageNewOrderSingleMarket(MockOrderListener mockOrderListener)
-    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+  void testOnMessageNewOrderSingleMarket(MockKafkaListener mockKafkaListener)
+    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue, IncorrectDataFormat {
     NewOrderSingle newOrderSingle = new NewOrderSingle(
       new quickfix.field.ClOrdID("1"),
       new quickfix.field.Side(quickfix.field.Side.BUY),
@@ -83,7 +92,7 @@ class ServerApplicationTest implements TestPropertyProvider {
     newOrderSingle.set(new quickfix.field.OrderQty(10));
     newOrderSingle.getHeader().setString(SenderCompID.FIELD, "testuser");
 
-    serverApplication.onMessage(
+    serverApplication.fromApp(
       newOrderSingle,
       new SessionID("FIX.4.4", "testuser", "SERVER")
     );
@@ -92,13 +101,13 @@ class ServerApplicationTest implements TestPropertyProvider {
       .pollInterval(Duration.ofSeconds(1))
       .atMost(Duration.ofSeconds(10))
       .untilAsserted(() -> {
-        assertThat(mockOrderListener.receivedOrders).hasSize(1);
+        assertThat(mockKafkaListener.receivedOrders).hasSize(1);
       });
   }
 
   @Test
-  void testOnMessageNewOrderSingleLimit(MockOrderListener mockOrderListener)
-    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+  void testOnMessageNewOrderSingleLimit(MockKafkaListener mockKafkaListener)
+    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue, IncorrectDataFormat {
     NewOrderSingle newOrderSingle = new NewOrderSingle(
       new quickfix.field.ClOrdID("1"),
       new quickfix.field.Side(quickfix.field.Side.BUY),
@@ -110,7 +119,7 @@ class ServerApplicationTest implements TestPropertyProvider {
     newOrderSingle.set(new quickfix.field.Price(100.0));
     newOrderSingle.getHeader().setString(SenderCompID.FIELD, "testuser");
 
-    serverApplication.onMessage(
+    serverApplication.fromApp(
       newOrderSingle,
       new SessionID("FIX.4.4", "testuser", "SERVER")
     );
@@ -119,13 +128,13 @@ class ServerApplicationTest implements TestPropertyProvider {
       .pollInterval(Duration.ofSeconds(1))
       .atMost(Duration.ofSeconds(10))
       .untilAsserted(() -> {
-        assertThat(mockOrderListener.receivedOrders).hasSize(1);
+        assertThat(mockKafkaListener.receivedOrders).hasSize(1);
       });
   }
 
   @Test
-  void testOnMessageOrderCancelRequest(MockOrderListener mockOrderListener)
-    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+  void testOnMessageOrderCancelRequest(MockKafkaListener mockKafkaListener)
+    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue, IncorrectDataFormat {
     OrderCancelRequest orderCancelRequest = new OrderCancelRequest(
       new quickfix.field.OrigClOrdID("1"),
       new quickfix.field.ClOrdID("2"),
@@ -137,7 +146,7 @@ class ServerApplicationTest implements TestPropertyProvider {
     orderCancelRequest.set(new quickfix.field.Symbol("AAPL"));
     orderCancelRequest.getHeader().setString(SenderCompID.FIELD, "testuser");
 
-    serverApplication.onMessage(
+    serverApplication.fromApp(
       orderCancelRequest,
       new SessionID("FIX.4.4", "testuser", "SERVER")
     );
@@ -146,14 +155,15 @@ class ServerApplicationTest implements TestPropertyProvider {
       .pollInterval(Duration.ofSeconds(1))
       .atMost(Duration.ofSeconds(10))
       .untilAsserted(() -> {
-        assertThat(mockOrderListener.receivedOrderBookRequests).hasSize(1);
+        assertThat(mockKafkaListener.receivedOrderBookRequests).hasSize(1);
       });
   }
 
   @Test
   void testOnMessageOrderCancelReplaceRequest(
-    MockOrderListener mockOrderListener
-  ) throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue {
+    MockKafkaListener mockKafkaListener
+  )
+    throws FieldNotFound, UnsupportedMessageType, IncorrectTagValue, IncorrectDataFormat {
     OrderCancelReplaceRequest orderCancelReplaceRequest =
       new OrderCancelReplaceRequest(
         new quickfix.field.OrigClOrdID("1"),
@@ -170,7 +180,7 @@ class ServerApplicationTest implements TestPropertyProvider {
       .getHeader()
       .setString(SenderCompID.FIELD, "testuser");
 
-    serverApplication.onMessage(
+    serverApplication.fromApp(
       orderCancelReplaceRequest,
       new SessionID("FIX.4.4", "testuser", "SERVER")
     );
@@ -179,7 +189,65 @@ class ServerApplicationTest implements TestPropertyProvider {
       .pollInterval(Duration.ofSeconds(1))
       .atMost(Duration.ofSeconds(10))
       .untilAsserted(() -> {
-        assertThat(mockOrderListener.receivedOrderBookRequests).hasSize(1);
+        assertThat(mockKafkaListener.receivedOrderBookRequests).hasSize(1);
+      });
+  }
+
+  @Test
+  void createMarketDataSnapshotTest(MockKafkaListener mockKafkaListener)
+    throws FieldNotFound, IncorrectTagValue, IncorrectDataFormat, UnsupportedMessageType {
+    MarketDataRequest marketDataRequest = new MarketDataRequest(
+      new quickfix.field.MDReqID("1"),
+      new quickfix.field.SubscriptionRequestType(
+        quickfix.field.SubscriptionRequestType.SNAPSHOT
+      ),
+      new quickfix.field.MarketDepth(1)
+    );
+
+    List<String> symbols = List.of("AAPL", "GOOGL");
+    for (String symbol : symbols) {
+      MarketDataRequest.NoRelatedSym relatedSymbolGroup =
+        new MarketDataRequest.NoRelatedSym();
+      relatedSymbolGroup.set(new quickfix.field.Symbol(symbol));
+      marketDataRequest.addGroup(relatedSymbolGroup);
+    }
+
+    List<Character> mdEntryTypes = List.of(
+      quickfix.field.MDEntryType.OPENING_PRICE,
+      quickfix.field.MDEntryType.CLOSING_PRICE,
+      quickfix.field.MDEntryType.TRADING_SESSION_HIGH_PRICE,
+      quickfix.field.MDEntryType.TRADING_SESSION_LOW_PRICE
+    );
+
+    for (Character mdEntryType : mdEntryTypes) {
+      MarketDataRequest.NoMDEntryTypes entryTypeGroup =
+        new MarketDataRequest.NoMDEntryTypes();
+      entryTypeGroup.set(new quickfix.field.MDEntryType(mdEntryType));
+      marketDataRequest.addGroup(entryTypeGroup);
+    }
+
+    marketDataRequest.getHeader().setString(SenderCompID.FIELD, "testuser");
+
+    serverApplication.fromApp(
+      marketDataRequest,
+      new SessionID("FIX.4.4", "testuser", "SERVER")
+    );
+
+    await()
+      .pollInterval(Duration.ofSeconds(1))
+      .atMost(Duration.ofSeconds(10))
+      .untilAsserted(() -> {
+        assertThat(mockKafkaListener.receivedMarketDataRequests).hasSize(1);
+        assertThat(
+          mockKafkaListener.receivedMarketDataRequests
+            .get(0)
+            .getMarketDataEntries()
+        )
+          .hasSize(4);
+        assertThat(
+          mockKafkaListener.receivedMarketDataRequests.get(0).getSymbols()
+        )
+          .hasSize(2);
       });
   }
 }

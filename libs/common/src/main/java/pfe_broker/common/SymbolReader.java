@@ -1,7 +1,10 @@
 package pfe_broker.common;
 
 import io.micronaut.context.annotation.Property;
+import io.micronaut.context.annotation.Requires;
+import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Properties;
 import java.util.concurrent.ExecutionException;
@@ -11,15 +14,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 @Singleton
+@Requires(property = "kafka.bootstrap.servers")
 public class SymbolReader {
 
   private static final Logger LOG = LoggerFactory.getLogger(SymbolReader.class);
+
+  private final List<String> symbols;
 
   @Property(name = "kafka.bootstrap.servers")
   private String bootstrapServers;
 
   @Property(name = "kafka.common.symbol-topic-prefix")
   private String symbolTopicPrefix;
+
+  public SymbolReader() throws InterruptedException {
+    this.symbols = new ArrayList<>();
+  }
+
+  @PostConstruct
+  void init() throws InterruptedException {
+    retrieveSymbols();
+  }
 
   public List<String> getSymbols() throws InterruptedException {
     Properties props = new Properties();
@@ -41,5 +56,18 @@ public class SymbolReader {
 
   public boolean isKafkaRunning() {
     return UtilsRunning.isKafkaRunning(bootstrapServers);
+  }
+
+  public List<String> getSymbolsCached() {
+    return symbols;
+  }
+
+  public void retrieveSymbols() throws InterruptedException {
+    if (isKafkaRunning()) {
+      this.symbols.clear();
+      this.symbols.addAll(getSymbols());
+    } else {
+      LOG.error("Kafka is not running");
+    }
   }
 }

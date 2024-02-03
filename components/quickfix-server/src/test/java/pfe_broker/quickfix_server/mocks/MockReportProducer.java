@@ -3,6 +3,8 @@ package pfe_broker.quickfix_server.mocks;
 import io.micronaut.configuration.kafka.annotation.KafkaClient;
 import io.micronaut.configuration.kafka.annotation.KafkaKey;
 import io.micronaut.configuration.kafka.annotation.Topic;
+import pfe_broker.avro.MarketDataRejected;
+import pfe_broker.avro.MarketDataResponse;
 import pfe_broker.avro.OrderBookRequest;
 import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
@@ -25,5 +27,17 @@ public interface MockReportProducer {
   void sendOrderBookRejected(
     @KafkaKey String key,
     OrderBookRequest orderBookRequest
+  );
+
+  @Topic("${kafka.topics.market-data-response}")
+  void sendMarketDataResponse(
+    @KafkaKey String key,
+    MarketDataResponse marketDataResponse
+  );
+
+  @Topic("${kafka.topics.market-data-rejected}")
+  void sendMarketDataRejected(
+    @KafkaKey String key,
+    MarketDataRejected marketDataRejected
   );
 }

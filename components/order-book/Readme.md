@@ -15,6 +15,8 @@ The Order Book is a component of the exchange system that maintains the list of 
 
 The Order Book is responsible for maintaining the list of orders for each symbol. It subscribes to Kafka topics for order book requests, processes them, and sends the resulting order book updates to another Kafka topic. The component also handles the matching of orders and the removal of orders from the order book when they are filled.
 
+The other role of this component is to allow users to subscribe to market data updates for a particular symbol. It subscribes to a Kafka topic for market data requests, processes them, and sends the resulting market data responses to another Kafka topic. The component also handles the unsubscription of users from market data updates.
+
 ## Dependencies
 
 The Order Book relies on the following dependencies:
@@ -54,6 +56,13 @@ Micrometer is employed for collecting and exposing metrics related to the Order 
     - `symbol`: The symbol of the order book request.
   - Description: This timer records the time taken to match orders, providing insights into the performance of the matching algorithm.
 
+- **Order Book Market Data Request Metric:**
+  - Type: _Timer_
+  - Metric Name: `order_book_market_data_request`
+  - Tags:
+    - `subscriptionRequest`: The type of the market data request (SNAPSHOT, SUBSCRIBE, UNSUBSCRIBE).
+  - Description: This timer records the time taken to handle a market data request, providing insights into the performance of the market data request.
+
 - **Order Book Volume Metric:**
   - Type: _Gauge_
   - Metric Name: `order_book_volume_order_book`
@@ -61,6 +70,11 @@ Micrometer is employed for collecting and exposing metrics related to the Order 
     - `symbol`: The symbol of the order book request.
     - `side`: The side (BUY/SELL) of the order book request.
   - Description: This gauge records the total volume of the order book, providing insights into the liquidity of the market.
+
+- **Order Book Market Data Subscriptions Metric:**
+  - Type: _Gauge_
+  - Metric Name: `order_book_market_data_subscriptions`
+  - Description: This gauge records the number of market data subscriptions for all symbols, providing insights into the number of users subscribed to market data updates.
 
 - **Order Book Trades Metric:**
   - Type: _Counter_
@@ -84,6 +98,22 @@ Micrometer is employed for collecting and exposing metrics related to the Order 
     - `symbol`: The symbol of the order book request.
     - `requestType`: The type of the order book request (NEW, MODIFY, CANCEL).
   - Description: This counter increments each time a response is sent to the client, providing insights into the performance of the order book.
+
+- **Order Book Market Data Response Metric:**
+  - Type: _Counter_
+  - Metric Name: `order_book_market_data_responses`
+  - Tags:
+    - `symbol`: The symbol of the order book request.
+  - Description: This counter increments each time a market data response is sent to the client, providing insights into the performance of the market data update.
+
+- **Order Book Market Data Rejected Metric:**
+  - Type: _Counter_
+  - Metric Name: `order_book_market_data_rejected`
+  - Tags:
+    - `symbol`: The symbol of the order book request.
+    - `reason`: The reason for the rejection of the market data request.
+  - Description: This counter increments each time a market data request is rejected due to any issue. It helps monitor and analyze rejected market data request patterns.
+
 
 The **Prometheus** endpoint is exposed at `/prometheus` can be used to view the metrics.
 

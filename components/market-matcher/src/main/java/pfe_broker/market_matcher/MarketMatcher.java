@@ -6,9 +6,7 @@ import io.micronaut.configuration.kafka.annotation.KafkaListener;
 import io.micronaut.configuration.kafka.annotation.OffsetReset;
 import io.micronaut.configuration.kafka.annotation.Topic;
 import io.micronaut.messaging.annotation.SendTo;
-import jakarta.annotation.PostConstruct;
 import jakarta.inject.Singleton;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 import java.util.stream.Collectors;
@@ -31,30 +29,19 @@ public class MarketMatcher {
 
   private final MarketDataConsumer marketDataConsumer;
   private final SymbolReader symbolReader;
-  private final List<String> symbols;
   private final MeterRegistry meterRegistry;
   private final RejectedOrderProducer rejectedOrderProducer;
 
   MarketMatcher(
-    MarketDataConsumer marketDataProducer,
+    MarketDataConsumer marketDataConsumer,
     SymbolReader symbolReader,
     MeterRegistry meterRegistry,
     RejectedOrderProducer rejectedOrderProducer
   ) {
-    this.marketDataConsumer = marketDataProducer;
+    this.marketDataConsumer = marketDataConsumer;
     this.symbolReader = symbolReader;
-    this.symbols = new ArrayList<>();
     this.meterRegistry = meterRegistry;
     this.rejectedOrderProducer = rejectedOrderProducer;
-  }
-
-  @PostConstruct
-  void init() throws InterruptedException {
-    if (this.symbolReader.isKafkaRunning()) {
-      this.retreiveSymbols();
-    } else {
-      LOG.error("Kafka is not running");
-    }
   }
 
   @KafkaListener(
@@ -88,7 +75,7 @@ public class MarketMatcher {
 
     String symbol = order.getSymbol().toString();
 
-    if (!symbols.contains(symbol)) {
+    if (!symbolReader.getSymbolsCached().contains(symbol)) {
       rejectOrder(key, order);
       return null;
     }
@@ -142,11 +129,10 @@ public class MarketMatcher {
    * Expose this public method to be able to call it from the test
    */
   public void retreiveSymbols() throws InterruptedException {
-    this.symbols.clear();
-    this.symbols.addAll(this.symbolReader.getSymbols());
+    this.symbolReader.retrieveSymbols();
   }
 
   public List<String> getSymbols() {
-    return symbols;
+    return this.symbolReader.getSymbolsCached();
   }
 }

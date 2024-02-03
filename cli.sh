@@ -67,9 +67,11 @@ function project() {
       ./gradlew :components:"$project":run
     elif [ "$action" == "build" ]; then
       ./gradlew :components:"$project":build
+    elif [ "$action" == "coverage" ]; then
+      ./gradlew :components:"$project":jacocoTestReport
     else
       echo "Invalid action for project: $action"
-      echo "Valid actions: build, run, test"
+      echo "Valid actions: build, run, test coverage"
       exit 1
     fi
   # Test if project is python
@@ -125,7 +127,8 @@ Commands:
   Project actions:
     build                Build project
     run                  Run project
-    test                 Run tests"
+    test                 Run tests
+    coverage             Run tests and generate coverage report"
 
 if [ "$#" -lt 1 ]; then
   echo "$help_text"

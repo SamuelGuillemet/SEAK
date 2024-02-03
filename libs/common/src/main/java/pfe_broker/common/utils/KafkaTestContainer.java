@@ -15,7 +15,7 @@ import org.testcontainers.utility.DockerImageName;
 
 public class KafkaTestContainer extends GenericContainer<KafkaTestContainer> {
 
-  Logger LOG = Logger.getLogger(KafkaTestContainer.class);
+  private static final Logger LOG = Logger.getLogger(KafkaTestContainer.class);
 
   private final Network KAFKA_NETWORK = Network.newNetwork();
   private final String CONFLUENT_PLATFORM_VERSION = "7.4.1";
@@ -50,6 +50,7 @@ public class KafkaTestContainer extends GenericContainer<KafkaTestContainer> {
     );
   }
 
+  @Override
   public boolean isRunning() {
     return KAFKA.isRunning() && SCHEMA_REGISTRY.isRunning();
   }
@@ -62,7 +63,7 @@ public class KafkaTestContainer extends GenericContainer<KafkaTestContainer> {
       CreateTopicsResult result = admin.createTopics(
         Stream
           .of(topics)
-          .map(topic -> new NewTopic(topic, 2, (short) 1))
+          .map(topic -> new NewTopic(topic, 3, (short) 1))
           .toList()
       );
       result.all().get();
@@ -78,7 +79,11 @@ public class KafkaTestContainer extends GenericContainer<KafkaTestContainer> {
   }
 
   public String getBootstrapServers() {
-    return KAFKA.getBootstrapServers();
+    return String.format(
+      "%s:%d",
+      KAFKA.getHost(),
+      KAFKA.getMappedPort(KafkaContainer.KAFKA_PORT)
+    );
   }
 
   public String getSchemaRegistryUrl() {
@@ -90,7 +95,7 @@ public class KafkaTestContainer extends GenericContainer<KafkaTestContainer> {
 
     public static final String SCHEMA_REGISTRY_IMAGE =
       "confluentinc/cp-schema-registry";
-    public final int SCHEMA_REGISTRY_PORT = 8081;
+    public static final int SCHEMA_REGISTRY_PORT = 8081;
 
     @SuppressWarnings("unused")
     public SchemaRegistryContainer() {

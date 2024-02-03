@@ -1,0 +1,6 @@
+{
+  "namespace": "pfe_broker.avro",
+  "type": "enum",
+  "name": "MarketDataEntry",
+  "symbols": ["LOW", "HIGH", "OPEN", "CLOSE"]
+}

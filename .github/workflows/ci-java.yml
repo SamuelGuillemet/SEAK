@@ -30,8 +30,8 @@ jobs:
           distribution: "temurin"
           cache: "gradle"
 
-      - name: Clean gradle cache
-        run: ./gradlew clean --no-daemon
+      - name: Setup Gradle
+        uses: gradle/gradle-build-action@v3
 
-      - name: Test Java project
-        run: ./gradlew :components:${{ matrix.project }}:test
+      - name: Build Java project
+        run: ./gradlew :components:${{ matrix.project }}:build
