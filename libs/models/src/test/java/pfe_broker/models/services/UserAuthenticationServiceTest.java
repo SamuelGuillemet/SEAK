@@ -66,8 +66,7 @@ class UserAuthenticationServiceTest {
       "Test",
       "User",
       Scope.USER,
-      true,
-      1000.0
+      true
     );
     userRepository.save(user);
 
@@ -87,8 +86,7 @@ class UserAuthenticationServiceTest {
       "Test",
       "User",
       Scope.USER,
-      true,
-      1000.0
+      true
     );
     userRepository.save(user);
 

@@ -41,8 +41,7 @@ class AccountRepositoryTest {
       "Test",
       "User",
       Scope.USER,
-      true,
-      1000.0
+      true
     );
     accountRepository.save(user);
 
