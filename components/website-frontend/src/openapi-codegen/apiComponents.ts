@@ -316,7 +316,7 @@ export type UpdateAccountVariables = {
  * This endpoint requires authentication with the "admin" scope.
  */
 export const fetchUpdateAccount = (variables: UpdateAccountVariables, signal?: AbortSignal) =>
-  apiFetch<Schemas.Account, UpdateAccountError, Schemas.AccountUpdate, {}, {}, UpdateAccountPathParams>({ url: '/api/v1/account/{accountId}', method: 'put', ...variables, signal });
+  apiFetch<Schemas.Account, UpdateAccountError, Schemas.AccountUpdate, {}, {}, UpdateAccountPathParams>({ url: '/api/v1/account/{accountId}', method: 'patch', ...variables, signal });
 
 /**
  * Update an account by ID.
@@ -488,6 +488,105 @@ export const useUpdateAccountMe = (options?: Omit<reactQuery.UseMutationOptions<
   const { fetcherOptions } = useApiContext();
   return reactQuery.useMutation<Schemas.Account, UpdateAccountMeError, UpdateAccountMeVariables>({
     mutationFn: (variables: UpdateAccountMeVariables) => fetchUpdateAccountMe({ ...fetcherOptions, ...variables }),
+    ...options
+  });
+};
+
+export type UpdateBalancePathParams = {
+  accountId: number;
+};
+
+export type UpdateBalanceError = Fetcher.ErrorWrapper<
+  | {
+      status: 400;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 401;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 404;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 422;
+      payload: Schemas.HTTPValidationError;
+    }
+>;
+
+export type UpdateBalanceVariables = {
+  body: Schemas.BalanceUpdate;
+  pathParams: UpdateBalancePathParams;
+} & ApiContext['fetcherOptions'];
+
+/**
+ * Modify the balance of an account by ID.
+ *
+ * This endpoint requires authentication with the "admin" scope.
+ */
+export const fetchUpdateBalance = (variables: UpdateBalanceVariables, signal?: AbortSignal) =>
+  apiFetch<Schemas.Balance, UpdateBalanceError, Schemas.BalanceUpdate, {}, {}, UpdateBalancePathParams>({ url: '/api/v1/balance/{accountId}', method: 'put', ...variables, signal });
+
+/**
+ * Modify the balance of an account by ID.
+ *
+ * This endpoint requires authentication with the "admin" scope.
+ */
+export const useUpdateBalance = (options?: Omit<reactQuery.UseMutationOptions<Schemas.Balance, UpdateBalanceError, UpdateBalanceVariables>, 'mutationFn'>) => {
+  const { fetcherOptions } = useApiContext();
+  return reactQuery.useMutation<Schemas.Balance, UpdateBalanceError, UpdateBalanceVariables>({
+    mutationFn: (variables: UpdateBalanceVariables) => fetchUpdateBalance({ ...fetcherOptions, ...variables }),
+    ...options
+  });
+};
+
+export type UpdateStockPathParams = {
+  accountId: number;
+  symbol: string;
+};
+
+export type UpdateStockError = Fetcher.ErrorWrapper<
+  | {
+      status: 400;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 401;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 404;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 422;
+      payload: Schemas.HTTPValidationError;
+    }
+>;
+
+export type UpdateStockVariables = {
+  body: Schemas.StockUpdate;
+  pathParams: UpdateStockPathParams;
+} & ApiContext['fetcherOptions'];
+
+/**
+ * Modify the stock of an account by ID and symbol.
+ *
+ * This endpoint requires authentication with the "admin" scope.
+ */
+export const fetchUpdateStock = (variables: UpdateStockVariables, signal?: AbortSignal) =>
+  apiFetch<Schemas.Stock, UpdateStockError, Schemas.StockUpdate, {}, {}, UpdateStockPathParams>({ url: '/api/v1/stock/{accountId}/{symbol}', method: 'put', ...variables, signal });
+
+/**
+ * Modify the stock of an account by ID and symbol.
+ *
+ * This endpoint requires authentication with the "admin" scope.
+ */
+export const useUpdateStock = (options?: Omit<reactQuery.UseMutationOptions<Schemas.Stock, UpdateStockError, UpdateStockVariables>, 'mutationFn'>) => {
+  const { fetcherOptions } = useApiContext();
+  return reactQuery.useMutation<Schemas.Stock, UpdateStockError, UpdateStockVariables>({
+    mutationFn: (variables: UpdateStockVariables) => fetchUpdateStock({ ...fetcherOptions, ...variables }),
     ...options
   });
 };

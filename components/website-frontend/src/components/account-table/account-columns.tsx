@@ -62,21 +62,6 @@ export const accountColumns: ColumnDef<Account>[] = [
     )
   },
   {
-    id: 'balance',
-    accessorKey: 'balance',
-    header: ({ column }) => (
-      <DataTableColumnHeader
-        column={column}
-        title='Solde'
-      />
-    ),
-    cell: ({ row }) => {
-      const balance = row.getValue<number>('balance');
-      return formatPrice(balance);
-    },
-    enableSorting: true
-  },
-  {
     id: 'scope',
     accessorKey: 'scope',
     header: ({ column }) => (

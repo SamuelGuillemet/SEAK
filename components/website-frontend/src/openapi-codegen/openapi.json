@@ -476,7 +476,7 @@
           }
         }
       },
-      "put": {
+      "patch": {
         "tags": [
           "account"
         ],
@@ -892,12 +892,237 @@
           }
         ]
       }
+    },
+    "/api/v1/balance/{account_id}": {
+      "put": {
+        "tags": [
+          "balance"
+        ],
+        "summary": "Update Balance",
+        "description": "Modify the balance of an account by ID.\n\nThis endpoint requires authentication with the \"admin\" scope.",
+        "operationId": "update_balance",
+        "security": [
+          {
+            "OAuth2PasswordBearer": [
+              "admin",
+              "user"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Account Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/BalanceUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Balance"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Internal server error"
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/stock/{account_id}/{symbol}": {
+      "put": {
+        "tags": [
+          "stock"
+        ],
+        "summary": "Update Stock",
+        "description": "Modify the stock of an account by ID and symbol.\n\nThis endpoint requires authentication with the \"admin\" scope.",
+        "operationId": "update_stock",
+        "security": [
+          {
+            "OAuth2PasswordBearer": [
+              "admin",
+              "user"
+            ]
+          }
+        ],
+        "parameters": [
+          {
+            "name": "account_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "integer",
+              "title": "Account Id"
+            }
+          },
+          {
+            "name": "symbol",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "title": "Symbol"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/StockUpdate"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Stock"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPError"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPError"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPError"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "text/plain": {
+                "example": "Internal server error"
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
       "Account": {
         "properties": {
+          "stocks": {
+            "items": {
+              "$ref": "#/components/schemas/Stock"
+            },
+            "type": "array",
+            "title": "Stocks"
+          },
+          "balance": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Balance"
+          },
           "username": {
             "type": "string",
             "maxLength": 32,
@@ -922,10 +1147,6 @@
           "enabled": {
             "type": "boolean",
             "title": "Enabled"
-          },
-          "balance": {
-            "type": "number",
-            "title": "Balance"
           }
         },
         "type": "object",
@@ -935,8 +1156,7 @@
           "firstName",
           "id",
           "scope",
-          "enabled",
-          "balance"
+          "enabled"
         ],
         "title": "Account",
         "description": "This this the account model that is linked to the database and used by the API.\n\nArgs:\n    AccountBase: The base model to use."
@@ -1039,12 +1259,17 @@
               }
             ],
             "title": "Enabled"
-          },
+          }
+        },
+        "type": "object",
+        "title": "AccountUpdate"
+      },
+      "Balance": {
+        "properties": {
           "balance": {
             "anyOf": [
               {
-                "type": "number",
-                "minimum": 0.0
+                "type": "number"
               },
               {
                 "type": "null"
@@ -1054,7 +1279,21 @@
           }
         },
         "type": "object",
-        "title": "AccountUpdate"
+        "title": "Balance"
+      },
+      "BalanceUpdate": {
+        "properties": {
+          "balance": {
+            "type": "number",
+            "minimum": 0.0,
+            "title": "Balance"
+          }
+        },
+        "type": "object",
+        "required": [
+          "balance"
+        ],
+        "title": "BalanceUpdate"
       },
       "Body_login": {
         "properties": {
@@ -1228,6 +1467,38 @@
           "admin"
         ],
         "title": "SecurityScopes"
+      },
+      "Stock": {
+        "properties": {
+          "symbol": {
+            "type": "string",
+            "title": "Symbol"
+          },
+          "quantity": {
+            "type": "integer",
+            "title": "Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "symbol",
+          "quantity"
+        ],
+        "title": "Stock"
+      },
+      "StockUpdate": {
+        "properties": {
+          "quantity": {
+            "type": "integer",
+            "minimum": 0.0,
+            "title": "Quantity"
+          }
+        },
+        "type": "object",
+        "required": [
+          "quantity"
+        ],
+        "title": "StockUpdate"
       },
       "Token": {
         "properties": {

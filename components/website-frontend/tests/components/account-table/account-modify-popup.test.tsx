@@ -1,8 +1,8 @@
-import { render, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { render, screen, within } from '@testing-library/react';
 
 import { AccountModifyPopup } from '@/components/account-table/account-modify-popup';
 import { Account } from '@/openapi-codegen/apiSchemas';
-import { createDialogWrapper, spyOnApi } from 'tests/utils';
+import { createDialogWrapper } from 'tests/utils';
 
 const rowAccount: Account = {
   username: 'admin',
@@ -34,7 +34,6 @@ describe('AccountModifyPopup', () => {
     expect(screen.getByText('Modifier le compte :')).not.toBeNull();
     expect(within(trigger).getByText('Admin')).not.toBeNull();
     expect(screen.getByLabelText<HTMLInputElement>('Compte actif').value).toBe('on');
-    expect(screen.getByLabelText<HTMLInputElement>('Solde').value).toBe('0');
     expect(screen.getByRole('button', { name: 'Modifier le compte' })).not.toBeNull();
   });
 });

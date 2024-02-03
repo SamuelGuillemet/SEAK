@@ -6,7 +6,6 @@ import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/button';
 import { DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
-import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Switch } from '@/components/ui/switch';
 import { useReadAccount, useUpdateAccount } from '@/openapi-codegen/apiComponents';
@@ -22,14 +21,6 @@ interface AccountModifyPopupProps {
 
 export function accountUpdateResolver(data: AccountUpdate): ResolverResult<AccountUpdate> {
   const errors: FieldErrors<AccountUpdate> = {};
-
-  if (!data.balance || data.balance < 0) {
-    errors.balance = {
-      type: 'min',
-      message: 'Le solde ne doit pas être négatif.'
-    };
-  }
-
   return {
     values: patchEmptyString(data),
     errors
@@ -66,8 +57,7 @@ export function AccountModifyPopup({ rowAccount, isOpen, setIsOpen }: Readonly<A
   const form = useForm<AccountUpdate>({
     defaultValues: {
       scope: account?.scope ?? rowAccount.scope,
-      enabled: account?.enabled ?? rowAccount.enabled,
-      balance: account?.balance ?? rowAccount.balance
+      enabled: account?.enabled ?? rowAccount.enabled
     },
     resolver: accountUpdateResolver
   });
@@ -133,25 +123,6 @@ export function AccountModifyPopup({ rowAccount, isOpen, setIsOpen }: Readonly<A
                         onCheckedChange={field.onChange}
                       />
                     </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
-              <FormField
-                control={form.control}
-                name='balance'
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Solde</FormLabel>
-                    <FormControl>
-                      <Input
-                        type='number'
-                        step='any'
-                        {...field}
-                        value={field.value ?? ''}
-                      />
-                    </FormControl>
-                    <FormDescription>Modification du solde</FormDescription>
                     <FormMessage />
                   </FormItem>
                 )}

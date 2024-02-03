@@ -10,6 +10,8 @@
  *     AccountBase: The base model to use.
  */
 export type Account = {
+  stocks?: Stock[];
+  balance?: number | null;
   /**
    * @maxLength 32
    * @minLength 3
@@ -20,7 +22,6 @@ export type Account = {
   id: number;
   scope: SecurityScopes;
   enabled: boolean;
-  balance: number;
 };
 
 export type AccountCreate = {
@@ -41,7 +42,17 @@ export type AccountUpdate = {
   password?: string | null;
   scope?: SecurityScopes | null;
   enabled?: boolean | null;
+};
+
+export type Balance = {
   balance?: number | null;
+};
+
+export type BalanceUpdate = {
+  /**
+   * @minimum 0
+   */
+  balance: number;
 };
 
 export type BodyLogin = {
@@ -89,6 +100,18 @@ export type RootResponse = {
 };
 
 export type SecurityScopes = 'user' | 'admin';
+
+export type Stock = {
+  symbol: string;
+  quantity: number;
+};
+
+export type StockUpdate = {
+  /**
+   * @minimum 0
+   */
+  quantity: number;
+};
 
 export type Token = {
   access_token: string;
