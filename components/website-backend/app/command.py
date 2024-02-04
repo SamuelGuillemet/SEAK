@@ -119,6 +119,12 @@ PROMPT_MESSAGE = (
 )
 
 
+async def setup_database():  # pragma: no cover
+    get_db.setup()
+    get_redis.setup()
+    await pre_start()
+
+
 async def main(command: str) -> None:
     args = parser.parse_args()
 
@@ -130,9 +136,7 @@ async def main(command: str) -> None:
         open_api(args.output)
         return
 
-    get_db.setup()
-    get_redis.setup()
-    await pre_start()
+    await setup_database()
 
     match command:
         case "reset":

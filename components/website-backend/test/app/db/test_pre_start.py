@@ -2,6 +2,7 @@ import signal
 from unittest.mock import AsyncMock, patch
 
 import pytest
+from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import AsyncSession
 from tenacity import RetryError
 
@@ -9,10 +10,12 @@ from app.db.pre_start import handle_sigint, pre_start
 
 
 @pytest.mark.asyncio
-async def test_pre_start():
-    with patch("app.db.pre_start.get_db.get_session") as mock_get_session:
-        mock_get_session.return_value = AsyncMock(spec=AsyncSession)
-        await pre_start()
+@patch("app.db.pre_start.get_redis.get_client")
+@patch("app.db.pre_start.get_db.get_session")
+async def test_pre_start(mock_get_session, mock_get_redis):
+    mock_get_session.return_value = AsyncMock(spec=AsyncSession)
+    mock_get_redis.return_value = AsyncMock(spec=Redis)
+    await pre_start()
 
 
 @pytest.mark.asyncio

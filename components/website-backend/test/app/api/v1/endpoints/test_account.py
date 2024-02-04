@@ -95,7 +95,7 @@ class TestAccount(BaseTest):
         # Arrange
         account_update = AccountUpdate(last_name="changed")
         # Act
-        response = self._client.put(
+        response = self._client.patch(
             f"/api/v1/account/{self.account_db.id}",
             json=account_update.model_dump(by_alias=True),
         )
@@ -112,7 +112,7 @@ class TestAccount(BaseTest):
         # Arrange
         account_update = AccountUpdate(last_name="changed")
         # Act
-        response = self._client.put(
+        response = self._client.patch(
             "/api/v1/account/0", json=account_update.model_dump(by_alias=True)
         )
 
@@ -135,7 +135,7 @@ class TestAccount(BaseTest):
 
         account_update = AccountUpdate(username=new_account.username)
         # Act
-        response = self._client.put(
+        response = self._client.patch(
             f"/api/v1/account/{self.account_db.id}",
             json=account_update.model_dump(by_alias=True),
         )

@@ -6,8 +6,9 @@ from app.command import main
 
 
 @pytest.mark.asyncio
+@patch("app.command.setup_database")
 @patch("app.command.reset_db")
-async def test_reset_db(mock_reset_db):
+async def test_reset_db(mock_reset_db, mock_setup_database):
     args = ["test", "reset"]
     with patch("sys.argv", args):
         await main("reset")
@@ -15,10 +16,13 @@ async def test_reset_db(mock_reset_db):
 
 
 @pytest.mark.asyncio
+@patch("app.command.setup_database")
 @patch("app.command.reset_db")
 @patch("app.command.migrate_db")
 @patch("app.command.init_db")
-async def test_init_db(mock_init_db, mock_migrate_db, mock_reset_db):
+async def test_init_db(
+    mock_init_db, mock_migrate_db, mock_reset_db, mock_setup_database
+):
     args = ["test", "init", "--yes", "--bypass-revision"]
     with patch("sys.argv", args):
         await main("init")
@@ -28,7 +32,8 @@ async def test_init_db(mock_init_db, mock_migrate_db, mock_reset_db):
 
 
 @pytest.mark.asyncio
-async def test_init_db_no():
+@patch("app.command.setup_database")
+async def test_init_db_no(mock_setup_database):
     args = ["test", "init"]
     with patch("sys.argv", args):
         with patch("builtins.input", return_value="n"):
@@ -36,8 +41,9 @@ async def test_init_db_no():
 
 
 @pytest.mark.asyncio
+@patch("app.command.setup_database")
 @patch("app.command.migrate_db")
-async def test_migrate_db(mock_migrate_db):
+async def test_migrate_db(mock_migrate_db, mock_setup_database):
     args = ["test", "migrate"]
     with patch("sys.argv", args):
         await main("migrate")
@@ -45,8 +51,9 @@ async def test_migrate_db(mock_migrate_db):
 
 
 @pytest.mark.asyncio
+@patch("app.command.setup_database")
 @patch("app.command.open_api")
-async def test_open_api(mock_open_api):
+async def test_open_api(mock_open_api, mock_setup_database):
     args = ["test", "openapi", "--output", "test.json"]
     with patch("sys.argv", args):
         await main("openapi")
@@ -54,8 +61,9 @@ async def test_open_api(mock_open_api):
 
 
 @pytest.mark.asyncio
+@patch("app.command.setup_database")
 @patch("app.command.dump_db")
-async def test_dump_db(mock_dump_db):
+async def test_dump_db(mock_dump_db, mock_setup_database):
     args = ["test", "dump", "--output", "test.json"]
     with patch("sys.argv", args):
         await main("dump")
@@ -63,8 +71,9 @@ async def test_dump_db(mock_dump_db):
 
 
 @pytest.mark.asyncio
+@patch("app.command.setup_database")
 @patch("app.command.load_db")
-async def test_load_db(mock_load_db):
+async def test_load_db(mock_load_db, mock_setup_database):
     args = ["test", "load", "--input", "test.json"]
     with patch("sys.argv", args):
         await main("load")
@@ -72,8 +81,9 @@ async def test_load_db(mock_load_db):
 
 
 @pytest.mark.asyncio
+@patch("app.command.setup_database")
 @patch("app.command.execute_sql_command")
-async def test_execute_sql_command(mock_execute_sql_command):
+async def test_execute_sql_command(mock_execute_sql_command, mock_setup_database):
     args = ["test", "execute", "SELECT * FROM users"]
     with patch("sys.argv", args):
         await main("execute")

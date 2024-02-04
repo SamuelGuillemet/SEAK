@@ -3,9 +3,10 @@ from typing import cast
 
 import pytest
 from fastapi.testclient import TestClient
+from testcontainers.redis import RedisContainer
 
 from app.db.databases.sqlite import SqliteDatabase
-from app.dependencies import get_current_active_account, get_db
+from app.dependencies import get_current_active_account, get_db, get_redis
 
 
 async def override_get_current_active_account():
@@ -13,6 +14,8 @@ async def override_get_current_active_account():
 
 
 class BaseTest(unittest.IsolatedAsyncioTestCase):
+    redis_db: RedisContainer | None = None
+
     @pytest.fixture(autouse=True)
     def inject_fixtures(
         self, client: TestClient, caplog: pytest.LogCaptureFixture, tmp_path
@@ -32,3 +35,12 @@ class BaseTest(unittest.IsolatedAsyncioTestCase):
 
         cast(SqliteDatabase, get_db).setup(sqlite_path)
         await cast(SqliteDatabase, get_db).create_all(no_drop=True)
+
+        self.redis_db = RedisContainer()
+        self.redis_db.start()
+        redis_uri = f"redis://{self.redis_db.get_container_host_ip()}:{self.redis_db.get_exposed_port(6379)}"
+        get_redis.setup(redis_uri)
+
+    async def asyncTearDown(self) -> None:
+        if self.redis_db:
+            self.redis_db.stop()

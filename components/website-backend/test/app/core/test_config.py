@@ -40,9 +40,8 @@ def test_env_prod(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("POSTGRES_DB", "FAKE_VALUE")
     monkeypatch.setenv("POSTGRES_USER", "FAKE_VALUE")
     monkeypatch.setenv("POSTGRES_PASSWORD", "FAKE_VALUE")
-    monkeypatch.setenv("ISSUE_LABELS", "FAKE_VALUE")
-    monkeypatch.setenv("REPOSITORY_NAME", "FAKE_VALUE")
-    monkeypatch.setenv("REPOSITORY_OWNER", "FAKE_VALUE")
+    monkeypatch.setenv("REDIS_HOST", "localhost")
+    monkeypatch.setenv("REDIS_PORT", "6379")
 
     assert isinstance(select_settings("production"), ConfigProduction)
     assert (

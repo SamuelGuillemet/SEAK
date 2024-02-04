@@ -9,13 +9,11 @@ class RedisDB:
     def __init__(self) -> None:
         self.connection_pool: ConnectionPool | None = None
 
-    def setup(self) -> ConnectionPool:
+    def setup(self, url: str = settings.REDIS_URI) -> ConnectionPool:
         """
         Create a new Redis connection pool.
         """
-        self.connection_pool = ConnectionPool.from_url(
-            settings.REDIS_URI, decode_responses=True
-        )
+        self.connection_pool = ConnectionPool.from_url(url, decode_responses=True)
         return self.connection_pool
 
     def get_client(self) -> Redis:
