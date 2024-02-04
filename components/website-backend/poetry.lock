@@ -222,6 +222,22 @@ jupyter = ["ipython (>=7.8.0)", "tokenize-rt (>=3.2.0)"]
 uvloop = ["uvloop (>=0.15.2)"]
 
 [[package]]
+name = "broker-quickfix-client"
+version = "0.3.0"
+description = ""
+optional = false
+python-versions = ">=3.10"
+files = []
+develop = true
+
+[package.dependencies]
+quickfix = "^1.15.1"
+
+[package.source]
+type = "directory"
+url = "../../clients/quickfix-client"
+
+[[package]]
 name = "certifi"
 version = "2023.11.17"
 description = "Python package for providing Mozilla's CA Bundle."
@@ -1575,13 +1591,13 @@ testutils = ["gitpython (>3)"]
 
 [[package]]
 name = "pylint-plugin-utils"
-version = "0.8.2"
+version = "0.7"
 description = "Utilities and helpers for writing Pylint plugins"
 optional = false
-python-versions = ">=3.7,<4.0"
+python-versions = ">=3.6.2"
 files = [
-    {file = "pylint_plugin_utils-0.8.2-py3-none-any.whl", hash = "sha256:ae11664737aa2effbf26f973a9e0b6779ab7106ec0adc5fe104b0907ca04e507"},
-    {file = "pylint_plugin_utils-0.8.2.tar.gz", hash = "sha256:d3cebf68a38ba3fba23a873809155562571386d4c1b03e5b4c4cc26c3eee93e4"},
+    {file = "pylint-plugin-utils-0.7.tar.gz", hash = "sha256:ce48bc0516ae9415dd5c752c940dfe601b18fe0f48aa249f2386adfa95a004dd"},
+    {file = "pylint_plugin_utils-0.7-py3-none-any.whl", hash = "sha256:b3d43e85ab74c4f48bb46ae4ce771e39c3a20f8b3d56982ab17aa73b4f98d535"},
 ]
 
 [package.dependencies]
@@ -1820,6 +1836,16 @@ files = [
 ]
 
 [[package]]
+name = "quickfix"
+version = "1.15.1"
+description = "FIX (Financial Information eXchange) protocol implementation"
+optional = false
+python-versions = "*"
+files = [
+    {file = "quickfix-1.15.1.tar.gz", hash = "sha256:e3564ad2dd155892dc74496d6f4db1794bd8f9f74450ccbb45571ffaa2815da2"},
+]
+
+[[package]]
 name = "redis"
 version = "5.0.1"
 description = "Python client for Redis database and key-value store"
@@ -1861,13 +1887,12 @@ use-chardet-on-py3 = ["chardet (>=3.0.2,<6)"]
 
 [[package]]
 name = "rsa"
-version = "4.9"
+version = "4.2"
 description = "Pure-Python RSA implementation"
 optional = false
-python-versions = ">=3.6,<4"
+python-versions = "*"
 files = [
-    {file = "rsa-4.9-py3-none-any.whl", hash = "sha256:90260d9058e514786967344d0ef75fa8727eed8a7d2e43ce9f4bcf1b536174f7"},
-    {file = "rsa-4.9.tar.gz", hash = "sha256:e38464a49c6c85d7f1351b0126661487a7e0a14a50f1675ec50eb34d4f20ef21"},
+    {file = "rsa-4.2.tar.gz", hash = "sha256:aaefa4b84752e3e99bd8333a2e1e3e7a7da64614042bd66f775573424370108a"},
 ]
 
 [package.dependencies]
@@ -2544,5 +2569,5 @@ files = [
 
 [metadata]
 lock-version = "2.0"
-python-versions = "^3.10"
-content-hash = "44408259d5f39cd5862cee096a130e2f463c1ee3d4c60b5df9621b125797a3ae"
+python-versions = ">=3.10"
+content-hash = "57681f7cda9c7971d81c31e85cc6e7b2e273f7866c05bf83f8b6ba5e485f72e8"

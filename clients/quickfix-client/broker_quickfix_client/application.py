@@ -145,23 +145,12 @@ def start_initiator(initiator: SocketInitiator, application: ClientApplication):
         sleep(0.1)
 
 
-def setup(
-    username: str,
-    password: str,
-    execution_report_handler: ExecutionReportHandler | None = None,
-    order_cancel_reject_handler: OrderCancelRejectHandler | None = None,
-    # market_data_request_reject_handler: MarketDataRequestRejectHandler | None = None,
-    # market_data_handler: MarketDataSnapshotFullRefreshHandler | None = None,
-):
+def setup(username: str, password: str):
     setup_logs("client")
     setup_logs("quickfix", level=logging.INFO)
     application = ClientApplication()
-
     application.set_credentials(username, password)
-    if execution_report_handler:
-        application.set_execution_report_handler(execution_report_handler)
-    if order_cancel_reject_handler:
-        application.set_order_cancel_reject_handler(order_cancel_reject_handler)
 
     initiator = build_initiator(username, application)
+
     return application, initiator

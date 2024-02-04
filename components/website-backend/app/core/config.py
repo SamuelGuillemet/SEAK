@@ -53,6 +53,9 @@ class Settings(BaseSettings):
     def REDIS_URI(self) -> str:
         return f"redis://{self.REDIS_HOST}:{self.REDIS_PORT}"
 
+    SERVICE_ACCOUNT_USERNAME: str
+    SERVICE_ACCOUNT_PASSWORD: str
+
 
 class ConfigDevelopment(Settings):
     LOCALE: SupportedLocales = "fr"
@@ -81,14 +84,14 @@ class ConfigDevelopment(Settings):
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
 
-    POSTGRES_DATABASE_URI: ClassVar[
-        str
-    ] = "postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}".format(
-        user=POSTGRES_USER,
-        password=POSTGRES_PASSWORD,
-        host=POSTGRES_HOST,
-        port=POSTGRES_PORT,
-        db=POSTGRES_DB,
+    POSTGRES_DATABASE_URI: ClassVar[str] = (
+        "postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}".format(
+            user=POSTGRES_USER,
+            password=POSTGRES_PASSWORD,
+            host=POSTGRES_HOST,
+            port=POSTGRES_PORT,
+            db=POSTGRES_DB,
+        )
     )
     SQLITE_DATABASE_URI: ClassVar[str] = "sqlite+aiosqlite:///./pfe_broker.db"
 
@@ -103,6 +106,9 @@ class ConfigDevelopment(Settings):
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+
+    SERVICE_ACCOUNT_USERNAME: str = "service_account"
+    SERVICE_ACCOUNT_PASSWORD: str = "91467d88cdf9aafc43d697be2d759b30"
 
 
 class ConfigProduction(Settings):
@@ -143,6 +149,9 @@ class ConfigProduction(Settings):
     REDIS_HOST: str = Field(...)
     REDIS_PORT: int = Field(...)
 
+    SERVICE_ACCOUNT_USERNAME: str = Field(...)
+    SERVICE_ACCOUNT_PASSWORD: str = Field(...)
+
 
 class ConfigTest(Settings):
     LOCALE: SupportedLocales = "en"
@@ -173,6 +182,9 @@ class ConfigTest(Settings):
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379
+
+    SERVICE_ACCOUNT_USERNAME: str = "test_service_username"
+    SERVICE_ACCOUNT_PASSWORD: str = "test_service_password"
 
 
 env = os.getenv("ENVIRONMENT", "development")

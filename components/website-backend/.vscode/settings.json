@@ -25,6 +25,9 @@
     }
   ],
   "python.analysis.typeCheckingMode": "basic",
+  "python.analysis.extraPaths": [
+    "../../../clients/quickfix-client/broker_quickfix_client"
+  ],
   "python.analysis.inlayHints.callArgumentNames": "partial",
   "python.analysis.inlayHints.variableTypes": true,
   "python.analysis.inlayHints.functionReturnTypes": true,
