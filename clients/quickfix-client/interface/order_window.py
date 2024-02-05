@@ -1,9 +1,19 @@
 import tkinter as tk
-from tkinter import *
-from tkinter import messagebox
+from tkinter import (
+    LEFT,
+    Button,
+    Entry,
+    Frame,
+    Label,
+    Radiobutton,
+    Toplevel,
+    W,
+    messagebox,
+)
 from tkinter.ttk import *
 
 from broker_quickfix_client.wrappers.enums import *
+from broker_quickfix_client.wrappers.enums import SideEnum
 from broker_quickfix_client.wrappers.new_order_single import NewOrderSingle
 
 
@@ -18,7 +28,7 @@ class orderWindow(Toplevel):
         screen_height = self.winfo_screenheight()
         center_x = int(screen_width / 2 - window_width / 2)
         center_y = int(screen_height / 2 - window_height / 2)
-        self.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+        self.geometry(f"{window_width}x{window_height}+{center_x}+{center_y}")
         self.wm_title("Order")
 
         # Variables for Radiobuttons
@@ -29,12 +39,19 @@ class orderWindow(Toplevel):
         order_type_label = Label(self, text="Order Type:")
         order_type_frame = Frame(self)
         for order_type in ["MARKET", "LIMIT", "STOP"]:
-            Radiobutton(order_type_frame, text=order_type, variable=self.order_type_var, value=order_type).pack(side=LEFT)
+            Radiobutton(
+                order_type_frame,
+                text=order_type,
+                variable=self.order_type_var,
+                value=order_type,
+            ).pack(side=LEFT)
 
         side_label = Label(self, text="Side:")
         side_frame = Frame(self)
         for side in ["BUY", "SELL"]:
-            Radiobutton(side_frame, text=side, variable=self.side_var, value=side).pack(side=LEFT)
+            Radiobutton(side_frame, text=side, variable=self.side_var, value=side).pack(
+                side=LEFT
+            )
 
         symbol_label = Label(self, text="Symbol:")
         symbol_entry = Entry(self)
@@ -101,22 +118,22 @@ class orderWindow(Toplevel):
             #   time.sleep(0.5)
             #   price = get_price(symbol)
 
-        total_order_price = price*shares
+        total_order_price = price * shares
         if self.master.owned_shares and symbol in self.master.owned_shares:
             owned_quantity_shares = self.master.owned_shares[symbol]
         else:
             owned_quantity_shares = 0
 
-        if shares==0 or order_type=="" or symbol=="" or side=="":
+        if shares == 0 or order_type == "" or symbol == "" or side == "":
             error_message = "Please fill in the fields."
             messagebox.showerror("Error", error_message)
-        elif side=="BUY" and total_order_price > self.master.account_balance:
+        elif side == "BUY" and total_order_price > self.master.account_balance:
             error_message = "Insufficient funds."
             messagebox.showerror("Error", error_message)
-        elif side=="SELL" and shares > owned_quantity_shares:
+        elif side == "SELL" and shares > owned_quantity_shares:
             error_message = "Insufficient shares."
             messagebox.showerror("Error", error_message)
-        elif order_type == "LIMIT" and price!=0:
+        elif order_type == "LIMIT" and price != 0:
             # Update the local DB
             cl_ord_id = self.master.database_manager.place_order(
                 side, order_type, symbol, price, self.master.username, shares
@@ -174,6 +191,3 @@ class orderWindow(Toplevel):
         else:
             error_message = "Invalid order."
             messagebox.showerror("Error", error_message)
-
-
-

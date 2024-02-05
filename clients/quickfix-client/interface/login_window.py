@@ -1,9 +1,7 @@
 import tkinter as tk
 from threading import Thread
 from time import sleep
-from tkinter import *
-from tkinter import messagebox
-from tkinter.ttk import *
+from tkinter import Button, Entry, Label, messagebox
 
 from broker_quickfix_client.application import setup, start_initiator
 from interface.main_interface import MainInterface
@@ -59,7 +57,7 @@ class LoginWindow(tk.Tk):
             # Check if logon was successful
             if application.get_session_id():
                 self.destroy()
-                MainInterface(username, application, initiator)  # add those to the init
+                MainInterface(username, application, initiator)
                 return True
             else:
                 messagebox.showerror("Error", "Wrong username or password")

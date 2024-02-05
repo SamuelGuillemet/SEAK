@@ -4,27 +4,19 @@ from tkinter import scrolledtext, ttk
 
 from PIL import Image, ImageTk
 
-from broker_quickfix_client.application import *
 from broker_quickfix_client.handlers.execution_report import ExecutionReportHandler
 from broker_quickfix_client.handlers.order_cancel_reject import OrderCancelRejectHandler
-from broker_quickfix_client.wrappers.enums import *
-from broker_quickfix_client.wrappers.execution_report import (
-    AcceptedOrderExecutionReport,
-    CanceledOrderExecutionReport,
-    FilledExecutionReport,
-    RejectedExecutionReport,
-    ReplacedOrderExecutionReport,
-)
+from broker_quickfix_client.wrappers.enums import OrderTypeEnum, SideEnum
 from broker_quickfix_client.wrappers.order import Order as QuickfixOrder
 from broker_quickfix_client.wrappers.order_cancel_request import OrderCancelRequest
-from db.database_manager import DatabaseManager
-from interface.account_window import AccountWindow
-from interface.edit_order_window import editOrderWindow
-from interface.order_window import orderWindow
 
-# from broker_quickfix_client.handlers.market_data_request_reject import MarketDataRequestRejectHandler
+# from broker_quickfix_client.handlers.market_data_request_reject import (
+# MarketDataRequestRejectHandler,
+# )
 # from interface.candlestick_chart import create_candlestick_chart
-# from broker_quickfix_client.handlers.market_data_snapshot_full_refresh import MarketDataSnapshotFullRefreshHandler
+# from broker_quickfix_client.handlers.market_data_snapshot_full_refresh
+# import(
+#  MarketDataSnapshotFullRefreshHandler)
 
 
 class MainInterface(tk.Tk):
@@ -91,6 +83,7 @@ class MainInterface(tk.Tk):
         self.create_order_treeview()
 
     def create_account_info_widgets(self):
+
         # Display Account Name
         account_name_label = tk.Label(self, text=f"Username:{self.username}")
         account_name_label.grid(row=0, column=0, padx=(10, 0), pady=(5, 0), sticky=tk.E)
@@ -178,20 +171,21 @@ class MainInterface(tk.Tk):
         # Fetch the latest order data from the database
         orders = self.database_manager.get_all_orders(self.username)
         # Insert the orders into the Treeview
-        for order in orders:
-            self.order_tree.insert(
-                "",
-                "end",
-                values=(
-                    order.cl_ord_id,
-                    order.side,
-                    order.type,
-                    order.symbol,
-                    order.quantity,
-                    order.price,
-                    order.status,
-                ),
-            )
+        if orders:
+            for order in orders:
+                self.order_tree.insert(
+                    "",
+                    "end",
+                    values=(
+                        order.cl_ord_id,
+                        order.side,
+                        order.type,
+                        order.symbol,
+                        order.quantity,
+                        order.price,
+                        order.status,
+                    ),
+                )
 
         # Refresh the chart
         symbol = self.symbol_entry.get()
@@ -209,7 +203,7 @@ class MainInterface(tk.Tk):
             #     ],
             # )
             # application.send(market_data_request_snapshot)
-            message = f"Snapshot for symbols {symbols}"
+            message = f"Snapshot for symbols {symbol}"
         else:
             message = "Please select a symbol"
         self.display_message(message)
@@ -249,9 +243,9 @@ class MainInterface(tk.Tk):
                 client_order_id=order.cl_ord_id,
                 symbol=order.symbol,
                 side=SideEnum.BUY if order.side == "BUY" else SideEnum.SELL,
-                type=OrderTypeEnum.LIMIT
-                if order.type == "LIMIT"
-                else OrderTypeEnum.STOP,
+                type=(
+                    OrderTypeEnum.LIMIT if order.type == "LIMIT" else OrderTypeEnum.STOP
+                ),
                 price=order.price,
                 quantity=order.quantity,
             )
@@ -282,8 +276,4 @@ class MainInterface(tk.Tk):
     def on_close(self):
         self.initiator.stop()
         self.destroy()
-
-
-if __name__ == "__main__":
-    app = MainInterface()
-    app.mainloop()
+        self.destroy()
