@@ -1,6 +1,3 @@
-from sqlalchemy import Column, Float, ForeignKey, Integer, String, create_engine
-from sqlalchemy.orm import declarative_base, relationship, sessionmaker
-
 from broker_quickfix_client.wrappers.execution_report import (
     AcceptedOrderExecutionReport,
     CanceledOrderExecutionReport,
@@ -9,6 +6,8 @@ from broker_quickfix_client.wrappers.execution_report import (
     ReplacedOrderExecutionReport,
 )
 from broker_quickfix_client.wrappers.order_cancel_reject import OrderCancelReject
+from sqlalchemy import Column, Float, ForeignKey, Integer, String, create_engine
+from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
 Base = declarative_base()
 

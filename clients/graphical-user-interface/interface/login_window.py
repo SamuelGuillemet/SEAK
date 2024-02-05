@@ -4,6 +4,7 @@ from time import sleep
 from tkinter import Button, Entry, Label, messagebox
 
 from broker_quickfix_client.application import setup, start_initiator
+
 from interface.main_interface import MainInterface
 
 

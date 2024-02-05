@@ -1,13 +1,13 @@
 import tkinter as tk
 from tkinter import scrolledtext, ttk
 
-from PIL import Image, ImageTk
-
 from broker_quickfix_client.handlers.execution_report import ExecutionReportHandler
 from broker_quickfix_client.handlers.order_cancel_reject import OrderCancelRejectHandler
 from broker_quickfix_client.wrappers.enums import OrderTypeEnum, SideEnum
 from broker_quickfix_client.wrappers.order import Order as QuickfixOrder
 from broker_quickfix_client.wrappers.order_cancel_request import OrderCancelRequest
+from PIL import Image, ImageTk
+
 from db.database_manager import DatabaseManager
 from interface.account_window import AccountWindow
 from interface.edit_order_window import EditOrderWindow
