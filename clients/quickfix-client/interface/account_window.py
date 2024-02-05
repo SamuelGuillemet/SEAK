@@ -1,8 +1,7 @@
 import tkinter as tk
 from tkinter import ttk
 import tkinter as tk
-from tkinter import *
-from tkinter.ttk import *
+from tkinter import Toplevel
 
 class AccountWindow(Toplevel):
     def __init__(self):

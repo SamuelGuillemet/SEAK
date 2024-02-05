@@ -1,5 +1,3 @@
-import tkinter as tk
-from tkinter import ttk
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 from broker_quickfix_client.wrappers.execution_report import (

@@ -1,7 +1,5 @@
-import tkinter as tk
 from tkinter import *
 from tkinter.ttk import *
-import tkinter.font
 from broker_quickfix_client.wrappers.order import Order as QuickfixOrder
 from broker_quickfix_client.wrappers.enums import *
 from broker_quickfix_client.wrappers.order_cancel_replace_request import OrderCancelReplaceRequest

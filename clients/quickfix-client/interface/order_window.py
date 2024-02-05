@@ -152,14 +152,14 @@ class orderWindow(Toplevel):
         elif order_type == "MARKET" and shares != 0:
             # Update the local DB
             cl_ord_id = self.master.database_manager.place_order(
-+                side, order_type, symbol, price, self.master.username, shares
+                side, order_type, symbol, price, self.master.username, shares
             )
             order = NewOrderSingle.new_market_order(
                 cl_ord_id,
                 SideEnum.BUY if side == "BUY" else SideEnum.SELL,
                 shares,
-+                symbol,
-+            )
+                symbol,
+            )
             self.master.application.send(order)
             self.master.refresh_main_interface()
             message = (
