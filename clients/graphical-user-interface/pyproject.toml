@@ -4,7 +4,7 @@ version = "0.3.0"
 description = ""
 authors = ["Théo Joseph-Antoine <theo.joseph-antoine@telecom-sudparis.eu>"]
 readme = "README.md"
-packages = []
+packages = [{ include = "quickfix_client_gui" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10"
@@ -32,3 +32,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
+known_first_party = "quickfix_client_gui"
