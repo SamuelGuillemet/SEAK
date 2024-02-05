@@ -78,8 +78,25 @@ class orderWindow(Toplevel):
         if self.price_entry.get() != "":
             price = float(self.price_entry.get())
         else:
+            # probably not necessary as market orders are instantaneous
             price = 10
-            #price = request_market_data_snapshot([symbol])["Price"]
+            # timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
+            # market_data_request_snapshot = MarketDataRequest.new_snapshot_request(
+            #     str(uuid.uuid4().hex),
+            #     f"{self.username}{timestamp}",
+            #     [symbol],
+            #     [
+            #         MarketDataEntryTypeEnum.OPEN,
+            #         MarketDataEntryTypeEnum.CLOSE,
+            #         MarketDataEntryTypeEnum.HIGH,
+            #         MarketDataEntryTypeEnum.LOW,
+            #     ],
+            # )
+            # application.send(market_data_request_snapshot)
+            # price = get_price(symbol)
+            # while price == 0:
+            #   time.sleep(0.5)
+            #   price = get_price(symbol)
         
         total_order_price = price*shares
         if self.master.owned_shares and symbol in self.master.owned_shares:
