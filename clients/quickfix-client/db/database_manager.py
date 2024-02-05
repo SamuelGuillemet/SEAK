@@ -3,6 +3,14 @@ from tkinter import ttk
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
 import os
+from broker_quickfix_client.wrappers.execution_report import (
+    FilledExecutionReport,
+    RejectedExecutionReport,
+    AcceptedOrderExecutionReport,
+    ReplacedOrderExecutionReport,
+    CanceledOrderExecutionReport,
+)
+from broker_quickfix_client.wrappers.order_cancel_reject import  OrderCancelReject
 
 Base = declarative_base()
 
@@ -49,6 +57,9 @@ class DatabaseManager:
         Session = sessionmaker(bind=self.engine)
         self.session = Session()
         self.init_example_data()
+        
+    def set_refresh_callback(self, callback):
+        self.refresh_callback = callback
 
     def init_example_data(self):
         user1 = self.session.query(User).filter_by(username="user1").first()
@@ -215,17 +226,100 @@ class DatabaseManager:
         else:
             return None
 
-    def handle_order_filled(self, filled_execution_report):
-        pass
+    
+    def order_filled_callback(execution_report: FilledExecutionReport):
+        client_order_id = execution_report.client_order_id
+        user = self.session.query(User).filter_by(username=username).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        if order:
+            order.status = "Filled"
+            session.commit()
+            print(f"Order {client_order_id} filled successfully.")
+            if self.refresh_callback:
+                self.refresh_callback()
+        else:
+            print(f"Order {client_order_id} not found in the database.")
+            
+    def order_rejected_callback(self, report: RejectedExecutionReport):
+        client_order_id = report.client_order_id
+        user = self.session.query(User).filter_by(username=username).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        if order:
+            order.status = "Rejected"
+            # Rollback
+            if order.side == "BUY":
+                user.balance += order.price * order.quantity
+                share = self.session.query(Share).filter_by(owner=user, symbol=order.symbol).first()
+                share.quantity -= order.quantity
+            elif order.side == "SELL":
+                user.balance -= order.price * order.quantity
+                share = self.session.query(Share).filter_by(owner=user, symbol=order.symbol).first()
+                share.quantity += order.quantity
+            self.session.commit()
+            if self.refresh_callback:
+                self.refresh_callback()
+            print(f"Order {client_order_id} rejected.")
+        else:
+            print(f"Order {client_order_id} not found in the database.")
 
-    def handle_order_rejected(self, rejected_execution_report):
-        pass
+    def order_accepted_callback(self, report: AcceptedOrderExecutionReport):
+        client_order_id = report.client_order_id
+        user = self.session.query(User).filter_by(username=username).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        if order:
+            order.status = "Accepted"
+            self.session.commit()
+            print(f"Order {client_order_id} accepted.")
+            if self.refresh_callback:
+                self.refresh_callback()
+        else:
+            print(f"Order {client_order_id} not found in the database.")
 
-    def handle_order_accepted(self, accepted_execution_report):
-        pass
+    def order_canceled_callback(self, report: CanceledOrderExecutionReport):
+        client_order_id = report.client_order_id
+        user = self.session.query(User).filter_by(username=username).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        if order:
+            order.status = "Canceled"
+            self.session.commit()
+            print(f"Order {client_order_id} canceled.")
+            if self.refresh_callback:
+                self.refresh_callback()
+        else:
+            print(f"Order {client_order_id} not found in the database.")
 
-    def handle_order_replaced(self, replaced_execution_report):
-        pass
+    def order_replaced_callback(self, report: ReplacedOrderExecutionReport):
+        client_order_id = report.client_order_id
+        user = self.session.query(User).filter_by(username=username).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        if order:
+            order.status = "Replaced"
+            self.session.commit()
+            print(f"Order {client_order_id} replaced.")
+            if self.refresh_callback:
+                self.refresh_callback()
+        else:
+            print(f"Order {client_order_id} not found in the database.")
 
-    def handle_order_canceled(self, canceled_execution_report):
-        pass
+    def order_cancel_rejected_callback(self, reject: OrderCancelReject):
+        client_order_id = reject.client_order_id
+        user = self.session.query(User).filter_by(username=username).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        if order:
+            order.status = "Pending"
+            print(f"Order cancel request for {client_order_id} rejected.")
+            if self.refresh_callback:
+                self.refresh_callback()
+        else:
+            print(f"Order {client_order_id} not found in the database.")
+
+    # def order_cancel_replace_rejected_callback(self, report: ):
+    #     return
+
+    # def market_data_snapshot_full_refresh_callback(
+    #     market_data_response: MarketDataResponse,
+    # ):
+    #     create_candlestick_chart(market_data_response)
+        # if self.refresh_callback:
+        #             self.refresh_callback()
+    #     return
