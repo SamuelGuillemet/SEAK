@@ -1,5 +1,6 @@
-from unittest.mock import patch
 from tkinter import Tk
+from unittest.mock import patch
+
 from interface.login_window import LoginWindow
 from interface.main_interface import MainInterface
 

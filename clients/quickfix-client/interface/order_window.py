@@ -106,46 +106,71 @@ class orderWindow(Toplevel):
 
         if shares==0 or order_type=="" or symbol=="" or side=="":
             error_message = "Please fill in the fields."
-            messagebox.showerror("Error",error_message)
+            messagebox.showerror("Error", error_message)
         elif side=="BUY" and total_order_price > self.master.account_balance:
             error_message = "Insufficient funds."
-            messagebox.showerror("Error",error_message)
+            messagebox.showerror("Error", error_message)
         elif side=="SELL" and shares > owned_quantity_shares:
             error_message = "Insufficient shares."
-            messagebox.showerror("Error",error_message)
+            messagebox.showerror("Error", error_message)
         elif order_type == "LIMIT" and price!=0:
             # Update the local DB
-            cl_ord_id = self.master.database_manager.place_order(side, order_type, symbol, price, self.master.username, shares)
+            cl_ord_id = self.master.database_manager.place_order(
+                side, order_type, symbol, price, self.master.username, shares
+            )
             # Send the order to the broker
-            order = NewOrderSingle.new_limit_order(cl_ord_id, SideEnum.BUY if side=="BUY" else SideEnum.SELL , shares, symbol, price)
+            order = NewOrderSingle.new_limit_order(
+                cl_ord_id,
+                SideEnum.BUY if side == "BUY" else SideEnum.SELL,
+                shares,
+                symbol,
+                price,
+            )
             self.master.application.send(order)
             message = f"Placed {order_type} {side} order for {shares} shares of {symbol} at Price {price}"
             self.master.display_message(message)
             self.master.refresh_main_interface()
             self.destroy()
-        elif order_type == "STOP" and price!=0:
+        elif order_type == "STOP" and price != 0:
             # Update the local DB
-            cl_ord_id = self.master.database_manager.place_order(side, order_type, symbol, price, self.master.username, shares)
+            cl_ord_id = self.master.database_manager.place_order(
+                side, order_type, symbol, price, self.master.username, shares
+            )
             # Send the order to the broker
-            order = NewOrderSingle.new_stop_order(cl_ord_id, SideEnum.BUY if side=="BUY" else SideEnum.SELL , shares, symbol, price)
+            order = NewOrderSingle.new_stop_order(
+                cl_ord_id,
+                SideEnum.BUY if side == "BUY" else SideEnum.SELL,
+                shares,
+                symbol,
+                price,
+            )
             self.master.application.send(order)
             message = f"Placed {order_type} {side} order for {shares} shares of {symbol} at Price {price}"
             self.master.display_message(message)
             self.master.refresh_main_interface()
             self.destroy()
-        elif order_type == "MARKET" and shares!=0:
+        elif order_type == "MARKET" and shares != 0:
             # Update the local DB
-            cl_ord_id = self.master.database_manager.place_order(side, order_type, symbol, price, self.master.username, shares)
-            order = NewOrderSingle.new_market_order(cl_ord_id, SideEnum.BUY if side=="BUY" else SideEnum.SELL , shares, symbol)
+            cl_ord_id = self.master.database_manager.place_order(
++                side, order_type, symbol, price, self.master.username, shares
+            )
+            order = NewOrderSingle.new_market_order(
+                cl_ord_id,
+                SideEnum.BUY if side == "BUY" else SideEnum.SELL,
+                shares,
++                symbol,
++            )
             self.master.application.send(order)
             self.master.refresh_main_interface()
-            message = f"Placed {order_type} {side} order for {shares} shares of {symbol}"
+            message = (
+                f"Placed {order_type} {side} order for {shares} shares of {symbol}"
+            )
             self.master.display_message(message)
             self.destroy()
 
         else:
             error_message = "Invalid order."
-            messagebox.showerror("Error",error_message)
+            messagebox.showerror("Error", error_message)
 
         
        

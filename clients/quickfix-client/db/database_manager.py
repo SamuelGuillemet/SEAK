@@ -2,7 +2,6 @@ import tkinter as tk
 from tkinter import ttk
 from sqlalchemy import create_engine, Column, Integer, String, ForeignKey, Float
 from sqlalchemy.orm import declarative_base, sessionmaker, relationship
-import os
 from broker_quickfix_client.wrappers.execution_report import (
     FilledExecutionReport,
     RejectedExecutionReport,
@@ -227,13 +226,12 @@ class DatabaseManager:
             return None
 
     
-    def order_filled_callback(execution_report: FilledExecutionReport):
+    def order_filled_callback(self, execution_report: FilledExecutionReport):
         client_order_id = execution_report.client_order_id
-        user = self.session.query(User).filter_by(username=username).first()
-        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
         if order:
             order.status = "Filled"
-            session.commit()
+            self.session.commit()
             print(f"Order {client_order_id} filled successfully.")
             if self.refresh_callback:
                 self.refresh_callback()
@@ -242,10 +240,10 @@ class DatabaseManager:
             
     def order_rejected_callback(self, report: RejectedExecutionReport):
         client_order_id = report.client_order_id
-        user = self.session.query(User).filter_by(username=username).first()
-        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
         if order:
             order.status = "Rejected"
+            user = order.user
             # Rollback
             if order.side == "BUY":
                 user.balance += order.price * order.quantity
@@ -264,8 +262,7 @@ class DatabaseManager:
 
     def order_accepted_callback(self, report: AcceptedOrderExecutionReport):
         client_order_id = report.client_order_id
-        user = self.session.query(User).filter_by(username=username).first()
-        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
         if order:
             order.status = "Accepted"
             self.session.commit()
@@ -277,8 +274,7 @@ class DatabaseManager:
 
     def order_canceled_callback(self, report: CanceledOrderExecutionReport):
         client_order_id = report.client_order_id
-        user = self.session.query(User).filter_by(username=username).first()
-        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
         if order:
             order.status = "Canceled"
             self.session.commit()
@@ -290,8 +286,7 @@ class DatabaseManager:
 
     def order_replaced_callback(self, report: ReplacedOrderExecutionReport):
         client_order_id = report.client_order_id
-        user = self.session.query(User).filter_by(username=username).first()
-        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
         if order:
             order.status = "Replaced"
             self.session.commit()
@@ -303,8 +298,7 @@ class DatabaseManager:
 
     def order_cancel_rejected_callback(self, reject: OrderCancelReject):
         client_order_id = reject.client_order_id
-        user = self.session.query(User).filter_by(username=username).first()
-        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id, user=user).first()
+        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
         if order:
             order.status = "Pending"
             print(f"Order cancel request for {client_order_id} rejected.")
