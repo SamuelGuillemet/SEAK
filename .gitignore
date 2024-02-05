@@ -55,3 +55,4 @@ data/*
 
 # Monitoring
 monitoring/prometheus/data/
+.venv/

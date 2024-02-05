@@ -1,19 +1,26 @@
-from tkinter import *
-from tkinter.ttk import *
-from interface.main_interface import MainInterface
 import tkinter as tk
-from tkinter import messagebox
-from broker_quickfix_client.application import setup, start_initiator
-from time import sleep
 from threading import Thread
+from time import sleep
+from tkinter import *
+from tkinter import messagebox
+from tkinter.ttk import *
+
+from broker_quickfix_client.application import setup, start_initiator
+from interface.main_interface import MainInterface
+
 
 class LoginWindow(tk.Tk):
     def __init__(self):
         super().__init__()
         window_width, window_height = 300, 150
-        screen_width, screen_height = self.winfo_screenwidth(), self.winfo_screenheight()
-        center_x, center_y = int((screen_width - window_width) / 2), int((screen_height - window_height) / 2)
-        self.geometry(f'{window_width}x{window_height}+{center_x}+{center_y}')
+        screen_width, screen_height = (
+            self.winfo_screenwidth(),
+            self.winfo_screenheight(),
+        )
+        center_x, center_y = int((screen_width - window_width) / 2), int(
+            (screen_height - window_height) / 2
+        )
+        self.geometry(f"{window_width}x{window_height}+{center_x}+{center_y}")
         self.wm_title("Login")
 
         username_label = Label(self, text="Username:")
@@ -40,26 +47,28 @@ class LoginWindow(tk.Tk):
         if username == "user1" and password == "password":
             self.destroy()
             application, initiator = setup(username, password)
-            Thread(target=start_initiator, args=(initiator,application)).start()
+            Thread(target=start_initiator, args=(initiator, application)).start()
             MainInterface(username, application, initiator)
             return True
         else:
             # Attempt logon
-            
+
             application, initiator = setup(username, password)
-            Thread(target=start_initiator, args=(initiator,application)).start()
+            Thread(target=start_initiator, args=(initiator, application)).start()
             sleep(3)
             # Check if logon was successful
             if application.get_session_id():
                 self.destroy()
-                MainInterface(username,application,initiator) # add those to the init
+                MainInterface(username, application, initiator)  # add those to the init
                 return True
             else:
-                messagebox.showerror("Error","Wrong username or password")
+                messagebox.showerror("Error", "Wrong username or password")
                 return False
+
     def on_close(self):
-        #self.initiator.stop()
+        # self.initiator.stop()
         self.destroy()
+
 
 if __name__ == "__main__":
     app = LoginWindow()
