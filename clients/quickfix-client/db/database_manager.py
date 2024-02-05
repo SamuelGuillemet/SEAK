@@ -1,6 +1,3 @@
-import tkinter as tk
-from tkinter import ttk
-
 from sqlalchemy import Column, Float, ForeignKey, Integer, String, create_engine
 from sqlalchemy.orm import declarative_base, relationship, sessionmaker
 
