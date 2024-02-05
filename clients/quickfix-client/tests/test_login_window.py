@@ -1,4 +1,3 @@
-from tkinter import Tk
 from unittest.mock import patch
 
 from interface.login_window import LoginWindow
