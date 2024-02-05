@@ -11,6 +11,7 @@ python = "~3.11"
 quickfix = "^1.15.1"
 pillow = "^10.2.0"
 sqlalchemy = "^2.0.25"
+mplfinance = "^0.12.10b0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
