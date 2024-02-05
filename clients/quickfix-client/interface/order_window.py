@@ -10,14 +10,12 @@ from tkinter import (
     W,
     messagebox,
 )
-from tkinter.ttk import *
 
-from broker_quickfix_client.wrappers.enums import *
 from broker_quickfix_client.wrappers.enums import SideEnum
 from broker_quickfix_client.wrappers.new_order_single import NewOrderSingle
 
 
-class orderWindow(Toplevel):
+class OrderWindow(Toplevel):
     def __init__(self, master):
         super().__init__(master=master)
 

@@ -1,4 +1,3 @@
-import datetime
 import tkinter as tk
 from tkinter import scrolledtext, ttk
 
@@ -9,6 +8,10 @@ from broker_quickfix_client.handlers.order_cancel_reject import OrderCancelRejec
 from broker_quickfix_client.wrappers.enums import OrderTypeEnum, SideEnum
 from broker_quickfix_client.wrappers.order import Order as QuickfixOrder
 from broker_quickfix_client.wrappers.order_cancel_request import OrderCancelRequest
+from db.database_manager import DatabaseManager
+from interface.account_window import AccountWindow
+from interface.edit_order_window import EditOrderWindow
+from interface.order_window import OrderWindow
 
 # from broker_quickfix_client.handlers.market_data_request_reject import (
 # MarketDataRequestRejectHandler,
@@ -83,7 +86,6 @@ class MainInterface(tk.Tk):
         self.create_order_treeview()
 
     def create_account_info_widgets(self):
-
         # Display Account Name
         account_name_label = tk.Label(self, text=f"Username:{self.username}")
         account_name_label.grid(row=0, column=0, padx=(10, 0), pady=(5, 0), sticky=tk.E)
@@ -124,7 +126,7 @@ class MainInterface(tk.Tk):
 
     def create_order_buttons(self):
         order_button = tk.Button(
-            self, text="Place order", command=lambda: orderWindow(self)
+            self, text="Place order", command=lambda: OrderWindow(self)
         )
         order_button.grid(row=3, column=0, pady=(10, 0), padx=(10, 0))
 
@@ -266,7 +268,7 @@ class MainInterface(tk.Tk):
             order = self.database_manager.get_order(self.username, cl_ord_id)
             if order and order.order_id:
                 self.order_tree.set(selected_item_id, "Status", "Editing")
-                editOrderWindow(self, selected_item_id)
+                EditOrderWindow(self, selected_item_id)
         else:
             message = "Please select an order to Edit."
             self.display_message(message)
