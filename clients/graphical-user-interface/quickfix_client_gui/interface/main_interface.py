@@ -8,10 +8,10 @@ from broker_quickfix_client.wrappers.order import Order as QuickfixOrder
 from broker_quickfix_client.wrappers.order_cancel_request import OrderCancelRequest
 from PIL import Image, ImageTk
 
-from db.database_manager import DatabaseManager
-from interface.account_window import AccountWindow
-from interface.edit_order_window import EditOrderWindow
-from interface.order_window import OrderWindow
+from quickfix_client_gui.db.database_manager import DatabaseManager
+from quickfix_client_gui.interface.account_window import AccountWindow
+from quickfix_client_gui.interface.edit_order_window import EditOrderWindow
+from quickfix_client_gui.interface.order_window import OrderWindow
 
 # from broker_quickfix_client.handlers.market_data_request_reject import (
 # MarketDataRequestRejectHandler,

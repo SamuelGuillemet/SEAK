@@ -5,7 +5,7 @@ from tkinter import Button, Entry, Label, messagebox
 
 from broker_quickfix_client.application import setup, start_initiator
 
-from interface.main_interface import MainInterface
+from quickfix_client_gui.interface.main_interface import MainInterface
 
 
 class LoginWindow(tk.Tk):
