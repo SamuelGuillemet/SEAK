@@ -3,9 +3,8 @@ import { useState } from 'react';
 import { DotsHorizontalIcon } from '@radix-ui/react-icons';
 import { Row } from '@tanstack/react-table';
 
-import { AccountDeletePopup } from './account-delete-popup';
-import { AccountModifyPopup } from './account-modify-popup';
-
+import { AccountDeletePopup } from '@/components/account-table/account-delete-popup';
+import { AccountModifyPopup } from '@/components/account-table/account-modify-popup';
 import { Button as UIButton } from '@/components/ui/button';
 import { Dialog, DialogContent, DialogTrigger } from '@/components/ui/dialog';
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSeparator, DropdownMenuTrigger } from '@/components/ui/dropdown-menu';

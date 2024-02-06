@@ -76,7 +76,7 @@ export function AccountModifyPopup({ rowAccount, isOpen, setIsOpen }: Readonly<A
       <DialogHeader>
         <DialogTitle>Modifier le compte :</DialogTitle>
       </DialogHeader>
-      <div className='flex flex-col gap-4 min-h-[50vh] min-w-[50vw]'>
+      <div className='flex flex-col gap-4'>
         {account && (
           <Form {...form}>
             <form

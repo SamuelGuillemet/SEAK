@@ -1,11 +1,11 @@
 import { ColumnDef } from '@tanstack/react-table';
 
-import { DataTableRowActions } from './account-table-row-actions';
+import { Checkbox } from '../ui/checkbox';
 
+import { DataTableRowActions } from '@/components/account-table/account-table-row-actions';
+import { DataTableCollapsibleTrigger } from '@/components/table/data-table-collapsible-triger';
 import { DataTableColumnHeader } from '@/components/table/data-table-column-header';
-import { Checkbox } from '@/components/ui/checkbox';
 import { Account } from '@/openapi-codegen/apiSchemas';
-import { formatPrice } from '@/utils/utils';
 
 export const accountColumns: ColumnDef<Account>[] = [
   {
@@ -19,12 +19,15 @@ export const accountColumns: ColumnDef<Account>[] = [
       />
     ),
     cell: ({ row }) => (
-      <Checkbox
-        checked={row.getIsSelected()}
-        onCheckedChange={(value) => row.toggleSelected(!!value)}
-        aria-label='Select row'
-        className='hidden sm:block'
-      />
+      <div className='flex items-center w-fit'>
+        <Checkbox
+          checked={row.getIsSelected()}
+          onCheckedChange={(value) => row.toggleSelected(!!value)}
+          aria-label='Select row'
+          className='hidden sm:block'
+        />
+        <DataTableCollapsibleTrigger enabled={row.original.enabled} />
+      </div>
     ),
     enableSorting: false,
     enableHiding: false
@@ -32,14 +35,6 @@ export const accountColumns: ColumnDef<Account>[] = [
   {
     id: 'id',
     accessorKey: 'id'
-  },
-  {
-    id: 'actionsMobile',
-    cell: ({ row }) => (
-      <div className='sm:hidden flex items-center'>
-        <DataTableRowActions row={row} />
-      </div>
-    )
   },
   {
     id: 'firstName',
@@ -84,9 +79,9 @@ export const accountColumns: ColumnDef<Account>[] = [
       const enabled = row.getValue<boolean>('enabled');
 
       if (enabled) {
-        return <span className='text-primary font-bold'>✓</span>;
+        return <span className='text-xl text-green-600 font-bold'>✓</span>;
       } else {
-        return <span className='text-destructive font-bold'>✗</span>;
+        return <span className='text-xl text-destructive font-bold'>✗</span>;
       }
     },
     enableSorting: false
@@ -94,7 +89,7 @@ export const accountColumns: ColumnDef<Account>[] = [
   {
     id: 'actionsDesktop',
     cell: ({ row }) => (
-      <div className='hidden sm:flex items-center'>
+      <div className='items-center'>
         <DataTableRowActions row={row} />
       </div>
     )
