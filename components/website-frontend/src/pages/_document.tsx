@@ -9,17 +9,6 @@ class MyDocument extends Document {
       >
         <Head>
           <meta charSet='UTF-8' />
-
-          <link
-            rel='alternate'
-            type='application/rss+xml'
-            href='/rss.xml'
-          />
-          <link
-            rel='icon'
-            type='image/x-icon'
-            href='/absinthe.png'
-          />
         </Head>
         <body>
           <Main />

@@ -26,7 +26,7 @@ export default function Base({ children, title, description }: React.PropsWithCh
         />
       </Head>
       <Navbar />
-      <main className='flex-grow p-3 flex flex-col select-none'>
+      <main className='flex-grow p-3 flex flex-col'>
         {children}
         <Toaster
           position='bottom-left'

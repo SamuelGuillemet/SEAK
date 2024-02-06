@@ -1,10 +1,10 @@
 import { GetServerSideProps, InferGetServerSidePropsType, NextPage } from 'next';
-import Link from 'next/link';
 
+import { AccountPageAddAccount } from '@/components/account-page/account-page-add-account';
 import { Tabs } from '@/components/account-page/account-page-tabs';
 import { accountColumns } from '@/components/account-table/account-columns';
+import { AccountDetails } from '@/components/account-table-details/account-details';
 import { DataTable } from '@/components/table/data-table';
-import { Button } from '@/components/ui/button';
 import Base from '@/layouts/base';
 import { logger } from '@/lib/logger';
 import { fetchReadAccounts, useReadAccounts } from '@/openapi-codegen/apiComponents';
@@ -52,15 +52,11 @@ const UsersPage: NextPage<InferGetServerSidePropsType<typeof getServerSideProps>
       <div className='flex md:flex-row flex-col flex-grow'>
         <Tabs />
         <div className='flex flex-col flex-grow gap-4'>
-          <Link
-            href={pages.signup}
-            className='place-self-end m-4'
-          >
-            <Button>Ajouter un compte</Button>
-          </Link>
+          <AccountPageAddAccount />
           <DataTable
             columns={accountColumns}
             data={accounts ?? []}
+            CollapsedRow={AccountDetails}
           />
         </div>
       </div>
