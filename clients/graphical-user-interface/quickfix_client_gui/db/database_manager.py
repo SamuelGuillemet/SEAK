@@ -61,15 +61,6 @@ class DatabaseManager:
         self.session = Session()
         self.init_example_data()
 
-    def set_refresh_callback(self, callback):
-        self.refresh_callback = callback
-
-    def set_display_message_callback(self, callback):
-        self.display_message_callback = callback
-
-    def set_update_chart_callback(self, callback):
-        self.update_chart_callback = callback
-
     def init_example_data(self):
         user1 = self.session.query(User).filter_by(username="user1").first()
 
@@ -275,10 +266,6 @@ class DatabaseManager:
             self.session.commit()
             message = f"Order {client_order_id} filled successfully."
             print(message)
-            if self.refresh_callback:
-                self.refresh_callback()
-            if self.display_message_callback:
-                self.display_message_callback(message)
         else:
             print(f"Order {client_order_id} not found in the database.")
 
@@ -307,10 +294,6 @@ class DatabaseManager:
                 share.quantity += order.quantity
             self.session.commit()
             message = f"Order {client_order_id} rejected."
-            if self.display_message_callback:
-                self.display_message_callback(message)
-            if self.refresh_callback:
-                self.refresh_callback()
             print(message)
         else:
             print(f"Order {client_order_id} not found in the database.")
@@ -323,10 +306,6 @@ class DatabaseManager:
             self.session.commit()
             message = f"Order {client_order_id} accepted."
             print(message)
-            if self.display_message_callback:
-                self.display_message_callback(message)
-            if self.refresh_callback:
-                self.refresh_callback()
         else:
             print(f"Order {client_order_id} not found in the database.")
 
@@ -338,10 +317,6 @@ class DatabaseManager:
             self.session.commit()
             message = f"Order {client_order_id} canceled."
             print(message)
-            if self.display_message_callback:
-                self.display_message_callback(message)
-            if self.refresh_callback:
-                self.refresh_callback()
         else:
             print(f"Order {client_order_id} not found in the database.")
 
@@ -353,10 +328,6 @@ class DatabaseManager:
             self.session.commit()
             message = f"Order {client_order_id} replaced."
             print(message)
-            if self.display_message_callback:
-                self.display_message_callback(message)
-            if self.refresh_callback:
-                self.refresh_callback()
         else:
             print(f"Order {client_order_id} not found in the database.")
 
@@ -367,10 +338,6 @@ class DatabaseManager:
             order.status = "Pending"
             message = f"Order cancel request for {client_order_id} rejected."
             print(message)
-            if self.display_message_callback:
-                self.display_message_callback(message)
-            if self.refresh_callback:
-                self.refresh_callback()
         else:
             message = f"Order {client_order_id} not found in the database."
             print(message)
@@ -383,13 +350,10 @@ class DatabaseManager:
         market_data_response: MarketDataResponse,
     ):
         message = "Market data request rejected"
-        if self.display_message_callback:
-            self.display_message_callback(message)
+        print(message)
 
     def market_data_snapshot_full_refresh_callback(
         self,
         market_data_response: MarketDataResponse,
     ):
         create_candlestick_chart(market_data_response)
-        if self.update_chart_callback:
-            self.update_chart_callback()
