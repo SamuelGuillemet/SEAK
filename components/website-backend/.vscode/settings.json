@@ -60,6 +60,7 @@
     "**/.mypy*": true,
     "**/.coverage": true,
     "**/.coverage.*": true,
-    "**/node_modules/": true
+    "storage/": true,
+    ".venv/": true
   }
 }

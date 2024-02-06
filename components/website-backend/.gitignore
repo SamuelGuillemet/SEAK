@@ -7,3 +7,4 @@ coverage.xml
 .coverage
 openapi.json
 dump.json
+storage/
