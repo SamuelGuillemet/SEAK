@@ -21,3 +21,9 @@ def load_cfg(file_path: Path):
     config = ConfigParser()
     config.read_file(get_file_as_stream(file_path))
     return config
+
+
+def get_config_file_path(name: str = "FIX44.xml") -> str:
+    """Get the path to the config file"""
+    file = get_config_dir() / name
+    return str(file)

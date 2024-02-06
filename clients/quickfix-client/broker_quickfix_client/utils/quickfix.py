@@ -20,6 +20,7 @@ from broker_quickfix_client.constant import (
     SERVER_PORT,
 )
 from broker_quickfix_client.decorators import default_return_value_decorator
+from broker_quickfix_client.utils.loader import get_config_file_path
 
 logger = logging.getLogger("quickfix.event")
 
@@ -46,9 +47,11 @@ def log_quick_fix_message(
         return
 
     message_parts = [
-        "=".join([get_field_name(split[0]), get_field_value(split[0], split[1])])
-        if len(split := s.split("=")) == 2
-        else s
+        (
+            "=".join([get_field_name(split[0]), get_field_value(split[0], split[1])])
+            if len(split := s.split("=")) == 2
+            else s
+        )
         for s in str(message).split("\x01")
     ]
 
@@ -104,7 +107,7 @@ def set_settings(username: str):
     session_dict.setString("ConnectionType", "initiator")
     session_dict.setString("SocketConnectHost", SERVER_IP)
     session_dict.setInt("SocketConnectPort", SERVER_PORT)
-    session_dict.setString("DataDictionary", "./config/FIX44.xml")
+    session_dict.setString("DataDictionary", get_config_file_path())
     session_dict.setString("StartTime", "00:00:00")
     session_dict.setString("EndTime", "00:00:00")
     session_dict.setInt("HeartBtInt", 30)

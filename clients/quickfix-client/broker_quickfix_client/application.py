@@ -1,5 +1,6 @@
 # pylint: disable=unused-argument,invalid-name,super-init-not-called
 
+import asyncio
 import logging
 from time import sleep
 
@@ -143,6 +144,29 @@ def start_initiator(initiator: SocketInitiator, application: ClientApplication):
     # Wait for the session to logon before sending messages.
     while not application.get_session_id():
         sleep(0.1)
+
+
+async def start_initiator_async(
+    initiator: SocketInitiator, application: ClientApplication, timeout: float = 1
+):
+    if not application.username or not application.password:
+        raise ValueError("Username and password must be set before starting initiator")
+
+    initiator.start()
+
+    try:
+        await asyncio.wait_for(wait_for_logon(application), timeout=timeout)
+    except asyncio.TimeoutError:
+        logger.error("Timeout waiting for logon")
+        initiator.stop()
+        return False
+
+    return True
+
+
+async def wait_for_logon(application: ClientApplication):
+    while not application.get_session_id():
+        await asyncio.sleep(0.1)
 
 
 def setup(username: str, password: str):
