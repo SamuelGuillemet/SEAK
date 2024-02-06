@@ -127,6 +127,7 @@ public class MarketDataRequestListener {
   ) {
     try {
       marketDataSubscriptionCatalog.subscribe(marketDataRequest);
+      LOG.debug("Subscribing to symbols {}", marketDataRequest.getSymbols());
     } catch (DuplicateEntryException e) {
       rejectRequest(
         key,
@@ -142,6 +143,10 @@ public class MarketDataRequestListener {
       marketDataSubscriptionCatalog.unsubscribeAll(marketDataRequest);
     } else {
       marketDataSubscriptionCatalog.unsubscribe(marketDataRequest);
+      LOG.debug(
+        "Unsubscribing from symbols {}",
+        marketDataRequest.getSymbols()
+      );
     }
   }
 
@@ -153,6 +158,11 @@ public class MarketDataRequestListener {
         MarketDataRejectedReason.UNSUPPORTED_MARKET_DEPTH
       );
     }
+
+    LOG.debug(
+      "Sending snapshot for symbols {}",
+      marketDataRequest.getSymbols()
+    );
 
     for (CharSequence symbol : marketDataRequest.getSymbols()) {
       List<MarketData> marketData = marketDataSeeker.readLastStockData(

@@ -68,7 +68,7 @@ public class MarketDataSeeker {
   }
 
   public List<MarketData> readLastStockData(String symbol, long depth) {
-    LOG.debug("Reading last {} stock data for {}", depth, symbol);
+    LOG.trace("Reading last {} stock data for {}", depth, symbol);
 
     List<TopicPartition> partitions = consumer
       .partitionsFor(symbolTopicPrefix + symbol)
@@ -98,6 +98,11 @@ public class MarketDataSeeker {
       stockData.put(item.timestamp(), item.value());
     }
 
-    return stockData.values().stream().skip(stockData.size() - depth).toList();
+    long skipped = stockData.size() - depth;
+    if (skipped < 0) {
+      skipped = 0;
+    }
+
+    return stockData.values().stream().skip(skipped).toList();
   }
 }
