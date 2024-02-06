@@ -47,6 +47,7 @@ class MainInterface(tk.Tk):
         # Initialize class attributes
         self.database_manager = DatabaseManager("sqlite:///quickfix_client_database.db")
         self.database_manager.set_refresh_callback(self.refresh_main_interface)
+        self.database_manager.set_display_message_callback(self.display_message)
         self.username = username
         self.account_balance = self.database_manager.get_user_balance(self.username)
         self.owned_shares = self.database_manager.get_user_shares(self.username)
