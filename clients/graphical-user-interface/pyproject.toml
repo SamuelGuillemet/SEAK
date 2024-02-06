@@ -1,14 +1,17 @@
 [tool.poetry]
-name = "broker-quickfix-client"
+name = "quickfix-client-graphical-user-interface"
 version = "0.3.0"
 description = ""
-authors = ["Samuel Guillemet <samuel.guillemet@telecom-sudparis.eu>"]
+authors = ["Théo Joseph-Antoine <theo.joseph-antoine@telecom-sudparis.eu>"]
 readme = "README.md"
-packages = [{ include = "broker_quickfix_client" }]
+packages = [{ include = "quickfix_client_gui" }]
 
 [tool.poetry.dependencies]
 python = ">=3.10"
-quickfix = "^1.15.1"
+broker-quickfix-client = { path = "../quickfix-client", develop = true }
+pillow = "^10.2.0"
+sqlalchemy = "^2.0.25"
+mplfinance = "^0.12.10b0"
 
 [tool.poetry.group.dev.dependencies]
 black = "^23.7.0"
@@ -29,10 +32,4 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
-src_paths = ["broker_quickfix_client", "tests"]
-known_first_party = "broker_quickfix_client"
-
-[tool.mypy]
-no_strict_optional = true
-ignore_missing_imports = true
-files = "^(broker_quickfix_client/|tests/)"
+known_first_party = "quickfix_client_gui"

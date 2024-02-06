@@ -150,6 +150,8 @@ def setup(
     password: str,
     execution_report_handler: ExecutionReportHandler | None = None,
     order_cancel_reject_handler: OrderCancelRejectHandler | None = None,
+    # market_data_request_reject_handler: MarketDataRequestRejectHandler | None = None,
+    # market_data_handler: MarketDataSnapshotFullRefreshHandler | None = None,
 ):
     setup_logs("client")
     setup_logs("quickfix", level=logging.INFO)
@@ -162,5 +164,4 @@ def setup(
         application.set_order_cancel_reject_handler(order_cancel_reject_handler)
 
     initiator = build_initiator(username, application)
-    start_initiator(initiator, application)
     return application, initiator
