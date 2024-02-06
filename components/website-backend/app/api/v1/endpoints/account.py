@@ -1,4 +1,5 @@
 import logging
+from operator import ne
 
 from fastapi import APIRouter, HTTPException, Security, status
 
@@ -31,9 +32,7 @@ async def read_accounts(
     This endpoint requires authentication with the "admin" scope.
     """
     return await accounts.query_redis(
-        db,
-        redis,
-        limit=None,
+        db, redis, limit=None, filters={"scope": {ne: SecurityScopes.SERVICE.value}}
     )
 
 

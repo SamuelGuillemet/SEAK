@@ -4,6 +4,7 @@ from enum import Enum
 class SecurityScopes(str, Enum):
     USER = "user"
     ADMIN = "admin"
+    SERVICE = "service"
 
 
 scopes_hierarchy: dict[str, list[str]] = {

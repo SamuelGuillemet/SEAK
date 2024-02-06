@@ -19,6 +19,7 @@ from app.dependencies import get_db, get_redis
 from app.schemas.base import HTTPError
 from app.utils.custom_openapi import generate_custom_openapi
 from app.utils.get_version import get_version
+from app.utils.initialize_service_accounts import initialize_services_account
 from app.utils.logger import setup_logs
 
 setup_logs("app", level=logging.DEBUG)
@@ -53,6 +54,7 @@ async def lifespan(_app: FastAPI):  # pragma: no cover
     get_redis.setup()
     await pre_start()
     logger.info("Database connection established.")
+    await initialize_services_account()
     yield
     logger.info("Closing database connection...")
     await get_db.shutdown()

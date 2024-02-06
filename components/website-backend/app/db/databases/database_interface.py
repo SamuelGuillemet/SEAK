@@ -50,23 +50,33 @@ class DatabaseInterface(ABC):
         if not self.async_sessionmaker:
             raise RuntimeError("Database not initialized")
 
-        return self.async_sessionmaker()
+        return self.async_sessionmaker()  # type: ignore
+
+    def sync_wrapper(self, session: Session, method: Any) -> Any:
+        """
+        Wrapper to get a connection from the session and close it after the method is called.
+        """
+        connection = session.connection()
+        return method(connection)
 
     async def create_all(self, no_drop: bool = False) -> None:
         """
         Create all tables, with a drop first if they already exist.
         """
 
-        def wrapper(session: Session, method: Any) -> Any:
-            """
-            Wrapper to get a connection from the session and close it after the method is called.
-            """
-            connection = session.connection()
-            return method(connection)
-
         metadata = Base.metadata
         async with self.get_session() as session:
             async with session.begin():
                 if not no_drop:
-                    await session.run_sync(wrapper, metadata.drop_all)
-                await session.run_sync(wrapper, metadata.create_all)
+                    await session.run_sync(self.sync_wrapper, metadata.drop_all)
+                await session.run_sync(self.sync_wrapper, metadata.create_all)
+
+    async def is_created(self) -> bool:
+        """
+        Check if the database is already created.
+        """
+        async with self.get_session() as session:
+            async with session.begin():
+                return await session.run_sync(
+                    self.sync_wrapper, Base.metadata.create_all
+                )
