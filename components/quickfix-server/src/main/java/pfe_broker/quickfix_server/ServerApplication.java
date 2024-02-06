@@ -19,8 +19,7 @@ import pfe_broker.avro.RejectedOrder;
 import pfe_broker.avro.Trade;
 import pfe_broker.avro.Type;
 import pfe_broker.avro.utils.Converters;
-import pfe_broker.models.domains.User;
-import pfe_broker.models.repositories.UserRepository;
+import pfe_broker.models.services.UserAuthenticationService;
 import pfe_broker.quickfix_server.interfaces.IMessageSender;
 import quickfix.Application;
 import quickfix.DoNotSend;
@@ -73,7 +72,7 @@ public class ServerApplication extends MessageCracker implements Application {
   private final QuickFixLogger quickFixLogger;
   private final IMessageSender messageSender;
   private final KafkaProducer orderProducer;
-  private final UserRepository userRepository;
+  private final UserAuthenticationService userAuthenticationService;
   private final MeterRegistry meterRegistry;
 
   private Integer orderKey;
@@ -84,13 +83,13 @@ public class ServerApplication extends MessageCracker implements Application {
     QuickFixLogger quickFixLogger,
     IMessageSender messageSender,
     KafkaProducer orderProducer,
-    UserRepository userRepository,
+    UserAuthenticationService userAuthenticationService,
     MeterRegistry meterRegistry
   ) {
     this.quickFixLogger = quickFixLogger;
     this.messageSender = messageSender;
     this.orderProducer = orderProducer;
-    this.userRepository = userRepository;
+    this.userAuthenticationService = userAuthenticationService;
     this.meterRegistry = meterRegistry;
 
     this.orderKey = 0;
@@ -181,12 +180,11 @@ public class ServerApplication extends MessageCracker implements Application {
         String password = message.getString(Password.FIELD);
 
         // Check credentials
-        if (checkCredentials(username, password)) {
-          LOG.debug("Valid credentials for: {}", username);
-        } else {
+        if (!userAuthenticationService.userAuthentication(username, password)) {
           LOG.debug("Logon rejected for: {}", username);
           throw new RejectLogon("Invalid username or password");
         }
+
         LOG.info("Logon received from: {}", sender);
         messageSender.registerNewUser(sender, sessionId);
       } catch (FieldNotFound e) {
@@ -674,20 +672,5 @@ public class ServerApplication extends MessageCracker implements Application {
     executionKey++;
 
     return executionReport;
-  }
-
-  /**
-   * for now, this method creates the user for testing purposes, normally it should just check the users credentials
-   */
-  private boolean checkCredentials(String username, String password) {
-    User user;
-    User userMatch = userRepository.findByUsername(username).orElse(null);
-    if (userMatch == null) {
-      user = new User(username, password, 1000.0);
-      userRepository.save(user);
-    } else {
-      user = userMatch;
-    }
-    return user.getPassword().equals(password);
   }
 }

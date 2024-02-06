@@ -35,6 +35,9 @@ dependencies {
     // Database
     implementation libs.micronaut.data.hibernate.jpa
 
+    // Authentication dependencies
+    implementation libs.spring.security.crypto
+
     // QuickFixJ
     implementation libs.quickfixj.core
     implementation libs.quickfixj.messages.all
@@ -46,6 +49,7 @@ dependencies {
     implementation libs.log4j.core
     runtimeOnly libs.log4j.api
     runtimeOnly libs.log4j.slf4j2.impl
+    runtimeOnly libs.jcl.over.slf4j
 
     // Test dependencies
     testImplementation libs.awaitility

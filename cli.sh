@@ -4,7 +4,8 @@ source cli_autocomplete.sh
 
 CONFIG_FILE="./config/common/kafka.yml"
 JAVA_PROJECTS=("market-matcher" "order-book" "order-stream" "trade-stream" "quickfix-server")
-PYTHON_PROJECTS=("pre-processing")
+PYTHON_PROJECTS=("pre-processing" "website-backend")
+NPM_PROJECTS=("website-frontend")
 
 function docker_single() {
   base_command=("docker" "compose" "-f" "docker-compose.base.yml" "-f" "docker-compose.single.yml")
@@ -77,10 +78,17 @@ function project() {
   # Test if project is python
   elif [[ " ${PYTHON_PROJECTS[*]} " =~ ${project} ]]; then
     if [ "$action" == "run" ]; then
-      (
-        cd components/"$project" || exit
-        poetry run "$project" "${args[@]:2}"
-      )
+      if [ "$project" == "website-backend" ]; then
+        (
+          cd components/"$project" || exit
+          DB_TYPE=POSTGRES poetry run uvicorn app.main:app --port 8001
+        )
+      else
+        (
+          cd components/"$project" || exit
+          poetry run "$project" "${args[@]:2}"
+        )
+      fi
     elif [ "$action" == "test" ]; then
       (
         cd components/"$project" || exit
@@ -89,6 +97,23 @@ function project() {
     else
       echo "Invalid action for project: $action"
       echo "Valid actions: run, test"
+      exit 1
+    fi
+  # Test if project is npm
+  elif [[ " ${NPM_PROJECTS[*]} " =~ ${project} ]]; then
+    if [ "$action" == "run" ]; then
+      (
+        cd components/"$project" || exit
+        npm run dev
+      )
+    elif [ "$action" == "test" ]; then
+      (
+        cd components/"$project" || exit
+        npm run test
+      )
+    else
+      echo "Invalid action for project: $action"
+      echo "Valid actions: run test"
       exit 1
     fi
   else

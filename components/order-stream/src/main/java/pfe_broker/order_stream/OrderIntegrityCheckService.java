@@ -10,7 +10,6 @@ import io.micrometer.core.instrument.Timer;
 import io.micronaut.context.annotation.Property;
 import jakarta.annotation.PreDestroy;
 import jakarta.inject.Singleton;
-import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import pfe_broker.avro.Order;
@@ -69,14 +68,6 @@ public class OrderIntegrityCheckService {
   }
 
   private boolean verifyUserExistInRedis(String username) {
-    boolean userExists =
-      redisConnection.sync().exists(buildBalanceKey(username)) == 1;
-    if (userExists) {
-      return true;
-    } else {
-      // Create the user in redis
-      redisConnection.sync().set(buildBalanceKey(username), "10000");
-    }
     return redisConnection.sync().exists(buildBalanceKey(username)) == 1;
   }
 
@@ -217,7 +208,8 @@ public class OrderIntegrityCheckService {
     if (
       symbol == null ||
       symbol.isEmpty() ||
-      !symbolReader.getSymbolsCached().contains(symbol)
+      (!symbolReader.getSymbolsCached().contains(symbol) &&
+        !symbolReader.retrieveSymbols().contains(symbol))
     ) {
       LOG.debug("Order {} rejected because of unknown symbol", order);
       return OrderRejectReason.UNKNOWN_SYMBOL;
@@ -270,16 +262,5 @@ public class OrderIntegrityCheckService {
     sample.stop(timer);
 
     return orderCheckIntegrityResult;
-  }
-
-  /**
-   * Expose this public method to be able to call it from the test
-   */
-  public void retreiveSymbols() throws InterruptedException {
-    this.symbolReader.retrieveSymbols();
-  }
-
-  public List<String> getSymbols() {
-    return this.symbolReader.getSymbolsCached();
   }
 }

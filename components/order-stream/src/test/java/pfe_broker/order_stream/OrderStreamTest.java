@@ -18,6 +18,7 @@ import org.testcontainers.junit.jupiter.Testcontainers;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Type;
+import pfe_broker.common.SymbolReader;
 import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.common.utils.RedisTestContainer;
 import pfe_broker.order_stream.mocks.MockOrderListener;
@@ -35,7 +36,7 @@ class OrderStreamTest implements TestPropertyProvider {
   static final RedisTestContainer redis = new RedisTestContainer();
 
   @Inject
-  OrderIntegrityCheckService orderIntegrityCheckService;
+  SymbolReader symbolReader;
 
   @Override
   public @NonNull Map<String, String> getProperties() {
@@ -60,8 +61,8 @@ class OrderStreamTest implements TestPropertyProvider {
   void setup(
     MockOrderListener mockOrderListener,
     StatefulRedisConnection<String, String> redisConnection
-  ) throws InterruptedException {
-    orderIntegrityCheckService.retreiveSymbols();
+  ) {
+    symbolReader.retrieveSymbols();
     mockOrderListener.acceptedOrders.clear();
     mockOrderListener.rejectedOrders.clear();
     mockOrderListener.orderBookRequests.clear();

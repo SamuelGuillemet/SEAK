@@ -32,11 +32,11 @@ public class SymbolReader {
   }
 
   @PostConstruct
-  void init() throws InterruptedException {
+  void init() {
     retrieveSymbols();
   }
 
-  public List<String> getSymbols() throws InterruptedException {
+  private List<String> getSymbols() throws InterruptedException {
     Properties props = new Properties();
     props.put(AdminClientConfig.BOOTSTRAP_SERVERS_CONFIG, bootstrapServers);
     try (Admin admin = Admin.create(props)) {
@@ -54,7 +54,7 @@ public class SymbolReader {
     }
   }
 
-  public boolean isKafkaRunning() {
+  private boolean isKafkaRunning() {
     return UtilsRunning.isKafkaRunning(bootstrapServers);
   }
 
@@ -62,12 +62,18 @@ public class SymbolReader {
     return symbols;
   }
 
-  public void retrieveSymbols() throws InterruptedException {
+  public List<String> retrieveSymbols() {
     if (isKafkaRunning()) {
       this.symbols.clear();
-      this.symbols.addAll(getSymbols());
+      try {
+        this.symbols.addAll(getSymbols());
+      } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        LOG.error("Error while getting symbols", e);
+      }
     } else {
       LOG.error("Kafka is not running");
     }
+    return this.symbols;
   }
 }

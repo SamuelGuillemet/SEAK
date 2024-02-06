@@ -1,5 +1,6 @@
 [versions]
 log4j = "2.22.1"
+slf4j = "2.0.11"
 fasterxml-jackson = "2.16.1"
 snakeyaml = "2.2"
 
@@ -10,6 +11,7 @@ confluent-avro = "7.5.1"
 quickfixj = "2.3.1"
 lombok = "1.18.30"
 postgresql = "42.7.1"
+spring-security-crypto = "6.2.1"
 
 awaitility = "4.2.0"
 assertj-core = "3.25.1"
@@ -23,6 +25,7 @@ plugin-shadow = "8.1.1"
 log4j-api = { group = "org.apache.logging.log4j", name = "log4j-api", version.ref = "log4j" }
 log4j-core = { group = "org.apache.logging.log4j", name = "log4j-core", version.ref = "log4j" }
 log4j-slf4j2-impl = { group = "org.apache.logging.log4j", name = "log4j-slf4j2-impl", version.ref = "log4j" }
+jcl-over-slf4j = { group = "org.slf4j", name = "jcl-over-slf4j", version.ref = "slf4j" }
 
 jackson-dataformat-yaml = { group = "com.fasterxml.jackson.dataformat", name = "jackson-dataformat-yaml", version.ref = "fasterxml-jackson" }
 jackson-databind = { group = "com.fasterxml.jackson.core", name = "jackson-databind", version.ref = "fasterxml-jackson" }
@@ -53,6 +56,8 @@ quickfixj-messages-all = { group = "org.quickfixj", name = "quickfixj-messages-a
 lombok = { group = "org.projectlombok", name = "lombok", version.ref = "lombok" }
 
 postgresql = { group = "org.postgresql", name = "postgresql", version.ref = "postgresql" }
+
+spring-security-crypto = { group = "org.springframework.security", name = "spring-security-crypto", version.ref = "spring-security-crypto" }
 
 awaitility = { group = "org.awaitility", name = "awaitility", version.ref = "awaitility" }
 assertj-core = { group = "org.assertj", name = "assertj-core", version.ref = "assertj-core" }
