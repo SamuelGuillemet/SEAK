@@ -1,17 +1,50 @@
 import { useState } from 'react';
 
-import { ColumnDef, SortingState, VisibilityState, flexRender, getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
+import { ColumnDef, Row, SortingState, VisibilityState, flexRender, getCoreRowModel, getFacetedRowModel, getFacetedUniqueValues, getFilteredRowModel, getPaginationRowModel, getSortedRowModel, useReactTable } from '@tanstack/react-table';
 
 import { DataTablePagination } from '@/components/table/data-table-pagination';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 
 interface DataTableProps<TData extends { id: number }, TValue> {
   columns: ColumnDef<TData, TValue>[];
   data: TData[];
   pagination?: boolean;
+  CollapsedRow?: ({ row }: { row: Row<TData> }) => React.ReactNode;
 }
 
-export function DataTable<TData extends { id: number }, TValue>({ columns, data, pagination = true }: Readonly<DataTableProps<TData, TValue>>) {
+function BasicTableRows<TData extends { id: number }>({ row }: Readonly<{ row: Row<TData> }>) {
+  return (
+    <TableRow key={row.id}>
+      {row.getVisibleCells().map((cell) => (
+        <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
+      ))}
+    </TableRow>
+  );
+}
+
+function RowWithCollapsibleDetails<TData extends { id: number }>({ row, CollapsedRow }: Readonly<{ row: Row<TData>; CollapsedRow: ({ row }: { row: Row<TData> }) => React.ReactNode }>) {
+  return (
+    <Collapsible
+      key={row.id}
+      asChild
+    >
+      <>
+        <BasicTableRows row={row} />
+        <CollapsibleContent asChild>
+          <TableRow
+            key={row.id + '-collapsed'}
+            className='bg-muted/10'
+          >
+            <TableCell colSpan={row.getVisibleCells().length}>{CollapsedRow({ row })}</TableCell>
+          </TableRow>
+        </CollapsibleContent>
+      </>
+    </Collapsible>
+  );
+}
+
+export function DataTable<TData extends { id: number }, TValue>({ columns, data, pagination = true, CollapsedRow }: Readonly<DataTableProps<TData, TValue>>) {
   const [rowSelection, setRowSelection] = useState({});
   const columnVisibility: VisibilityState = { id: false };
   const [sorting, setSorting] = useState<SortingState>([{ id: 'id', desc: true }]);
@@ -55,13 +88,20 @@ export function DataTable<TData extends { id: number }, TValue>({ columns, data,
           </TableHeader>
           <TableBody>
             {table.getRowModel().rows?.length ? (
-              table.getRowModel().rows.map((row) => (
-                <TableRow key={row.id}>
-                  {row.getVisibleCells().map((cell) => (
-                    <TableCell key={cell.id}>{flexRender(cell.column.columnDef.cell, cell.getContext())}</TableCell>
-                  ))}
-                </TableRow>
-              ))
+              table.getRowModel().rows.map((row) =>
+                CollapsedRow ? (
+                  <RowWithCollapsibleDetails
+                    key={row.id}
+                    row={row}
+                    CollapsedRow={CollapsedRow}
+                  />
+                ) : (
+                  <BasicTableRows
+                    key={row.id}
+                    row={row}
+                  />
+                )
+              )
             ) : (
               <TableRow>
                 <TableCell
