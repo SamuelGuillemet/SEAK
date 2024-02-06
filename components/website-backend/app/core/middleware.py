@@ -54,7 +54,11 @@ class ExceptionMonitorMiddleware(BaseHTTPMiddleware):
                 f"Exception raised during processing of request {request.method} {request.url}: {e}"
             )
             # Get the body of the request as bytes
-            body: bytes = await request.body()
+            try:
+                body: bytes = await request.body()
+            except RuntimeError:
+                body = b""
+
             # Create a background task to call the alert backend function with the exception and request details
             task = BackgroundTask(
                 self.alert_backend,
