@@ -1,8 +1,7 @@
-from test.base_test import BaseTest
-
 from fastapi import HTTPException, status
 from fastapi.security import SecurityScopes
 from jose import jwt
+from tests.base_test import BaseTest
 
 from app.core.config import settings
 from app.core.security import create_access_token

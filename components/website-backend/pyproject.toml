@@ -45,12 +45,6 @@ pytest-xdist = "^3.5.0"
 flake8-pyproject = "^1.2.3"
 
 
-[tool.poetry.scripts]
-init-db = "app.commands.init_db:init_db"
-migrate-db = "app.commands.migrate_db:migrate_db"
-reset-db = "app.commands.reset_db:reset_db"
-
-
 [build-system]
 requires = ["poetry-core"]
 build-backend = "poetry.core.masonry.api"

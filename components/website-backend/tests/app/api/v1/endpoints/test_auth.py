@@ -1,4 +1,4 @@
-from test.base_test import BaseTest
+from tests.base_test import BaseTest
 
 from app.core.config import settings
 from app.crud.crud_account import account as crud_account

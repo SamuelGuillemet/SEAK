@@ -1,8 +1,9 @@
 from datetime import datetime as _datetime
 from operator import gt
-from test.base_test import BaseTest
 from typing import Optional
 from unittest.mock import patch
+
+from tests.base_test import BaseTest
 
 from app.crud.base import CRUDBase, patch_timezone_sqlite
 from app.db.base_class import Base, Datetime, Mapped, Str256, Str512
