@@ -75,7 +75,10 @@ public class MarketMatcher {
 
     String symbol = order.getSymbol().toString();
 
-    if (!symbolReader.getSymbolsCached().contains(symbol)) {
+    if (
+      !symbolReader.getSymbolsCached().contains(symbol) &&
+      !symbolReader.retrieveSymbols().contains(symbol)
+    ) {
       rejectOrder(key, order);
       return null;
     }
@@ -123,16 +126,5 @@ public class MarketMatcher {
         .setReason(OrderRejectReason.UNKNOWN_SYMBOL)
         .build()
     );
-  }
-
-  /**
-   * Expose this public method to be able to call it from the test
-   */
-  public void retreiveSymbols() throws InterruptedException {
-    this.symbolReader.retrieveSymbols();
-  }
-
-  public List<String> getSymbols() {
-    return this.symbolReader.getSymbolsCached();
   }
 }

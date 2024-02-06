@@ -19,6 +19,7 @@ import pfe_broker.avro.MarketData;
 import pfe_broker.avro.Order;
 import pfe_broker.avro.Side;
 import pfe_broker.avro.Type;
+import pfe_broker.common.SymbolReader;
 import pfe_broker.common.utils.KafkaTestContainer;
 import pfe_broker.common.utils.mocks.MockMarketDataProducer;
 import pfe_broker.market_matcher.mocks.MockOrderProducer;
@@ -33,7 +34,7 @@ class MarketMatcherTest implements TestPropertyProvider {
   static final KafkaTestContainer kafka = new KafkaTestContainer();
 
   @Inject
-  MarketMatcher marketMatcher;
+  SymbolReader symbolReader;
 
   private final float closeValue = 100.0f;
 
@@ -70,7 +71,7 @@ class MarketMatcherTest implements TestPropertyProvider {
 
   @BeforeEach
   void reset(MockTradeListener mockTradeListener) throws InterruptedException {
-    marketMatcher.retreiveSymbols();
+    symbolReader.retrieveSymbols();
     mockTradeListener.trades.clear();
     mockTradeListener.rejectedOrders.clear();
   }
@@ -81,7 +82,7 @@ class MarketMatcherTest implements TestPropertyProvider {
     MockOrderProducer mockOrderProducer
   ) {
     // Assert that AAPL is in the list of symbols of the order consumer
-    assertThat(marketMatcher.getSymbols()).contains("AAPL");
+    assertThat(symbolReader.getSymbolsCached()).contains("AAPL");
     // Given
     Order order = new Order(
       "user",
