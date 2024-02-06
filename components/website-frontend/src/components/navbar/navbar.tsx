@@ -4,9 +4,9 @@ import dynamic from 'next/dynamic';
 import Link from 'next/link';
 
 import LoginButton from '@/components/navbar/login-button';
+import { useLinks } from '@/hooks/useLinks';
+import { navLinks } from '@/utils/constant';
 import { pages } from '@/utils/pages';
-
-const navitems: Record<string, string> = {};
 
 // Import Dark mode dynamically to avoid SSR issues
 const DarkMode = dynamic(() => import('@/components/navbar/dark-mode-switch').then((mod) => mod.DarkMode), { ssr: false });
@@ -14,15 +14,11 @@ const DarkMode = dynamic(() => import('@/components/navbar/dark-mode-switch').th
 export default function Navbar(): React.JSX.Element {
   const [isOpen, setIsOpen] = useState(false);
 
+  const { activeLink, filteredLinks } = useLinks(navLinks);
+
   return (
     <header className='flex flex-col lg:flex-row'>
       <div className='flex justify-between items-center'>
-        <Link
-          href={pages.index}
-          className='text-4xl text-primary font-bold p-2'
-        >
-          PFE Broker
-        </Link>
         <button
           id='hamburger-menu'
           aria-label='hamburger-menu'
@@ -36,13 +32,13 @@ export default function Navbar(): React.JSX.Element {
       </div>
       <div className={(!isOpen ? 'hidden ' : '') + 'lg:flex flex-col lg:flex-row items-center flex-grow'}>
         <div className={'flex p-2 justify-start flex-grow self-start lg:self-center h-full flex-col lg:flex-row pb-4 space-y-2 lg:space-y-0 lg:items-end lg:mb-2'}>
-          {Object.entries(navitems).map(([name, link]) => (
+          {filteredLinks.map((link) => (
             <Link
-              key={name}
-              className='text-xl hover:underline mx-4 w-max xl:mx-6'
-              href={link}
+              key={link.href}
+              href={link.href}
+              className={`text-xl hover:underline mx-4 w-max xl:mx-6 ${activeLink === link ? 'text-primary' : 'text-gray-500 dark:text-gray-400'}`}
             >
-              {name}
+              {link.label}
             </Link>
           ))}
         </div>

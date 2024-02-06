@@ -1,4 +1,7 @@
+import { Session } from 'next-auth';
 import { JWT } from 'next-auth/jwt';
+
+import { LinksType } from '@/utils/constant';
 
 /**
  * Parses a JWT token and returns the information inside it, or null if the token is invalid.
@@ -49,4 +52,17 @@ export function patchEmptyString(obj: Record<string, unknown>): Record<string, u
     if (obj[key] === '') obj[key] = null;
   });
   return obj;
+}
+
+export function findActiveLink(links: LinksType, pathname: string) {
+  return links.find((link) => link.href === pathname);
+}
+
+export function filterLinks(links: LinksType, session: Session | null) {
+  if (session) {
+    const userRoles = session.scopes;
+    return links.filter((link) => link.scopes.some((role) => userRoles.includes(role)));
+  } else {
+    return [];
+  }
 }

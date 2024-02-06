@@ -1,21 +1,21 @@
 import { GetServerSidePropsContext, Redirect } from 'next';
 import { getServerSession, Session } from 'next-auth';
 
-import { links } from '@/components/account-page/account-page-tabs';
 import { options } from '@/pages/api/auth/[...nextauth]';
+import { tabLinks } from '@/utils/constant';
 import { pages } from '@/utils/pages';
 
 type VerifySessionReturn =
   | {
-      status: 'authenticated';
-      session: Session;
-    }
+    status: 'authenticated';
+    session: Session;
+  }
   | {
-      status: 'unauthenticated';
-      redirection: {
-        redirect: Redirect;
-      };
+    status: 'unauthenticated';
+    redirection: {
+      redirect: Redirect;
     };
+  };
 
 /**
  * Verifies the user session on the server side.
@@ -45,14 +45,14 @@ export async function verifySession(context: GetServerSidePropsContext, callback
 
 type VerifyScopesReturn =
   | {
-      status: 'authorized';
-    }
+    status: 'authorized';
+  }
   | {
-      status: 'unauthorized';
-      redirection: {
-        redirect: Redirect;
-      };
+    status: 'unauthorized';
+    redirection: {
+      redirect: Redirect;
     };
+  };
 
 /**
  * Verifies if the current session has the required scopes to access the current URL.
@@ -61,7 +61,7 @@ type VerifyScopesReturn =
  * @returns An object with the status of the verification and a redirection object if the user is unauthorized.
  */
 export function verifyScopes(currentUrl: string, session: Session): VerifyScopesReturn {
-  const requiredScopes = links.find((value) => value.href === currentUrl)!.scopes;
+  const requiredScopes = tabLinks.find((value) => value.href === currentUrl)!.scopes;
   for (const scope of session.scopes) {
     const findedScope = requiredScopes.find((value) => value === scope);
     if (findedScope === undefined) {
