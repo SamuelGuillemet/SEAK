@@ -116,7 +116,7 @@ class MainInterface(tk.Tk):
         self.symbol_entry.grid(row=1, column=2, pady=(10, 0), padx=(0, 10))
 
     def create_image_widget(self):
-        image_path = "charts/aapl_chart.jpeg"
+        image_path = "quickfix_client_gui/charts/aapl_chart.jpeg"
 
         chart_image = Image.open(image_path)
         chart_image = chart_image.resize((600, 200), Image.LANCZOS)
@@ -277,5 +277,4 @@ class MainInterface(tk.Tk):
 
     def on_close(self):
         self.initiator.stop()
-        self.destroy()
         self.destroy()
