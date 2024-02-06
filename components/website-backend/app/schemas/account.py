@@ -93,3 +93,17 @@ class Account(AccountBase, Balance, AccountStock):
     enabled: bool
 
     model_config = ConfigDict(from_attributes=True)
+
+
+class RankedAccount(Balance, AccountStock):
+    """This is the account model that is used by the API when the request is not authenticated.
+
+    Args:
+        AccountBase: The base model to use.
+    """
+
+    username: str
+    first_name: str
+    last_name: str
+
+    model_config = ConfigDict(from_attributes=True)

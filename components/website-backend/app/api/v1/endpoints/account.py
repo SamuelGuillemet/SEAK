@@ -1,5 +1,5 @@
 import logging
-from operator import ne
+from operator import eq, ne
 
 from fastapi import APIRouter, HTTPException, Security, status
 
@@ -32,8 +32,32 @@ async def read_accounts(
     This endpoint requires authentication with the "admin" scope.
     """
     return await accounts.query_redis(
-        db, redis, limit=None, filters={"scope": {ne: SecurityScopes.SERVICE.value}}
+        db, redis, limit=None, scope={ne: SecurityScopes.SERVICE.value}
     )
+
+
+@router.get(
+    "/ranking",
+    response_model=list[account_schema.RankedAccount],
+)
+async def read_ranked_accounts(
+    db: DBDependency,
+    redis: RedisDependency,
+):
+    """
+    Retrieve a list of accounts for ranking.
+    """
+    raw_accounts = await accounts.query_redis(
+        db,
+        redis,
+        limit=None,
+        scope={eq: SecurityScopes.USER.value},
+        enabled=True,
+    )
+
+    return [
+        account_schema.RankedAccount.model_validate(account) for account in raw_accounts
+    ]
 
 
 @router.post("/", response_model=account_schema.Account)
