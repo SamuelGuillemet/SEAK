@@ -15,6 +15,7 @@ from app.db.redis.redis import RedisDB
 from app.db.select_db import select_db
 from app.models.account import Account
 from app.schemas import token as token_schema
+from app.services.quickfix import QuickfixEngineService, QuickfixServiceDependency
 
 translator = Translator()
 logger = logging.getLogger("app.dependencies")
@@ -29,6 +30,13 @@ DBDependency = Annotated[AsyncSession, Depends(get_db)]
 get_redis = RedisDB()
 
 RedisDependency = Annotated[Redis, Depends(get_redis)]
+
+# Create quickfix engine (dependency injected)
+get_quickfix_engine = QuickfixServiceDependency()
+
+QuickfixEngineDependency = Annotated[
+    QuickfixEngineService, Depends(get_quickfix_engine)
+]
 
 
 async def get_current_account(
