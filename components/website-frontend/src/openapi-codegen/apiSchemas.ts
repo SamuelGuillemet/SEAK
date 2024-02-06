@@ -85,11 +85,35 @@ export type HealthResponse = {
   status: string;
 };
 
+export type MarketData = {
+  marketData: {
+    [key: string]: number;
+  };
+};
+
+export type MarketDataRequest = {
+  symbols: string[];
+};
+
 export type OwnAccountUpdate = {
   username?: string | null;
   lastName?: string | null;
   firstName?: string | null;
   password?: string | null;
+};
+
+/**
+ * This is the account model that is used by the API when the request is not authenticated.
+ *
+ * Args:
+ *     AccountBase: The base model to use.
+ */
+export type RankedAccount = {
+  stocks?: Stock[];
+  balance?: number | null;
+  username: string;
+  firstName: string;
+  lastName: string;
 };
 
 export type RootResponse = {
@@ -99,7 +123,7 @@ export type RootResponse = {
   msg: string;
 };
 
-export type SecurityScopes = 'user' | 'admin';
+export type SecurityScopes = 'user' | 'admin' | 'service';
 
 export type Stock = {
   symbol: string;

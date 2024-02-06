@@ -32,7 +32,15 @@ export const unprotectedRoutes = [
     "method": "post"
   },
   {
+    "path": "/api/v1/account/ranking",
+    "method": "get"
+  },
+  {
     "path": "/api/v1/auth/login/",
+    "method": "post"
+  },
+  {
+    "path": "/api/v1/market_data/",
     "method": "post"
   }
 ];

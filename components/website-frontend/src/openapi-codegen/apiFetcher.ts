@@ -22,6 +22,14 @@ export type ApiError = ErrorWrapper<
   | {
     status: 422;
     payload: Schemas.HTTPValidationError;
+  }
+  | {
+    status: 503;
+    payload: Schemas.HTTPError;
+  }
+  | {
+    status: 504;
+    payload: Schemas.HTTPError;
   }>;
 
 export function generateApiErrorMessage(error: ApiError): string {
@@ -31,10 +39,10 @@ export function generateApiErrorMessage(error: ApiError): string {
 
   switch (error.status) {
     case 400:
-      return error.payload.detail;
     case 401:
-      return error.payload.detail;
     case 404:
+    case 503:
+    case 504:
       return error.payload.detail;
     case 422:
       return error.payload.detail?.map((e) => e.msg).join(' ') ?? 'Erreur de validation';

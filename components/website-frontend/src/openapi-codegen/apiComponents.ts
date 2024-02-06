@@ -22,6 +22,14 @@ export type RootError = Fetcher.ErrorWrapper<
       status: 404;
       payload: Schemas.HTTPError;
     }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
 >;
 
 export type RootVariables = ApiContext['fetcherOptions'];
@@ -55,6 +63,14 @@ export type HealthError = Fetcher.ErrorWrapper<
     }
   | {
       status: 404;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
       payload: Schemas.HTTPError;
     }
 >;
@@ -96,6 +112,14 @@ export type ErrorError = Fetcher.ErrorWrapper<
       status: 500;
       payload: void;
     }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
 >;
 
 export type ErrorVariables = ApiContext['fetcherOptions'];
@@ -131,6 +155,14 @@ export type VersionError = Fetcher.ErrorWrapper<
       status: 404;
       payload: Schemas.HTTPError;
     }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
 >;
 
 export type VersionVariables = ApiContext['fetcherOptions'];
@@ -164,6 +196,14 @@ export type ReadAccountsError = Fetcher.ErrorWrapper<
     }
   | {
       status: 404;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
       payload: Schemas.HTTPError;
     }
 >;
@@ -211,6 +251,14 @@ export type CreateAccountError = Fetcher.ErrorWrapper<
       status: 422;
       payload: Schemas.HTTPValidationError;
     }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
 >;
 
 export type CreateAccountVariables = {
@@ -230,6 +278,55 @@ export const useCreateAccount = (options?: Omit<reactQuery.UseMutationOptions<Sc
   return reactQuery.useMutation<Schemas.Account, CreateAccountError, CreateAccountVariables>({
     mutationFn: (variables: CreateAccountVariables) => fetchCreateAccount({ ...fetcherOptions, ...variables }),
     ...options
+  });
+};
+
+export type ReadRankedAccountsError = Fetcher.ErrorWrapper<
+  | {
+      status: 400;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 401;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 404;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
+>;
+
+export type ReadRankedAccountsResponse = Schemas.RankedAccount[];
+
+export type ReadRankedAccountsVariables = ApiContext['fetcherOptions'];
+
+/**
+ * Retrieve a list of accounts for ranking.
+ */
+export const fetchReadRankedAccounts = (variables: ReadRankedAccountsVariables, signal?: AbortSignal) =>
+  apiFetch<ReadRankedAccountsResponse, ReadRankedAccountsError, undefined, {}, {}, {}>({ url: '/api/v1/account/ranking', method: 'get', ...variables, signal });
+
+/**
+ * Retrieve a list of accounts for ranking.
+ */
+export const useReadRankedAccounts = <TData = ReadRankedAccountsResponse>(
+  variables: ReadRankedAccountsVariables,
+  options?: Omit<reactQuery.UseQueryOptions<ReadRankedAccountsResponse, ReadRankedAccountsError, TData>, 'queryKey' | 'queryFn' | 'initialData'>
+) => {
+  const { fetcherOptions, queryOptions, queryKeyFn } = useApiContext(options);
+  return reactQuery.useQuery<ReadRankedAccountsResponse, ReadRankedAccountsError, TData>({
+    queryKey: queryKeyFn({ path: '/api/v1/account/ranking', operationId: 'readRankedAccounts', variables }),
+    queryFn: ({ signal }) => fetchReadRankedAccounts({ ...fetcherOptions, ...variables }, signal),
+    ...options,
+    ...queryOptions
   });
 };
 
@@ -253,6 +350,14 @@ export type ReadAccountError = Fetcher.ErrorWrapper<
   | {
       status: 422;
       payload: Schemas.HTTPValidationError;
+    }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
     }
 >;
 
@@ -303,6 +408,14 @@ export type UpdateAccountError = Fetcher.ErrorWrapper<
       status: 422;
       payload: Schemas.HTTPValidationError;
     }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
 >;
 
 export type UpdateAccountVariables = {
@@ -352,6 +465,14 @@ export type DeleteAccountError = Fetcher.ErrorWrapper<
       status: 422;
       payload: Schemas.HTTPValidationError;
     }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
 >;
 
 export type DeleteAccountVariables = {
@@ -396,6 +517,14 @@ export type LoginError = Fetcher.ErrorWrapper<
       status: 422;
       payload: Schemas.HTTPValidationError;
     }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
 >;
 
 export type LoginVariables = {
@@ -429,6 +558,14 @@ export type ReadAccountMeError = Fetcher.ErrorWrapper<
     }
   | {
       status: 404;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
       payload: Schemas.HTTPError;
     }
 >;
@@ -469,6 +606,14 @@ export type UpdateAccountMeError = Fetcher.ErrorWrapper<
   | {
       status: 422;
       payload: Schemas.HTTPValidationError;
+    }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
     }
 >;
 
@@ -513,6 +658,14 @@ export type UpdateBalanceError = Fetcher.ErrorWrapper<
       status: 422;
       payload: Schemas.HTTPValidationError;
     }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
 >;
 
 export type UpdateBalanceVariables = {
@@ -541,6 +694,54 @@ export const useUpdateBalance = (options?: Omit<reactQuery.UseMutationOptions<Sc
   });
 };
 
+export type ReadMarketDataError = Fetcher.ErrorWrapper<
+  | {
+      status: 400;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 401;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 404;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 422;
+      payload: Schemas.HTTPValidationError;
+    }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
+    }
+>;
+
+export type ReadMarketDataVariables = {
+  body: Schemas.MarketDataRequest;
+} & ApiContext['fetcherOptions'];
+
+/**
+ * List the price of the given symbols.
+ */
+export const fetchReadMarketData = (variables: ReadMarketDataVariables, signal?: AbortSignal) =>
+  apiFetch<Schemas.MarketData, ReadMarketDataError, Schemas.MarketDataRequest, {}, {}, {}>({ url: '/api/v1/market_data/', method: 'post', ...variables, signal });
+
+/**
+ * List the price of the given symbols.
+ */
+export const useReadMarketData = (options?: Omit<reactQuery.UseMutationOptions<Schemas.MarketData, ReadMarketDataError, ReadMarketDataVariables>, 'mutationFn'>) => {
+  const { fetcherOptions } = useApiContext();
+  return reactQuery.useMutation<Schemas.MarketData, ReadMarketDataError, ReadMarketDataVariables>({
+    mutationFn: (variables: ReadMarketDataVariables) => fetchReadMarketData({ ...fetcherOptions, ...variables }),
+    ...options
+  });
+};
+
 export type UpdateStockPathParams = {
   accountId: number;
   symbol: string;
@@ -562,6 +763,14 @@ export type UpdateStockError = Fetcher.ErrorWrapper<
   | {
       status: 422;
       payload: Schemas.HTTPValidationError;
+    }
+  | {
+      status: 503;
+      payload: Schemas.HTTPError;
+    }
+  | {
+      status: 504;
+      payload: Schemas.HTTPError;
     }
 >;
 
@@ -616,6 +825,11 @@ export type QueryOperation =
       path: '/api/v1/account/';
       operationId: 'readAccounts';
       variables: ReadAccountsVariables;
+    }
+  | {
+      path: '/api/v1/account/ranking';
+      operationId: 'readRankedAccounts';
+      variables: ReadRankedAccountsVariables;
     }
   | {
       path: '/api/v1/account/{accountId}';
