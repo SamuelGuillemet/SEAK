@@ -129,15 +129,17 @@ class MainInterface(tk.Tk):
         chart_image = Image.open(image_path)
         chart_image = chart_image.resize((450, 300), Image.LANCZOS)
         self.chart_image = ImageTk.PhotoImage(chart_image)
-        chart_label = tk.Label(self, image=self.chart_image)
-        chart_label.grid(row=2, column=0, columnspan=3, pady=(10, 0), padx=(10, 0))
+        self.chart_label = tk.Label(self, image=self.chart_image)
+        self.chart_label.grid(row=2, column=0, columnspan=3, pady=(10, 0), padx=(10, 0))
 
     def update_chart(self, symbol):
         image_path = os.path.join("quickfix_client_gui/charts", f"{symbol}.png")
-        chart_image = Image.open(image_path)
-        chart_image = chart_image.resize((450, 300), Image.LANCZOS)
-        self.chart_image = ImageTk.PhotoImage(chart_image)
-        self.chart_label.config(image=self.chart_image)
+        # Check if the image file exists
+        if os.path.exists(image_path):
+            chart_image = Image.open(image_path)
+            chart_image = chart_image.resize((450, 300), Image.LANCZOS)
+            self.chart_image = ImageTk.PhotoImage(chart_image)
+            self.chart_label.config(image=self.chart_image)
 
     def create_order_buttons(self):
         order_button = tk.Button(
@@ -206,10 +208,10 @@ class MainInterface(tk.Tk):
 
         # Refresh the chart
         symbol = self.symbol_entry.get()
-        if symbol != "":
-            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
+        if len(symbol) == 4:
+            timestamp = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
             market_data_request_snapshot = MarketDataRequest.new_snapshot_request(
-                f"{self.username}{timestamp}",
+                timestamp,
                 5,
                 [symbol],
                 [
@@ -220,12 +222,8 @@ class MainInterface(tk.Tk):
                 ],
             )
             self.application.send(market_data_request_snapshot)
-            message = f"Snapshot for symbols {symbol}"
             self.update_chart(symbol)
-        else:
-            message = "Please select a symbol"
-        self.display_message(message)
-        return
+        self.after(5000, self.refresh_main_interface)
 
     def create_message_display(self):
         message_frame = tk.Frame(self, bg="lightgray", height=10)
@@ -284,7 +282,7 @@ class MainInterface(tk.Tk):
             order = self.database_manager.get_order(self.username, cl_ord_id)
             if order and order.order_id:
                 self.order_tree.set(selected_item_id, "Status", "Editing")
-                EditOrderWindow(self, selected_item_id)
+                EditOrderWindow(self, cl_ord_id)
         else:
             message = "Please select an order to Edit."
             self.display_message(message)
