@@ -1,9 +1,22 @@
+import datetime
 import tkinter as tk
+import uuid
 from tkinter import scrolledtext, ttk
 
 from broker_quickfix_client.handlers.execution_report import ExecutionReportHandler
+from broker_quickfix_client.handlers.market_data_request_reject import (
+    MarketDataRequestRejectHandler,
+)
+from broker_quickfix_client.handlers.market_data_snapshot_full_refresh import (
+    MarketDataSnapshotFullRefreshHandler,
+)
 from broker_quickfix_client.handlers.order_cancel_reject import OrderCancelRejectHandler
-from broker_quickfix_client.wrappers.enums import OrderTypeEnum, SideEnum
+from broker_quickfix_client.wrappers.enums import (
+    MarketDataEntryTypeEnum,
+    OrderTypeEnum,
+    SideEnum,
+)
+from broker_quickfix_client.wrappers.market_data_request import MarketDataRequest
 from broker_quickfix_client.wrappers.order import Order as QuickfixOrder
 from broker_quickfix_client.wrappers.order_cancel_request import OrderCancelRequest
 from PIL import Image, ImageTk
@@ -12,14 +25,6 @@ from quickfix_client_gui.db.database_manager import DatabaseManager
 from quickfix_client_gui.interface.account_window import AccountWindow
 from quickfix_client_gui.interface.edit_order_window import EditOrderWindow
 from quickfix_client_gui.interface.order_window import OrderWindow
-
-# from broker_quickfix_client.handlers.market_data_request_reject import (
-# MarketDataRequestRejectHandler,
-# )
-# from interface.candlestick_chart import create_candlestick_chart
-# from broker_quickfix_client.handlers.market_data_snapshot_full_refresh
-# import(
-#  MarketDataSnapshotFullRefreshHandler)
 
 
 class MainInterface(tk.Tk):
@@ -60,16 +65,20 @@ class MainInterface(tk.Tk):
             # order_cancel_replace_rejected_callback=self.database_manager.order_cancel_replace_rejected_callback,
         )
 
-        # market_data_handler = MarketDataSnapshotFullRefreshHandler(
-        #     market_data_snapshot_full_refresh_callback=market_data_snapshot_full_refresh_callback,
-        # )
-        # market_data_request_reject_handler = MarketDataRequestRejectHandler(
-        #     market_data_request_reject_callback=market_data_request_reject_callback,
-        # )
+        market_data_handler = MarketDataSnapshotFullRefreshHandler(
+            market_data_snapshot_full_refresh_callback=self.database_manager.market_data_snapshot_full_refresh_callback,
+        )
+        market_data_request_reject_handler = MarketDataRequestRejectHandler(
+            market_data_request_reject_callback=self.database_manager.market_data_request_reject_callback,
+        )
         self.application.set_execution_report_handler(execution_report_handler)
         self.application.set_order_cancel_reject_handler(order_cancel_reject_handler)
-        # self.application.set_market_data_handler(market_data_handler)
-        # self.application.set_market_data_request_reject_handler(market_data_request_reject_handler)
+        self.application.set_market_data_snapshot_full_refresh_handler(
+            market_data_handler
+        )
+        self.application.set_market_data_request_reject_handler(
+            market_data_request_reject_handler
+        )
 
         # Create main widgets
         self.create_widgets()
@@ -192,19 +201,19 @@ class MainInterface(tk.Tk):
         # Refresh the chart
         symbol = self.symbol_entry.get()
         if symbol != "":
-            # timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
-            # market_data_request_snapshot = MarketDataRequest.new_snapshot_request(
-            #     str(uuid.uuid4().hex),
-            #     f"{self.username}{timestamp}",
-            #     [symbol],
-            #     [
-            #         MarketDataEntryTypeEnum.OPEN,
-            #         MarketDataEntryTypeEnum.CLOSE,
-            #         MarketDataEntryTypeEnum.HIGH,
-            #         MarketDataEntryTypeEnum.LOW,
-            #     ],
-            # )
-            # application.send(market_data_request_snapshot)
+            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
+            market_data_request_snapshot = MarketDataRequest.new_snapshot_request(
+                str(uuid.uuid4().hex),
+                f"{self.username}{timestamp}",
+                [symbol],
+                [
+                    MarketDataEntryTypeEnum.OPEN,
+                    MarketDataEntryTypeEnum.CLOSE,
+                    MarketDataEntryTypeEnum.HIGH,
+                    MarketDataEntryTypeEnum.LOW,
+                ],
+            )
+            self.application.send(market_data_request_snapshot)
             message = f"Snapshot for symbols {symbol}"
         else:
             message = "Please select a symbol"
