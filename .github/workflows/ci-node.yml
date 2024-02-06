@@ -35,7 +35,7 @@ jobs:
         run: cd ${{ matrix.project }}; npm run lint
 
       - name: Verify format
-        run: cd ${{ matrix.project }}; npm run format:check
+        run: cd ${{ matrix.project }}; npm run format -- -c
 
       - name: Test
         run: cd ${{ matrix.project }}; npm test

@@ -1,6 +1,6 @@
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
-import { RankedAccount } from "@/openapi-codegen/apiSchemas";
+import { RankedAccount } from '@/openapi-codegen/apiSchemas';
 
 interface UseTotalAccountProps {
   account: RankedAccount;

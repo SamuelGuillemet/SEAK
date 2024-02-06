@@ -84,14 +84,14 @@ class ConfigDevelopment(Settings):
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
 
-    POSTGRES_DATABASE_URI: ClassVar[str] = (
-        "postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}".format(
-            user=POSTGRES_USER,
-            password=POSTGRES_PASSWORD,
-            host=POSTGRES_HOST,
-            port=POSTGRES_PORT,
-            db=POSTGRES_DB,
-        )
+    POSTGRES_DATABASE_URI: ClassVar[
+        str
+    ] = "postgresql+asyncpg://{user}:{password}@{host}:{port}/{db}".format(
+        user=POSTGRES_USER,
+        password=POSTGRES_PASSWORD,
+        host=POSTGRES_HOST,
+        port=POSTGRES_PORT,
+        db=POSTGRES_DB,
     )
     SQLITE_DATABASE_URI: ClassVar[str] = "sqlite+aiosqlite:///./pfe_broker.db"
 

@@ -1,11 +1,10 @@
-import { useMemo } from "react";
+import { useMemo } from 'react';
 
-import { useRouter } from "next/router";
-import { useSession } from "next-auth/react";
+import { useRouter } from 'next/router';
+import { useSession } from 'next-auth/react';
 
-import { LinksType } from "@/utils/constant";
-import { filterLinks, findActiveLink } from "@/utils/utils";
-
+import { LinksType } from '@/utils/constant';
+import { filterLinks, findActiveLink } from '@/utils/utils';
 
 export function useLinks(links: LinksType) {
   const { pathname } = useRouter();

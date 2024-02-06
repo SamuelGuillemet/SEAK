@@ -17,7 +17,6 @@ describe('parseJwt', () => {
   });
 });
 
-
 describe('formatPrice', () => {
   it('should format a number as a price in EUR', () => {
     const price = formatPrice(1234.56);

@@ -8,6 +8,6 @@ export const pages = {
   index: '/',
   account: {
     index: '/account',
-    users: '/account/users',
+    users: '/account/users'
   }
 } as const;
