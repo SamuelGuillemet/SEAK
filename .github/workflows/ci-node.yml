@@ -1,0 +1,41 @@
+name: CI - Node
+
+on:
+  push:
+    branches:
+      - develop
+      - main
+  pull_request:
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [20]
+        project:
+          - "components/website-frontend"
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache-dependency-path: ${{ matrix.project }}/package-lock.json
+          cache: "npm"
+
+      - name: Install dependencies
+        run: cd ${{ matrix.project }}; npm ci
+
+      - name: Verify lint
+        run: cd ${{ matrix.project }}; npm run lint
+
+      - name: Verify format
+        run: cd ${{ matrix.project }}; npm run format:check
+
+      - name: Test
+        run: cd ${{ matrix.project }}; npm test
