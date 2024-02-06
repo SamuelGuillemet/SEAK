@@ -1,3 +1,4 @@
+from sqlalchemy import UniqueConstraint
 from sqlalchemy.orm import Mapped
 
 from app.core.types import SecurityScopes
@@ -11,3 +12,5 @@ class Account(Base):
     last_name: Mapped[Str256]
     scope: Mapped[SecurityScopes]
     enabled: Mapped[bool]
+
+    __table_args__ = (UniqueConstraint("username"),)

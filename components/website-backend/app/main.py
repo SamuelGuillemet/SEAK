@@ -15,7 +15,7 @@ from app.core.config import settings
 from app.core.middleware import ExceptionMonitorMiddleware
 from app.core.utils.backend.alert_backend import alert_backend
 from app.db.pre_start import pre_start
-from app.dependencies import get_db, get_redis
+from app.dependencies import get_db, get_quickfix_engine, get_redis
 from app.schemas.base import HTTPError
 from app.utils.custom_openapi import generate_custom_openapi
 from app.utils.get_version import get_version
@@ -59,6 +59,7 @@ async def lifespan(_app: FastAPI):  # pragma: no cover
     logger.info("Closing database connection...")
     await get_db.shutdown()
     logger.info("Database connection closed.")
+    get_quickfix_engine.shutdown()
 
 
 responses: Dict[int | str, Dict[str, Any]] | None = None
@@ -71,6 +72,14 @@ responses = {
     500: {
         "description": "Internal server error",
         "content": {"text/plain": {"example": "Internal server error"}},
+    },
+    503: {
+        "description": "Service Unavailable",
+        "model": HTTPError,
+    },
+    504: {
+        "description": "Gateway Timeout",
+        "model": HTTPError,
     },
 }
 
