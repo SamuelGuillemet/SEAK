@@ -263,6 +263,11 @@ class DatabaseManager:
         order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
         if order:
             order.status = "Filled"
+            if order.type == "MARKET":
+                if order.side == "BUY":
+                    order.user.balance -= execution_report.price * order.quantity
+                else:
+                    order.user.balance += execution_report.price * order.quantity
             self.session.commit()
             message = f"Order {client_order_id} filled successfully."
             print(message)
@@ -303,6 +308,7 @@ class DatabaseManager:
         order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
         if order:
             order.status = "Accepted"
+            order.order_id = report.order_id
             self.session.commit()
             message = f"Order {client_order_id} accepted."
             print(message)
@@ -357,3 +363,5 @@ class DatabaseManager:
         market_data_response: MarketDataResponse,
     ):
         create_candlestick_chart(market_data_response)
+        message = "Market data snapshot received"
+        print(message)
