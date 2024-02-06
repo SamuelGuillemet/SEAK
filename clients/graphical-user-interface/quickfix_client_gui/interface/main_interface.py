@@ -33,7 +33,7 @@ class MainInterface(tk.Tk):
         super().__init__()
 
         # Set up window dimensions and position
-        window_width, window_height = 800, 700
+        window_width, window_height = 800, 900
         screen_width, screen_height = (
             self.winfo_screenwidth(),
             self.winfo_screenheight(),
@@ -126,10 +126,10 @@ class MainInterface(tk.Tk):
         self.symbol_entry.grid(row=1, column=2, pady=(10, 0), padx=(0, 10))
 
     def create_image_widget(self):
-        image_path = "quickfix_client_gui/charts/aapl_chart.jpeg"
+        image_path = "quickfix_client_gui/charts/placeholder.png"
 
         chart_image = Image.open(image_path)
-        chart_image = chart_image.resize((600, 200), Image.LANCZOS)
+        chart_image = chart_image.resize((450, 300), Image.LANCZOS)
         self.chart_image = ImageTk.PhotoImage(chart_image)
         chart_label = tk.Label(self, image=self.chart_image)
         chart_label.grid(row=2, column=0, columnspan=3, pady=(10, 0), padx=(10, 0))
