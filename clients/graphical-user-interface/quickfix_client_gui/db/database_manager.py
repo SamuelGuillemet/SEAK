@@ -67,6 +67,9 @@ class DatabaseManager:
     def set_display_message_callback(self, callback):
         self.display_message_callback = callback
 
+    def set_update_chart_callback(self, callback):
+        self.update_chart_callback = callback
+
     def init_example_data(self):
         user1 = self.session.query(User).filter_by(username="user1").first()
 
@@ -388,5 +391,5 @@ class DatabaseManager:
         market_data_response: MarketDataResponse,
     ):
         create_candlestick_chart(market_data_response)
-        if self.refresh_callback:
-            self.refresh_callback()
+        if self.update_chart_callback:
+            self.update_chart_callback()

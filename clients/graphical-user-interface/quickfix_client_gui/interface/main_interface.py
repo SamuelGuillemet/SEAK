@@ -1,4 +1,5 @@
 import datetime
+import os
 import tkinter as tk
 import uuid
 from tkinter import scrolledtext, ttk
@@ -48,6 +49,7 @@ class MainInterface(tk.Tk):
         self.database_manager = DatabaseManager("sqlite:///quickfix_client_database.db")
         self.database_manager.set_refresh_callback(self.refresh_main_interface)
         self.database_manager.set_display_message_callback(self.display_message)
+        self.database_manager.set_update_chart_callback(self.update_chart)
         self.username = username
         self.account_balance = self.database_manager.get_user_balance(self.username)
         self.owned_shares = self.database_manager.get_user_shares(self.username)
@@ -126,13 +128,21 @@ class MainInterface(tk.Tk):
         self.symbol_entry.grid(row=1, column=2, pady=(10, 0), padx=(0, 10))
 
     def create_image_widget(self):
-        image_path = "quickfix_client_gui/charts/placeholder.png"
+        image_path = os.path.join("quickfix_client_gui/charts", "placeholder.png")
 
         chart_image = Image.open(image_path)
         chart_image = chart_image.resize((450, 300), Image.LANCZOS)
         self.chart_image = ImageTk.PhotoImage(chart_image)
         chart_label = tk.Label(self, image=self.chart_image)
         chart_label.grid(row=2, column=0, columnspan=3, pady=(10, 0), padx=(10, 0))
+
+    def update_chart(self):
+        symbol = self.symbol_entry.get()
+        image_path = os.path.join("quickfix_client_gui/charts", f"{symbol}.png")
+        chart_image = Image.open(image_path)
+        chart_image = chart_image.resize((450, 300), Image.LANCZOS)
+        self.chart_image = ImageTk.PhotoImage(chart_image)
+        self.chart_label.config(image=self.chart_image)
 
     def create_order_buttons(self):
         order_button = tk.Button(
