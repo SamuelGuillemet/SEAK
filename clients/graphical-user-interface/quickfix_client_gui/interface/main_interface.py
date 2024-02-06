@@ -1,7 +1,6 @@
 import datetime
 import os
 import tkinter as tk
-import uuid
 from tkinter import scrolledtext, ttk
 
 from broker_quickfix_client.handlers.execution_report import ExecutionReportHandler
@@ -214,8 +213,8 @@ class MainInterface(tk.Tk):
         if symbol != "":
             timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
             market_data_request_snapshot = MarketDataRequest.new_snapshot_request(
-                str(uuid.uuid4().hex),
                 f"{self.username}{timestamp}",
+                5,
                 [symbol],
                 [
                     MarketDataEntryTypeEnum.OPEN,
