@@ -1,4 +1,5 @@
-import { parseJwt, formatPrice, patchEmptyString } from '../../src/utils/utils';
+import { tabLinks } from '@/utils/constant';
+import { parseJwt, formatPrice, patchEmptyString, findActiveLink, filterLinks } from '@/utils/utils';
 
 describe('parseJwt', () => {
   it('should return null for an invalid token', () => {
@@ -35,5 +36,43 @@ describe('patchEmptyString', () => {
     const expected = { name: 'Alice', age: null, email: 'alice@example.com' };
     const result = patchEmptyString(obj);
     expect(result).toEqual(expected);
+  });
+});
+
+describe('findActiveLink', () => {
+  it('should return the active link', () => {
+    const pathname = '/account/users';
+    const activeLink = findActiveLink(tabLinks, pathname);
+    expect(activeLink?.href).toBe('/account/users');
+  });
+
+  it('should return undefined if no active link is found', () => {
+    const pathname = '/account/settings';
+    const activeLink = findActiveLink(tabLinks, pathname);
+    expect(activeLink).toBeUndefined();
+  });
+});
+
+describe('filterLinks', () => {
+  it('should return all links if session is null', () => {
+    const session = null;
+    const filteredLinks = filterLinks(tabLinks, session);
+    expect(filteredLinks).toEqual([]);
+  });
+
+  it('should return only links with matching scopes', () => {
+    const session = {
+      scopes: ['admin']
+    };
+    const filteredLinks = filterLinks(tabLinks, session as any);
+    expect(filteredLinks).toEqual(tabLinks);
+  });
+
+  it('should return an empty array if no links match the user roles', () => {
+    const session = {
+      scopes: ['member']
+    };
+    const filteredLinks = filterLinks(tabLinks, session as any);
+    expect(filteredLinks).toEqual([]);
   });
 });

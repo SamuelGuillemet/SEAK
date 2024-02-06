@@ -8,12 +8,6 @@ exports[`Navbar > should match snapshot 1`] = `
     <div
       class="flex justify-between items-center"
     >
-      <a
-        class="text-4xl text-primary font-bold p-2"
-        href="/"
-      >
-        PFE Broker
-      </a>
       <button
         aria-label="hamburger-menu"
         class="lg:hidden"
@@ -35,7 +29,20 @@ exports[`Navbar > should match snapshot 1`] = `
     >
       <div
         class="flex p-2 justify-start flex-grow self-start lg:self-center h-full flex-col lg:flex-row pb-4 space-y-2 lg:space-y-0 lg:items-end lg:mb-2"
-      />
+      >
+        <a
+          class="text-xl hover:underline mx-4 w-max xl:mx-6 text-gray-500 dark:text-gray-400"
+          href="/"
+        >
+          Classement
+        </a>
+        <a
+          class="text-xl hover:underline mx-4 w-max xl:mx-6 text-gray-500 dark:text-gray-400"
+          href="/account/users"
+        >
+          Utilisateurs
+        </a>
+      </div>
       <div
         class="flex flex-row justify-end flex-wrap lg:flex-nowrap"
       >
