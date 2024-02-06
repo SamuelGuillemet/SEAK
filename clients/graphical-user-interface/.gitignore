@@ -5,3 +5,5 @@ data/*
 **/__pycache__/
 storage/**
 latency*.txt
+quickfix_client_gui/charts/*
+!quickfix_client_gui/charts/placeholder.png
