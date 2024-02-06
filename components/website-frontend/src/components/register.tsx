@@ -53,7 +53,11 @@ export function registerResolver(data: RegisterBody): ResolverResult<RegisterBod
   };
 }
 
-export default function Register(): React.JSX.Element {
+interface RegisterProps {
+  onSuccess?: () => void;
+}
+
+export default function Register(props: Readonly<RegisterProps>): React.JSX.Element {
   const { push } = useRouter();
 
   const form = useForm<RegisterBody>({
@@ -70,8 +74,12 @@ export default function Register(): React.JSX.Element {
 
   const createAccount = useCreateAccount({
     onSuccess(data, variables, context) {
-      toast.success('Votre compte a bien été créé ! Le président validera votre inscription dans les plus brefs délais.');
-      push('/');
+      if (props.onSuccess) {
+        props.onSuccess();
+      } else {
+        toast.success('Votre compte a bien été créé ! Un administrateur validera votre inscription dans les plus brefs délais.');
+        push('/');
+      }
     },
     onError(error, variables, context) {
       const detail = generateApiErrorMessage(error);
