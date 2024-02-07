@@ -13,7 +13,19 @@ The Trade Stream is a component of the exchange system that is responsible for r
 
 ## Overview
 
-The Trade Stream is responsible for receiving trades from either the Market Matcher or the Order Book and verifying their integrity. It uses Kafka Streams to subscribe to a Kafka topic for incoming trades, processes them, and sends the resulting trades to another Kafka topic. The component verify the integrity using a Redis database to check user and stock balances.
+The Trade Stream is responsible for receiving trades from either the Market Matcher or the Order Book and verifying their integrity. It uses Kafka Streams to subscribe to a Kafka topic for incoming trades, processes them, and sends the resulting trades to another Kafka topic. The component verify the integrity using a Redis database to check user and stock balances. If a trade is rejected, the corresponding order is sent to the rejected order topic.
+
+## Workflow
+
+![alt text](/docs/imgs/trade-stream.png)
+
+The Trade Integrity Check Service Flow Diagram outlines the process of ensuring the correctness and validity of trades in a trading system.
+
+Depending on the type of trade—whether market or limit—the system executes specific integrity checks.
+- For market trades, the system verifies the user's fund availability, increments the user's stock quantity and decrements the user's fund quantity accordingly for buy orders. For sell orders, it increments the stock quantity.
+- For limit trades, it increments user stock quantity for buy orders. For sell orders, it increments the user fund's.
+
+If a trade is rejected, the system logs the reason for rejection and send the corresponding orders to the rejected order topic; otherwise, it records the acceptance of the trade.
 
 ## Dependencies
 
