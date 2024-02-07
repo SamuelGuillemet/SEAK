@@ -106,6 +106,16 @@ function project() {
         cd components/"$project" || exit
         npm run dev
       )
+    elif [ "$action" == "build" ]; then
+      (
+        cd components/"$project" || exit
+        npm run build
+      )
+    elif [ "$action" == "start" ]; then
+      (
+        cd components/"$project" || exit
+        npm start
+      )
     elif [ "$action" == "test" ]; then
       (
         cd components/"$project" || exit
@@ -113,7 +123,7 @@ function project() {
       )
     else
       echo "Invalid action for project: $action"
-      echo "Valid actions: run test"
+      echo "Valid actions: run build start test"
       exit 1
     fi
   else

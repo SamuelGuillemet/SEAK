@@ -13,7 +13,7 @@ _cli_autocomplete() {
   npm_projects="website-frontend"
   java_actions="build run test coverage"
   python_actions="run test"
-  npm_actions="run test"
+  npm_actions="run build start test"
 
   case "$prev" in
   docker | docker_multi)
