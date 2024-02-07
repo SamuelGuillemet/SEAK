@@ -78,6 +78,9 @@ class QuickfixEngineService:
                 detail="Quickfix service is not available",
             )
 
+        if not symbols or len(symbols) == 0:
+            return MarketData(market_data={})
+
         req_id = self.md_req_id
         self.md_req_id += 1
         market_data_snapshot = MarketDataRequest.new_snapshot_request(

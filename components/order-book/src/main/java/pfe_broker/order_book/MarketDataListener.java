@@ -57,11 +57,10 @@ public class MarketDataListener {
       LimitOrderBook orderBook = orderBooks.getOrderBook(symbol);
       if (orderBook != null) {
         Map<String, Trade> trades = orderBook.matchOrdersToTrade(marketData);
-        if (trades.isEmpty()) {
-          return;
+        if (!trades.isEmpty()) {
+          LOG.debug("Sending {} trades to Kafka", trades.size());
+          trades.forEach(tradeProducer::sendTrade);
         }
-        LOG.debug("Sending {} trades to Kafka", trades.size());
-        trades.forEach(tradeProducer::sendTrade);
       }
 
       List<MarketDataRequest> marketDataRequests =
