@@ -112,7 +112,7 @@ class ConfigDevelopment(Settings):
 
 
 class ConfigProduction(Settings):
-    LOCALE: SupportedLocales = "en"
+    LOCALE: SupportedLocales = "fr"
 
     ALLOWED_HOSTS: list[str] = ["*"]  # ! Shouldn't be set to ["*"] in production!
 
@@ -125,7 +125,7 @@ class ConfigProduction(Settings):
 
     """Base account config """
 
-    BASE_ACCOUNT_USERNAME: str = "admin"
+    BASE_ACCOUNT_USERNAME: str = Field(...)
     BASE_ACCOUNT_PASSWORD: str = Field(...)
 
     """Database config"""
