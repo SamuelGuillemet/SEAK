@@ -208,7 +208,7 @@ class MainInterface(tk.Tk):
 
         # Refresh the chart
         symbol = self.symbol_entry.get()
-        if len(symbol) in range(1, 5):
+        if len(symbol) in range(1, 6):
             timestamp = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
             market_data_request_snapshot = MarketDataRequest.new_snapshot_request(
                 timestamp,
