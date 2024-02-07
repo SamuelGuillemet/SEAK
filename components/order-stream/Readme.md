@@ -5,6 +5,7 @@ The Order Stream is a component from the exchange system that is responsible for
 ## Table of Contents
 
 - [Overview](#overview)
+- [Workflow](#workflow)
 - [Dependencies](#dependencies)
 - [Configuration](#configuration)
 - [Metrics](#metrics)
@@ -14,6 +15,20 @@ The Order Stream is a component from the exchange system that is responsible for
 ## Overview
 
 The Order Stream is responsible for receiving orders from the client and verifying their integrity. It uses Kafka Streams to subscribe to a Kafka topic for incoming orders, processes them, and sends the resulting orders to another Kafka topic. The component verify the integrity using a Redis database to check user and stock balances.
+
+## Workflow
+
+![alt text](/docs/imgs/order-stream.png)
+
+The Order Integrity Check Service Flow Diagram outlines the process of ensuring the correctness and validity of orders submitted to a trading system. 
+
+It begins with a basic integrity check, verifying the presence of essential information such as user identification, symbol, and correct quantity. 
+
+Depending on the type of order—whether market or limit—the system executes specific integrity checks. 
+- For market orders, if it's a buy order, the system can't verifies the user's fund availability because the price is unknown at this time, while for sell orders, it checks if the user holds enough stocks and adjusts the stock quantity accordingly. 
+- For limit orders, similar checks are performed with additional steps to decrement user funds for buy orders. 
+
+If an order is rejected, the system logs the reason for rejection; otherwise, it records the acceptance of the order. 
 
 ## Dependencies
 
