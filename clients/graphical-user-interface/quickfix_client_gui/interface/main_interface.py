@@ -1,9 +1,22 @@
+import datetime
+import os
 import tkinter as tk
 from tkinter import scrolledtext, ttk
 
 from broker_quickfix_client.handlers.execution_report import ExecutionReportHandler
+from broker_quickfix_client.handlers.market_data_request_reject import (
+    MarketDataRequestRejectHandler,
+)
+from broker_quickfix_client.handlers.market_data_snapshot_full_refresh import (
+    MarketDataSnapshotFullRefreshHandler,
+)
 from broker_quickfix_client.handlers.order_cancel_reject import OrderCancelRejectHandler
-from broker_quickfix_client.wrappers.enums import OrderTypeEnum, SideEnum
+from broker_quickfix_client.wrappers.enums import (
+    MarketDataEntryTypeEnum,
+    OrderTypeEnum,
+    SideEnum,
+)
+from broker_quickfix_client.wrappers.market_data_request import MarketDataRequest
 from broker_quickfix_client.wrappers.order import Order as QuickfixOrder
 from broker_quickfix_client.wrappers.order_cancel_request import OrderCancelRequest
 from PIL import Image, ImageTk
@@ -13,14 +26,6 @@ from quickfix_client_gui.interface.account_window import AccountWindow
 from quickfix_client_gui.interface.edit_order_window import EditOrderWindow
 from quickfix_client_gui.interface.order_window import OrderWindow
 
-# from broker_quickfix_client.handlers.market_data_request_reject import (
-# MarketDataRequestRejectHandler,
-# )
-# from interface.candlestick_chart import create_candlestick_chart
-# from broker_quickfix_client.handlers.market_data_snapshot_full_refresh
-# import(
-#  MarketDataSnapshotFullRefreshHandler)
-
 
 class MainInterface(tk.Tk):
     def __init__(self, username, application, initiator):
@@ -28,7 +33,7 @@ class MainInterface(tk.Tk):
         super().__init__()
 
         # Set up window dimensions and position
-        window_width, window_height = 800, 700
+        window_width, window_height = 800, 900
         screen_width, screen_height = (
             self.winfo_screenwidth(),
             self.winfo_screenheight(),
@@ -41,7 +46,6 @@ class MainInterface(tk.Tk):
 
         # Initialize class attributes
         self.database_manager = DatabaseManager("sqlite:///quickfix_client_database.db")
-        self.database_manager.set_refresh_callback(self.refresh_main_interface)
         self.username = username
         self.account_balance = self.database_manager.get_user_balance(self.username)
         self.owned_shares = self.database_manager.get_user_shares(self.username)
@@ -60,16 +64,20 @@ class MainInterface(tk.Tk):
             # order_cancel_replace_rejected_callback=self.database_manager.order_cancel_replace_rejected_callback,
         )
 
-        # market_data_handler = MarketDataSnapshotFullRefreshHandler(
-        #     market_data_snapshot_full_refresh_callback=market_data_snapshot_full_refresh_callback,
-        # )
-        # market_data_request_reject_handler = MarketDataRequestRejectHandler(
-        #     market_data_request_reject_callback=market_data_request_reject_callback,
-        # )
+        market_data_handler = MarketDataSnapshotFullRefreshHandler(
+            market_data_snapshot_full_refresh_callback=self.database_manager.market_data_snapshot_full_refresh_callback,
+        )
+        market_data_request_reject_handler = MarketDataRequestRejectHandler(
+            market_data_request_reject_callback=self.database_manager.market_data_request_reject_callback,
+        )
         self.application.set_execution_report_handler(execution_report_handler)
         self.application.set_order_cancel_reject_handler(order_cancel_reject_handler)
-        # self.application.set_market_data_handler(market_data_handler)
-        # self.application.set_market_data_request_reject_handler(market_data_request_reject_handler)
+        self.application.set_market_data_snapshot_full_refresh_handler(
+            market_data_handler
+        )
+        self.application.set_market_data_request_reject_handler(
+            market_data_request_reject_handler
+        )
 
         # Create main widgets
         self.create_widgets()
@@ -116,13 +124,22 @@ class MainInterface(tk.Tk):
         self.symbol_entry.grid(row=1, column=2, pady=(10, 0), padx=(0, 10))
 
     def create_image_widget(self):
-        image_path = "charts/aapl_chart.jpeg"
+        image_path = os.path.join("quickfix_client_gui/charts", "placeholder.png")
 
         chart_image = Image.open(image_path)
-        chart_image = chart_image.resize((600, 200), Image.LANCZOS)
+        chart_image = chart_image.resize((450, 300), Image.LANCZOS)
         self.chart_image = ImageTk.PhotoImage(chart_image)
-        chart_label = tk.Label(self, image=self.chart_image)
-        chart_label.grid(row=2, column=0, columnspan=3, pady=(10, 0), padx=(10, 0))
+        self.chart_label = tk.Label(self, image=self.chart_image)
+        self.chart_label.grid(row=2, column=0, columnspan=3, pady=(10, 0), padx=(10, 0))
+
+    def update_chart(self, symbol):
+        image_path = os.path.join("quickfix_client_gui/charts", f"{symbol}.png")
+        # Check if the image file exists
+        if os.path.exists(image_path):
+            chart_image = Image.open(image_path)
+            chart_image = chart_image.resize((450, 300), Image.LANCZOS)
+            self.chart_image = ImageTk.PhotoImage(chart_image)
+            self.chart_label.config(image=self.chart_image)
 
     def create_order_buttons(self):
         order_button = tk.Button(
@@ -191,25 +208,22 @@ class MainInterface(tk.Tk):
 
         # Refresh the chart
         symbol = self.symbol_entry.get()
-        if symbol != "":
-            # timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M")
-            # market_data_request_snapshot = MarketDataRequest.new_snapshot_request(
-            #     str(uuid.uuid4().hex),
-            #     f"{self.username}{timestamp}",
-            #     [symbol],
-            #     [
-            #         MarketDataEntryTypeEnum.OPEN,
-            #         MarketDataEntryTypeEnum.CLOSE,
-            #         MarketDataEntryTypeEnum.HIGH,
-            #         MarketDataEntryTypeEnum.LOW,
-            #     ],
-            # )
-            # application.send(market_data_request_snapshot)
-            message = f"Snapshot for symbols {symbol}"
-        else:
-            message = "Please select a symbol"
-        self.display_message(message)
-        return
+        if len(symbol) in range(1, 5):
+            timestamp = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
+            market_data_request_snapshot = MarketDataRequest.new_snapshot_request(
+                timestamp,
+                5,
+                [symbol],
+                [
+                    MarketDataEntryTypeEnum.OPEN,
+                    MarketDataEntryTypeEnum.CLOSE,
+                    MarketDataEntryTypeEnum.HIGH,
+                    MarketDataEntryTypeEnum.LOW,
+                ],
+            )
+            self.application.send(market_data_request_snapshot)
+            self.update_chart(symbol)
+        self.after(5000, self.refresh_main_interface)
 
     def create_message_display(self):
         message_frame = tk.Frame(self, bg="lightgray", height=10)
@@ -268,7 +282,7 @@ class MainInterface(tk.Tk):
             order = self.database_manager.get_order(self.username, cl_ord_id)
             if order and order.order_id:
                 self.order_tree.set(selected_item_id, "Status", "Editing")
-                EditOrderWindow(self, selected_item_id)
+                EditOrderWindow(self, cl_ord_id)
         else:
             message = "Please select an order to Edit."
             self.display_message(message)
@@ -277,5 +291,4 @@ class MainInterface(tk.Tk):
 
     def on_close(self):
         self.initiator.stop()
-        self.destroy()
         self.destroy()

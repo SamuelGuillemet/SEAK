@@ -11,7 +11,7 @@ class EditOrderWindow(Toplevel):
     def __init__(self, master, item_id):
         super().__init__(master=master)
         #   WINDOW SETUP    #####
-        self.item_id = item_id
+        self.cl_ord_id = item_id
         window_width = 500
         window_height = 300
 
@@ -47,11 +47,8 @@ class EditOrderWindow(Toplevel):
     def edit_order(self):
         shares = self.shares_entry.get()
         price = self.price_entry.get()
-        self.master.order_tree.item(self.item_id)
-        current_values = self.master.order_tree.item(self.item_id, "values")
-        cl_ord_id = current_values[0]
         order = self.master.database_manager.edit_order(
-            self.master.username, cl_ord_id, shares, price
+            self.master.username, self.cl_ord_id, shares, price
         )
         order = QuickfixOrder(
             order_id=order.order_id,
@@ -63,15 +60,11 @@ class EditOrderWindow(Toplevel):
             quantity=order.quantity,
         )
         replaced_order = OrderCancelReplaceRequest.new_replace_order(
-            cl_ord_id, order, float(price), int(shares)
+            self.cl_ord_id, order, float(price), int(shares)
         )
         self.master.application.send(replaced_order)
 
-        message = (
-            f"Edited order {cl_ord_id} from {current_values[4]} shares "
-            f"at price {float(current_values[5])/float(current_values[4])} "
-            f"to {shares} shares at price {price} "
-        )
+        message = f"Edited order {self.cl_ord_id}"
         self.master.display_message(message)
         self.master.refresh_main_interface()
         self.destroy()

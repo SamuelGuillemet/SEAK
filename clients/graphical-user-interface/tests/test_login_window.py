@@ -1,7 +1,7 @@
 from unittest.mock import patch
 
-from interface.login_window import LoginWindow
-from interface.main_interface import MainInterface
+from quickfix_client_gui.interface.login_window import LoginWindow
+from quickfix_client_gui.interface.main_interface import MainInterface
 
 
 def test_valid_login():

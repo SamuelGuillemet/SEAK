@@ -1,26 +1,45 @@
-# import mplfinance as mpf
-# from broker_quickfix_client.wrappers.market_data import MarketDataResponse
+import os
 
-# def create_candlestick_chart(market_data_response: MarketDataResponse):
-#     symbol = market_data_response.symbol
+import mplfinance as mpf
+import pandas as pd
+from broker_quickfix_client.wrappers.enums import MarketDataEntryTypeEnum
+from broker_quickfix_client.wrappers.market_data import MarketDataResponse
 
-#     # Extract relevant data for the first symbol
-#     entries = market_data_response.market_data.get(symbol, [])
 
-#     # Prepare candlestick data
-#     ohlc_data = []
-#     for entry in entries:
-#         ohlc_data.append((
-#             date2num(entry.md_entry_time),  # Convert time to matplotlib format
-#             entry.md_entry_px.open,
-#             entry.md_entry_px.high,
-#             entry.md_entry_px.low,
-#             entry.md_entry_px.close,
-#         ))
+def create_candlestick_chart(market_data_response: MarketDataResponse):
+    symbol = market_data_response.symbol
 
-#     # Create a simple candlestick chart
-#     df = mpf.DataFrame(ohlc_data, columns=['Date', 'Open', 'High', 'Low', 'Close'])
-#     df['Date'] = pd.to_datetime(df['Date'], unit='s')
+    ohlc_list = []
+    for item_id, details_list in market_data_response.market_data.items():
+        detail_dict = {
+            MarketDataEntryTypeEnum.OPEN: None,
+            MarketDataEntryTypeEnum.HIGH: None,
+            MarketDataEntryTypeEnum.LOW: None,
+            MarketDataEntryTypeEnum.CLOSE: None,
+        }
+        for detail in details_list:
+            detail_dict[
+                MarketDataEntryTypeEnum(detail.md_entry_type)
+            ] = detail.md_entry_px
+        ohlc = (
+            detail_dict[MarketDataEntryTypeEnum.OPEN],
+            detail_dict[MarketDataEntryTypeEnum.HIGH],
+            detail_dict[MarketDataEntryTypeEnum.LOW],
+            detail_dict[MarketDataEntryTypeEnum.CLOSE],
+        )
+        ohlc_list.append(ohlc)
 
-#     mpf.plot(df, type='candle', style='yahoo', title=f'Candlestick Chart - {symbol}',
-#              ylabel='Price', savefig=os.path.join('charts', f'{symbol}.png'))
+    index_values = pd.date_range(start="today", periods=len(ohlc_list), freq="T")
+    df = pd.DataFrame(
+        ohlc_list, columns=["Open", "High", "Low", "Close"], index=index_values
+    )
+
+    mpf.plot(
+        df,
+        type="candle",
+        style="yahoo",
+        title=f"{symbol} stock - last 5 mins",
+        ylabel="Price",
+        savefig=os.path.join("quickfix_client_gui/charts", f"{symbol}.png"),
+        show_nontrading=True,
+    )
