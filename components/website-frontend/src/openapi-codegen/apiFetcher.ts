@@ -1,10 +1,17 @@
 import { getSession } from 'next-auth/react';
+
 import { ApiContext } from './apiContext';
 import type * as Schemas from './apiSchemas';
 import { patchedRoutes, unprotectedRoutes } from './apiUtilities';
-import { BACKEND_URL } from '@/utils/constant';
 
-const baseUrl = BACKEND_URL;
+import { logger } from '@/lib/logger';
+import { BACKEND_URL, LOCAL_BACKEND_URL } from '@/utils/constant';
+
+let baseUrl = BACKEND_URL;
+
+if (typeof window === 'undefined') {
+  baseUrl = LOCAL_BACKEND_URL;
+}
 
 export type ApiError = ErrorWrapper<
   {
@@ -108,6 +115,8 @@ export async function apiFetch<TData, TError, TBody extends {} | FormData | unde
 
   let response: Response;
 
+  logger.info(`Fetching ${method.toUpperCase()} ${baseUrl}${resolveUrl(url, queryParams, pathParams)}`);
+
   try {
 
     response = await fetch(`${baseUrl}${resolveUrl(url, queryParams, pathParams)}`, {
@@ -117,6 +126,7 @@ export async function apiFetch<TData, TError, TBody extends {} | FormData | unde
       headers: requestHeaders
     });
   } catch (e) {
+    logger.error(e);
     throw {
       status: 0,
       payload: e instanceof Error ? `Network error (${e.message})` : 'Network error',
