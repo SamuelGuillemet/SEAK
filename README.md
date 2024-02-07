@@ -13,6 +13,8 @@ This is a monorepo for the PFE Asr Broker project.
 
 The goal of this project is to emulate a financial market with a broker which allows you to buy and sell stocks at market price, place limit orders inside the order book and get the market data in real time.
 
+![alt text](docs/imgs/architecture.png)
+
 ## How to use the project
 
 A `cli.sh` script is available at the root of the project to help you to use the project.
