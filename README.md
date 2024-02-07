@@ -139,6 +139,13 @@ $> ./cli.sh project website-frontend start
 ```
 
 ---
+Before using the GUI client, you need to register clients and enables them using the website.
+
+Go to http://localhost:3001/register and register any clients you want to use.
+
+Then go to http://localhost:3001/account/users and authenticate using the admin account. You can now enable the clients you want to use and set them some money they can use to buy stocks.
+
+---
 
 You can now use the GUI client to interact with the broker.
 
@@ -147,3 +154,18 @@ $> cd clients/graphical-user-interface; poetry run python quickfix_client_gui/ru
 ```
 
 In cas you need to change the ip of the quickfix server, you need to modify this file [clients/quickfix-client/broker_quickfix_client/constant.py](clients/quickfix-client/broker_quickfix_client/constant.py) withe `SERVER_IP` variable.
+
+
+### Test the project
+
+All the components are tested with unit tests and integration tests which you can launch using the cli script.
+
+```shell
+$> ./cli.sh project <component> test
+```
+
+### Metrics
+
+The project is monitored with prometheus and grafana. You can access the grafana dashboard at http://localhost:3000 with anonymous access.
+
+You will have dashboards for kafka cluster and the different components of the project.
