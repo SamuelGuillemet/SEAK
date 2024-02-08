@@ -35,7 +35,7 @@ jobs:
         uses: abatilo/actions-poetry@v3
 
       - name: Define a cache for the virtual environment based on the dependencies lock file for ${{ matrix.project }}
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ./${{ matrix.project }}/.venv
           key: venv-${{ matrix.project }}-${{ hashFiles(steps.poetry-path.outputs.path) }}

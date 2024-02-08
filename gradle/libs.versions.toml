@@ -1,6 +1,6 @@
 [versions]
 log4j = "2.22.1"
-slf4j = "2.0.11"
+slf4j = "2.0.12"
 fasterxml-jackson = "2.16.1"
 snakeyaml = "2.2"
 
@@ -14,9 +14,9 @@ postgresql = "42.7.1"
 spring-security-crypto = "6.2.1"
 
 awaitility = "4.2.0"
-assertj-core = "3.25.1"
-junit-jupiter = "5.10.1"
-testcontainers = "1.19.3"
+assertj-core = "3.25.3"
+junit-jupiter = "5.10.2"
+testcontainers = "1.19.4"
 
 plugin-lombok = "8.4"
 plugin-shadow = "8.1.1"
