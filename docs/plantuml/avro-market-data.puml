@@ -1,0 +1,67 @@
+@startuml market_data
+
+hide empty members
+
+  enum MarketDataEntry {
+    LOW
+    HIGH
+    OPEN
+    CLOSE
+  }
+
+  enum MarketDataRejectedReason {
+    UNKNOWN_SYMBOL
+    DUPLICATE_MD_REQ_ID
+    UNSUPPORTED_SUBSCRIPTION_REQUEST_TYPE
+    UNSUPPORTED_MARKET_DEPTH
+    UNSUPPORTED_MD_UPDATE_TYPE
+    UNSUPPORTED_MD_ENTRY_TYPE
+  }
+
+  enum MarketDataSubscriptionRequest {
+    SNAPSHOT
+    SUBSCRIBE
+    UNSUBSCRIBE
+  }
+
+  class MarketDataRejected {
+    - username: string
+    - requestId: string
+    - reason: MarketDataRejectedReason
+  }
+
+  class MarketDataRequest {
+    - username: string
+    - symbols: string[]
+    - depth: int
+    - marketDataEntries: MarketDataEntry[]
+    - marketDataSubscriptionRequest: MarketDataSubscriptionRequest
+    - requestId: string
+  }
+
+  class MarketDataResponse {
+    - username: string
+    - symbol: string
+    - data: MarketData[]
+    - requestId: string
+    - marketDataEntries: MarketDataEntry[]
+  }
+
+  class MarketData {
+    - open: double
+    - high: double
+    - low: double
+    - close: double
+    - volume: int
+  }
+
+
+  MarketDataRejected --> MarketDataRejectedReason: reason
+
+  MarketDataRequest --> MarketDataEntry: marketDataEntries
+  MarketDataRequest --> MarketDataSubscriptionRequest: marketDataSubscriptionRequest
+  MarketDataResponse --> MarketData: data
+  MarketDataResponse --> MarketDataEntry: marketDataEntries
+
+
+@enduml
