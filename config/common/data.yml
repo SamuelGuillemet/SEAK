@@ -10,4 +10,4 @@ datasources:
 jpa:
   default:
     properties.hibernate.hbm2ddl.auto: update
-    entity-scan.packages: seak.models.domains
+    entity-scan.packages: io.seak.models.domains
