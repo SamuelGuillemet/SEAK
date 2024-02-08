@@ -172,3 +172,5 @@ $> ./cli.sh project <component> test
 The project is monitored with prometheus and grafana. You can access the grafana dashboard at http://localhost:3000 with anonymous access.
 
 You will have dashboards for kafka cluster and the different components of the project.
+
+Check the [Grafana documentation](docs/Grafana.md) for more information.

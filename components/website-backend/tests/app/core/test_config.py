@@ -35,6 +35,7 @@ def test_env_dev_override_db_type_sqlite(monkeypatch: pytest.MonkeyPatch):
 
 def test_env_prod(monkeypatch: pytest.MonkeyPatch):
     monkeypatch.setenv("SECRET_KEY", "FAKE_VALUE")
+    monkeypatch.setenv("BASE_ACCOUNT_USERNAME", "FAKE_VALUE")
     monkeypatch.setenv("BASE_ACCOUNT_PASSWORD", "FAKE_VALUE")
     monkeypatch.setenv("POSTGRES_HOST", "localhost")
     monkeypatch.setenv("POSTGRES_DB", "FAKE_VALUE")
