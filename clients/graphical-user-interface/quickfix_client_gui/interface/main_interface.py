@@ -47,6 +47,7 @@ class MainInterface(tk.Tk):
         # Initialize class attributes
         self.database_manager = DatabaseManager("sqlite:///quickfix_client_database.db")
         self.username = username
+        self.database_manager.create_user(username)
         self.account_balance = self.database_manager.get_user_balance(self.username)
         self.owned_shares = self.database_manager.get_user_shares(self.username)
         self.application, self.initiator = application, initiator
@@ -208,7 +209,7 @@ class MainInterface(tk.Tk):
 
         # Refresh the chart
         symbol = self.symbol_entry.get()
-        if len(symbol) in range(1, 5):
+        if len(symbol) in range(1, 6):
             timestamp = int(datetime.datetime.now().strftime("%Y%m%d%H%M"))
             market_data_request_snapshot = MarketDataRequest.new_snapshot_request(
                 timestamp,
