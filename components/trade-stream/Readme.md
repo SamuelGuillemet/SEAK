@@ -5,6 +5,7 @@ The Trade Stream is a component of the exchange system that is responsible for r
 ## Table of Contents
 
 - [Overview](#overview)
+- [Workflow](#workflow)
 - [Dependencies](#dependencies)
 - [Configuration](#configuration)
 - [Metrics](#metrics)

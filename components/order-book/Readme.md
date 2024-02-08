@@ -5,6 +5,9 @@ The Order Book is a component of the exchange system that maintains the list of 
 ## Table of Contents
 
 - [Overview](#overview)
+- [Workflows](#workflows)
+  - [Order Book Request Workflow](#order-book-request-workflow)
+  - [Market Data Request Workflow](#market-data-request-workflow)
 - [Dependencies](#dependencies)
 - [Configuration](#configuration)
 - [Metrics](#metrics)
@@ -16,6 +19,51 @@ The Order Book is a component of the exchange system that maintains the list of 
 The Order Book is responsible for maintaining the list of orders for each symbol. It subscribes to Kafka topics for order book requests, processes them, and sends the resulting order book updates to another Kafka topic. The component also handles the matching of orders and the removal of orders from the order book when they are filled.
 
 The other role of this component is to allow users to subscribe to market data updates for a particular symbol. It subscribes to a Kafka topic for market data requests, processes them, and sends the resulting market data responses to another Kafka topic. The component also handles the unsubscription of users from market data updates.
+
+## Workflows
+
+### Order Book Request Workflow
+
+![alt text](/docs/imgs/order-book-request.png)
+
+1. **Initialization**: The process starts with initializing and obtaining the order book for a particular symbol.
+
+2. **Handling New Order Request**:
+   - If the request type is "NEW", the system proceeds to add the new order to the order book and sends a response acknowledging the addition.
+
+3. **Finding an Existing Order**:
+   - Regardless of the request type, the system looks for the existence of the order corresponding to the provided key.
+   - If the order is not found, a rejection message is sent, indicating that the order was not found.
+   - If the order is found but its ID doesn't match the original ID provided in the request, another rejection message is sent indicating the mismatch.
+
+4. **Handling Cancel Order Request**:
+   - If the request type is "CANCEL", the system proceeds to cancel the order, removes it from the order book, and sends a response confirming the cancellation.
+
+5. **Handling Replace Order Request**:
+   - If the request type is "REPLACE", several checks are performed:
+     - Side and type mismatch checks are done between the existing order and the new order.
+     - An integrity check is performed, and if it fails, a rejection message is sent.
+     - If the integrity check passes, the existing order is replaced with the new order, and a response confirming the replacement is sent.
+
+### Market Data Request Workflow
+
+![alt text](/docs/imgs/market-data-request.png)
+
+
+1. **Initialization**: The process starts with the reception of a market data request.
+
+2. **Checking for Unknown Symbol**:
+   - If the symbol provided in the request is unknown, the request is rejected with a reason indicating an unknown symbol.
+
+3. **Checking Market Depth**:
+   - If the requested market depth is either less than 0 or greater than 10, the request is rejected, indicating that the market depth is not supported.
+
+4. **Handling Market Data Subscription Request**:
+   - Depending on the type of market data subscription request:
+     - **SUBSCRIBE**: The system subscribes to the market data for the specified symbol.
+     - **UNSUBSCRIBE**: The system unsubscribes from the market data for the specified symbol.
+     - **SNAPSHOT**: The system retrieves the last stock data for the specified symbol and depth and sends it as a snapshot response.
+
 
 ## Dependencies
 
@@ -142,3 +190,9 @@ $> ./gradlew components:order-book:jacocoTestReport
 ```
 
 This will generate a code coverage report at [`components/order-book/build/reports/jacoco/test/html/index.html`](/components/order-book/build/reports/jacoco/test/html/index.html).
+
+
+
+The Order Book keeps track of the orders for each symbol. It subscribes to Kafka topics for order book requests, processes them, and then delivers the order book updates to another Kafka topic. The component also manages order matching and order modification/removal from the order book once they have been filled or when the user requests it.
+
+This component also allows users to subscribe to market data updates for certain symbols. The component also handles users' unsubscription from market data updates.

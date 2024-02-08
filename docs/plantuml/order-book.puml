@@ -1,0 +1,76 @@
+@startuml order-book
+
+start
+
+if (orderBookRequest.getType() == OrderBookRequestType.NEW) then (yes)
+  partition "New Order" {
+    :orderBook.addOrder(key, order);
+    #lightGreen:messageProducer.sendOrderBookResponse(key, orderBookRequest);
+    stop
+  }
+endif
+
+partition "Find Old Order" {
+
+  :Order oldOrder = orderBook.getOrder(key);
+  if (oldOrder == null) then (yes)
+    #IndianRed:messageProducer.sendOrderBookRejected(key, orderBookRequest);
+    note left
+      "Order not found"
+    end note
+    stop
+  endif
+
+  if (!oldOrder.getClOrderID().equals((orderBookRequest.getOrigClOrderID()))) then (yes)
+    #IndianRed:messageProducer.sendOrderBookRejected(key, orderBookRequest);
+    note left
+      "Order id mismatch"
+    end note
+    stop
+  endif
+}
+
+if (orderBookRequest.getType() == OrderBookRequestType.CANCEL) then (yes)
+  partition "Cancel Order" {
+    :integrityCheckService.cancelOrder(order);
+    :orderBook.removeOrder(key);
+    #LightGreen:messageProducer.sendOrderBookResponse(key, orderBookRequest);
+    stop
+  }
+endif
+
+if (orderBookRequest.getType() == OrderBookRequestType.REPLACE) then (yes)
+  partition "Replace Order" {
+    if (oldOrder.getSide() != order.getSide()) then (yes)
+      #IndianRed:messageProducer.sendOrderBookRejected(key, orderBookRequest);
+      note left
+        "Side mismatch"
+      end note
+      stop
+    endif
+
+    if (oldOrder.getType() != order.getType()) then (yes)
+      #IndianRed:messageProducer.sendOrderBookRejected(key, orderBookRequest);
+      note left
+        "Type mismatch"
+      end note
+      stop
+    endif
+
+    :integrityCheck = integrityCheckService.replaceOrder(oldOrder, order);
+    if (!integrityCheck) then (yes)
+      #IndianRed:messageProducer.sendOrderBookRejected(key, orderBookRequest);
+      stop
+    else (no)
+      :orderBook.replaceOrder(key, order);
+      #LightGreen:messageProducer.sendOrderBookResponse(key, orderBookRequest);
+      stop
+    endif
+  }
+else
+  stop
+endif
+
+
+
+@enduml

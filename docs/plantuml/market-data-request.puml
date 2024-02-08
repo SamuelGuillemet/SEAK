@@ -1,0 +1,41 @@
+@startuml market-data-request-processor
+
+start
+partition "Preliminary checks" {
+  if (symbol unknown) then (yes)
+    #IndianRed:rejectRequest(MarketDataRejectedReason.UNKNOWN_SYMBOL);
+    note left
+      The symbol is unknown.
+    end note
+    stop
+  endif
+
+  if (marketDataRequest.getDepth() < 0 || marketDataRequest.getDepth() > 10) then (yes)
+    #IndianRed:rejectRequest(MarketDataRejectedReason.UNSUPPORTED_MARKET_DEPTH);
+    note left
+      The market depth is not supported.
+    end note
+    stop
+  endif
+}
+
+
+switch (marketDataRequest.getMarketDataSubscriptionRequest())
+  case (SUBSCRIBE)
+    partition "Subscribe" {
+      :subscribe(marketDataRequest);
+      stop
+    }
+  case (UNSUBSCRIBE)
+    partition "Unsubscribe" {
+      :unsubscribe(marketDataRequest);
+      stop
+    }
+  case (SNAPSHOT)
+    partition "Snapshot" {
+      :readLastStockData(symbol, depth);
+      #LightGreen:messageProducer.sendMarketDataResponse;
+      stop
+    }
+endswitch
+@enduml
