@@ -1,6 +1,6 @@
-# Fast API Backend for pfe asr broker website
+# Fast API Backend for website
 
-This is the backend for the pfe asr broker website. It is based on FastAPI and uses a PostgreSQL database.
+This is the backend for the SEAK website. It is based on FastAPI and uses a PostgreSQL database.
 
 ## Requirements
 
@@ -157,14 +157,14 @@ $ export DB_TYPE=POSTGRES
 Here is a command to start a docker container with a PostgreSQL database:
 
 ```bash
-docker run --name pfe_broker-postgres -e POSTGRES_USER=postrges -e POSTGRES_PASSWORD=postrges -e POSTGRES_DB=pfe_broker -p 127.0.0.1:5432:5432/tcp -d postgres
+docker run --name seak-postgres -e POSTGRES_USER=postrges -e POSTGRES_PASSWORD=postrges -e POSTGRES_DB=seak -p 127.0.0.1:5432:5432/tcp -d postgres
 ```
 
 #### Default values for development
 
 - `DATABASE_URI`: `SQLITE_DATABASE_URI`
-- `SQLITE_DATABASE_URI`: `sqlite+aiosqlite:///./pfe_broker.db`
-- `POSTGRES_DATABASE_URI`: `postgresql+asyncpg://pfe_broker:pfe_broker@localhost:5432/pfe_broker`
+- `SQLITE_DATABASE_URI`: `sqlite+aiosqlite:///./seak.db`
+- `POSTGRES_DATABASE_URI`: `postgresql+asyncpg://seak:seak@localhost:5432/seak`
 - `SECRET_KEY`: `6a50e3ddeef70fd46da504d8d0a226db7f0b44dcdeb65b97751cf2393b33693e` can be generated with `openssl rand -hex 32` and could be overriden by the `SECRET_KEY` environment variable
 - `BASE_ACCOUNT_USERNAME`: `admin`
 - `BASE_ACCOUNT_PASSWORD`: `admin-password*45`

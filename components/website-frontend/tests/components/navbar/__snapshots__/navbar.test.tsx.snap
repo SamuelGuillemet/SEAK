@@ -8,6 +8,20 @@ exports[`Navbar > should match snapshot 1`] = `
     <div
       class="flex justify-between items-center"
     >
+      <a
+        href="/"
+      >
+        <img
+          alt="logo"
+          data-nimg="1"
+          decoding="async"
+          height="150"
+          loading="lazy"
+          src="/logo.svg"
+          style="color: transparent;"
+          width="250"
+        />
+      </a>
       <button
         aria-label="hamburger-menu"
         class="lg:hidden"

@@ -10,13 +10,13 @@ Configuration:
 
   Loggers:
     Logger:
-      - name: pfe_broker
+      - name: seak
         level: debug
         additivity: false
         AppenderRef:
           - ref: LogToConsole
 
-      - name: pfe_broker.db
+      - name: seak.db
         level: debug
         additivity: false
         AppenderRef:

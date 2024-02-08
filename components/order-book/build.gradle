@@ -9,7 +9,7 @@ ext {
 }
 
 version = "${version}"
-group = "pfe_broker"
+group = "io.seak"
 
 repositories {
     mavenCentral()
@@ -47,7 +47,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("pfe_broker.order_book.Application")
+    mainClass.set("io.seak.order_book.Application")
 }
 
 sourceSets {
@@ -75,7 +75,7 @@ micronaut {
     testRuntime("junit5")
     processing {
         incremental(true)
-        annotations("pfe_broker.order_book.*")
+        annotations("io.seak.order_book.*")
     }
 }
 

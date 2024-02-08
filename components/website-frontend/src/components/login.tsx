@@ -1,6 +1,7 @@
 import { useRef, useState } from 'react';
 import { ResolverResult, useForm } from 'react-hook-form';
 
+import Image from 'next/image';
 import Link from 'next/link';
 import { useRouter } from 'next/router';
 import { signIn } from 'next-auth/react';
@@ -83,9 +84,14 @@ export default function Login() {
       <CardHeader className='pb-0'>
         <Link
           href={pages.index}
-          className='flex self-center text-2xl font-semibold mb-2'
+          className='flex self-center mb-4'
         >
-          <span>Pfe Broker</span>
+          <Image
+            src='/name.svg'
+            alt='name'
+            width={150}
+            height={150}
+          />
         </Link>
         <CardTitle className='text-xl font-bold md:text-2xl'>Connectez-vous</CardTitle>
       </CardHeader>

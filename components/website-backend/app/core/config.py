@@ -80,7 +80,7 @@ class ConfigDevelopment(Settings):
 
     POSTGRES_HOST: str = "localhost"
     POSTGRES_PORT: int = 5432
-    POSTGRES_DB: str = "pfe_broker"
+    POSTGRES_DB: str = "seak"
     POSTGRES_USER: str = "postgres"
     POSTGRES_PASSWORD: str = "postgres"
 
@@ -93,7 +93,7 @@ class ConfigDevelopment(Settings):
         port=POSTGRES_PORT,
         db=POSTGRES_DB,
     )
-    SQLITE_DATABASE_URI: ClassVar[str] = "sqlite+aiosqlite:///./pfe_broker.db"
+    SQLITE_DATABASE_URI: ClassVar[str] = "sqlite+aiosqlite:///./seak.db"
 
     # you can change it to either SQLITE_DATABASE_URI or POSTGRES_DATABASE_URI
     @property
@@ -178,7 +178,7 @@ class ConfigTest(Settings):
 
     @property
     def DATABASE_URI(self) -> str:
-        return "sqlite+aiosqlite:///./test_pfe_broker.db"
+        return "sqlite+aiosqlite:///./test_seak.db"
 
     REDIS_HOST: str = "localhost"
     REDIS_PORT: int = 6379

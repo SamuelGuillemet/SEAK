@@ -9,7 +9,7 @@ ext {
 }
 
 version = "${version}"
-group = "pfe_broker"
+group = "io.seak"
 
 
 repositories {
@@ -48,7 +48,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("pfe_broker.market_matcher.Application")
+    mainClass.set("io.seak.market_matcher.Application")
 }
 
 java {
@@ -77,7 +77,7 @@ micronaut {
     testRuntime("junit5")
     processing {
         incremental(true)
-        annotations("pfe_broker.market_matcher.*")
+        annotations("io.seak.market_matcher.*")
     }
 }
 

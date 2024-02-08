@@ -2,7 +2,7 @@ plugins {
   id 'java-library'
 }
 
-group = 'pfe_broker'
+group = 'io.seak'
 version = "${version}"
 sourceCompatibility = "${javaVersion}"
 
@@ -38,5 +38,5 @@ tasks.named('test') {
 
 task generateAvro(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'pfe_broker.avro.utils.GenerateAvro'
+    mainClass = 'io.seak.avro.utils.GenerateAvro'
 }
