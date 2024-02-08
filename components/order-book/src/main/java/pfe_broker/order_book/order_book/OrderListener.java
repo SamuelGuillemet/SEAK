@@ -103,16 +103,7 @@ public class OrderListener {
     }
 
     if (orderBookRequest.getType() == OrderBookRequestType.CANCEL) {
-      boolean integrityCheck = integrityCheckService.replaceCancelOrder(
-        oldOrder,
-        order
-      );
-
-      if (!integrityCheck) {
-        LOG.error("Order {} could not be cancelled by {}", oldOrder, order);
-        messageProducer.sendOrderBookRejected(key, orderBookRequest);
-        return;
-      }
+      integrityCheckService.cancelOrder(order);
 
       LOG.debug("Order {} cancelled by {}", oldOrder, order);
       orderBook.removeOrder(key);
@@ -132,7 +123,7 @@ public class OrderListener {
         return;
       }
 
-      boolean integrityCheck = integrityCheckService.replaceCancelOrder(
+      boolean integrityCheck = integrityCheckService.replaceOrder(
         oldOrder,
         order
       );

@@ -51,7 +51,7 @@ public class IntegrityCheckService {
     return String.format(STOCK_KEY_PATTERN, username, symbol);
   }
 
-  public boolean replaceCancelOrder(Order oldOrder, Order newOrder) {
+  public boolean replaceOrder(Order oldOrder, Order newOrder) {
     RedisCommands<String, String> syncCommands = redisConnection.sync();
 
     if (newOrder.getPrice() < 0 || newOrder.getQuantity() < 0) {
@@ -62,6 +62,25 @@ public class IntegrityCheckService {
       return replaceBuyLimitOrder(syncCommands, oldOrder, newOrder);
     } else {
       return replaceSellLimitOrder(syncCommands, oldOrder, newOrder);
+    }
+  }
+
+  public void cancelOrder(Order order) {
+    RedisCommands<String, String> syncCommands = redisConnection.sync();
+
+    if (order.getSide() == Side.BUY) {
+      syncCommands.incrbyfloat(
+        buildBalanceKey(order.getUsername().toString()),
+        order.getPrice() * order.getQuantity()
+      );
+    } else {
+      syncCommands.incrby(
+        buildStockKey(
+          order.getUsername().toString(),
+          order.getSymbol().toString()
+        ),
+        order.getQuantity()
+      );
     }
   }
 
