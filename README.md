@@ -4,10 +4,11 @@
 [![CI - Python](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-python.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-python.yml)
 [![CI - Node](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-node.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-node.yml)
 
+<img src="docs/logo.png" height="150" />
 
-# PFE Asr Broker
+# SEAK - Stock Exchange Application using Kafka
 
-This is a monorepo for the PFE Asr Broker project.
+This is a monorepo for the SEAK project. This project comes from a PFE (Projet de Fin d'Études) at the Télécom SudParis.
 
 ## Getting Started
 
