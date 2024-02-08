@@ -1,6 +1,7 @@
 import { useState } from 'react';
 
 import dynamic from 'next/dynamic';
+import Image from 'next/image';
 import Link from 'next/link';
 
 import LoginButton from '@/components/navbar/login-button';
@@ -19,6 +20,14 @@ export default function Navbar(): React.JSX.Element {
   return (
     <header className='flex flex-col lg:flex-row'>
       <div className='flex justify-between items-center'>
+        <Link href={pages.index}>
+          <Image
+            src='/logo.svg'
+            alt='logo'
+            width={250}
+            height={150}
+          />
+        </Link>
         <button
           id='hamburger-menu'
           aria-label='hamburger-menu'
