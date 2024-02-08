@@ -1,4 +1,5 @@
 import pandas as pd
+
 from pre_processing.constant import CSV_COLUMNS, DATA_PATH
 from pre_processing.data_completion.helpers import (
     add_ticker,

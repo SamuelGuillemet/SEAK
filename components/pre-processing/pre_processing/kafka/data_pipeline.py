@@ -8,6 +8,7 @@ from multiprocessing.synchronize import Event
 from typing import Dict, Generator, List, cast
 
 import pandas as pd
+
 from pre_processing.constant import MARKET_DATA_PARTIONS
 from pre_processing.dataframe_extraction.hour import complete_a_day_hour_by_hour
 from pre_processing.decorators import performance_timer_decorator

@@ -8,6 +8,7 @@ from typing import Dict, cast
 
 import pandas as pd
 from confluent_kafka.schema_registry.error import SchemaRegistryError
+
 from pre_processing.constant import DATA_PATH, StockChartType
 from pre_processing.data_agregation.helpers import save_date_data
 from pre_processing.data_agregation.reader import gather_data

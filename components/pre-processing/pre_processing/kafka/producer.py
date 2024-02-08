@@ -3,6 +3,7 @@ from typing import Any
 
 from confluent_kafka import SerializingProducer
 from confluent_kafka.schema_registry.avro import AvroSerializer
+
 from pre_processing.kafka.avro import AvroService
 
 logger = logging.getLogger("pre_processing.kafka.producer")
