@@ -103,7 +103,7 @@ public class OrderListener {
     }
 
     if (orderBookRequest.getType() == OrderBookRequestType.CANCEL) {
-      integrityCheckService.cancelOrder(order);
+      integrityCheckService.cancelOrder(oldOrder);
 
       LOG.debug("Order {} cancelled by {}", oldOrder, order);
       orderBook.removeOrder(key);
