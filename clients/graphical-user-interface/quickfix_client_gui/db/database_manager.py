@@ -100,6 +100,13 @@ class DatabaseManager:
             self.session.add_all([order1, order2])
             self.session.commit()
 
+    def create_user(self, username):
+        user = self.session.query(User).filter_by(username=username).first()
+        if user is None:
+            user1 = User(username=username, balance=1000)
+            self.session.add(user1)
+            self.session.commit()
+
     def get_user_balance(self, username):
         user = self.session.query(User).filter_by(username=username).first()
 
