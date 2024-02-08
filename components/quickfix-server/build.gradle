@@ -9,7 +9,7 @@ ext {
 }
 
 version = "${version}"
-group = "pfe_broker"
+group = "io.seak"
 
 repositories {
     mavenCentral()
@@ -59,7 +59,7 @@ dependencies {
 }
 
 application {
-    mainClass.set("pfe_broker.quickfix_server.Application")
+    mainClass.set("io.seak.quickfix_server.Application")
 }
 
 java {
@@ -96,7 +96,7 @@ micronaut {
     testRuntime("junit5")
     processing {
         incremental(true)
-        annotations("pfe_broker.quickfix_server.*")
+        annotations("io.seak.quickfix_server.*")
     }
 }
 

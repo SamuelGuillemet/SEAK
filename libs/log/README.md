@@ -2,14 +2,14 @@
 
 The config for this log4j2 logger is at [log42j.yml](../../config/shared/log4j2.yml).
 
-The defined logger is called `pfe_broker`.
+The defined logger is called `seak`.
 
 ## Use
 
 You can import the logger with the following:
 
 ```java
-import static pfe_broker.log.Log.LOG;
+import static io.seak.log.Log.LOG;
 ```
 
 Be sure to add the log4j2 and lib dependencies inside the `build.gradle` file as following:

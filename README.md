@@ -1,8 +1,8 @@
-![GitHub Release](https://img.shields.io/github/v/release/SamuelGuillemet/pfe-asr-broker?label=Version)
-[![CodeQL](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/codeql.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/codeql.yml)
-[![CI - Java](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-java.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-java.yml)
-[![CI - Python](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-python.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-python.yml)
-[![CI - Node](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-node.yml/badge.svg)](https://github.com/SamuelGuillemet/pfe-asr-broker/actions/workflows/ci-node.yml)
+![GitHub Release](https://img.shields.io/github/v/release/SamuelGuillemet/seak?label=Version)
+[![CodeQL](https://github.com/SamuelGuillemet/seak/actions/workflows/codeql.yml/badge.svg)](https://github.com/SamuelGuillemet/seak/actions/workflows/codeql.yml)
+[![CI - Java](https://github.com/SamuelGuillemet/seak/actions/workflows/ci-java.yml/badge.svg)](https://github.com/SamuelGuillemet/seak/actions/workflows/ci-java.yml)
+[![CI - Python](https://github.com/SamuelGuillemet/seak/actions/workflows/ci-python.yml/badge.svg)](https://github.com/SamuelGuillemet/seak/actions/workflows/ci-python.yml)
+[![CI - Node](https://github.com/SamuelGuillemet/seak/actions/workflows/ci-node.yml/badge.svg)](https://github.com/SamuelGuillemet/seak/actions/workflows/ci-node.yml)
 
 <img src="docs/logo.png" height="150" />
 

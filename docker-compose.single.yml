@@ -1,6 +1,6 @@
 version: "3"
 
-name: pfe-broker-singlenode
+name: seak-singlenode
 
 services:
   kafka1:

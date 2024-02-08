@@ -1,5 +1,5 @@
 {
-  "namespace": "pfe_broker.avro",
+  "namespace": "io.seak.avro",
   "type": "record",
   "name": "MarketDataResponse",
   "fields": [

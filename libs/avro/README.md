@@ -17,7 +17,7 @@ We have definied the following schemas:
 You can import each entity with this kind of import:
 
 ```java
-import pfe_broker.avro.Order;
+import io.seak.avro.Order;
 ```
 
 Bes sure to add avro and lib dependencies inside the `build.gradle` file as following:
@@ -51,7 +51,7 @@ dependencies {
 You can then define the following:
 
 ```java
-import pfe_broker.avro.Order;
+import io.seak.avro.Order;
 import io.confluent.kafka.serializers.AbstractKafkaSchemaSerDeConfig;
 import io.confluent.kafka.streams.serdes.avro.SpecificAvroSerde;
 ```

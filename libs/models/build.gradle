@@ -7,7 +7,7 @@ ext {
     configFiles = "classpath:data.yml"
 }
 
-group = 'pfe_broker'
+group = 'io.seak'
 version = "${version}"
 
 repositories {
@@ -60,7 +60,7 @@ micronaut {
   testRuntime("junit5")
   processing {
     incremental(true)
-    annotations("pfe_broker.models.*")
+    annotations("io.seak.models.*")
   }
 }
 

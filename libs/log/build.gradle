@@ -2,7 +2,7 @@ plugins {
   id 'java-library'
 }
 
-group = 'pfe_broker'
+group = 'io.seak'
 version = "${version}"
 sourceCompatibility = "${javaVersion}"
 
