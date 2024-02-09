@@ -5,6 +5,7 @@ source cli_autocomplete.sh
 CONFIG_FILE="./config/common/kafka.yml"
 JAVA_PROJECTS=("market-matcher" "order-book" "order-stream" "trade-stream" "quickfix-server")
 PYTHON_PROJECTS=("pre-processing" "website-backend")
+CLIENT_PYTHON_PROJECTS=("quickfix-client" "graphical-user-interface")
 NPM_PROJECTS=("website-frontend")
 
 function docker_single() {
@@ -143,6 +144,51 @@ function reload_prometheus() {
   echo "Prometheus config reloaded"
 }
 
+function version() {
+  version=$1
+  # Step 1: Update the java projects in the gradle.properties
+  echo "Updating version for java projects to $version"
+  sed -i 's/^\(\s*version\s*=\s*\).*/\1'"$version"'/' gradle.properties
+  # Step 2: Find all python projects and update their version in their pyproject.toml
+  for project in "${CLIENT_PYTHON_PROJECTS[@]}"; do
+    (
+      echo "Updating version for $project client to $version"
+      cd clients/"$project" || exit
+      poetry version "$version"
+    )
+  done
+  for project in "${PYTHON_PROJECTS[@]}"; do
+    (
+      echo "Updating version for $project to $version"
+      cd components/"$project" || exit
+      poetry version "$version"
+    )
+  done
+  # Step 2.5: For all python projects, update the lock file
+  for project in "${PYTHON_PROJECTS[@]}"; do
+    (
+      echo "Updating lock file for $project"
+      cd components/"$project" || exit
+      poetry lock --no-update
+    )
+  done
+  for project in "${CLIENT_PYTHON_PROJECTS[@]}"; do
+    (
+      echo "Updating lock file for $project"
+      cd clients/"$project" || exit
+      poetry lock --no-update
+    )
+  done
+  # Step 3: Find all npm projects and update their version in their package.json
+  for project in "${NPM_PROJECTS[@]}"; do
+    (
+      echo "Updating version for $project to $version"
+      cd components/"$project" || exit
+      npm version "$version"
+    )
+  done
+}
+
 help_text="Usage: $0 <command> [options]
 
 Commands:
@@ -152,6 +198,7 @@ Commands:
   reload_prometheus                     Reload prometheus config
   help                                  Show this help text
   project <project> <action> [options]  Manage projects
+  version <version>                     Set version for all components
 
   Docker actions:
     start                Start containers
@@ -188,6 +235,9 @@ case "$command" in
   ;;
 "project")
   project "$@"
+  ;;
+"version")
+  version "$@"
   ;;
 "help" | "-h" | "--help")
   echo "$help_text"

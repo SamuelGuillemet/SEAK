@@ -6,7 +6,7 @@ _cli_autocomplete() {
   COMPREPLY=()
   cur="${COMP_WORDS[COMP_CWORD]}"
   prev="${COMP_WORDS[COMP_CWORD - 1]}"
-  commands="docker docker_multi reload_grafana reload_prometheus project help"
+  commands="docker docker_multi reload_grafana reload_prometheus project version help"
   docker_actions="start restart stop down"
   java_projects="market-matcher order-book order-stream trade-stream quickfix-server"
   python_projects="pre-processing website-backend"
