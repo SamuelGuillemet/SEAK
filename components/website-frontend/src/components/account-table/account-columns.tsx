@@ -37,6 +37,16 @@ export const accountColumns: ColumnDef<Account>[] = [
     accessorKey: 'id'
   },
   {
+    id: 'username',
+    accessorKey: 'username',
+    header: ({ column }) => (
+      <DataTableColumnHeader
+        column={column}
+        title='Nom d’utilisateur'
+      />
+    )
+  },
+  {
     id: 'firstName',
     accessorKey: 'firstName',
     header: ({ column }) => (
