@@ -136,7 +136,7 @@ class DatabaseManager:
                 symbol=symbol,
                 quantity=quantity,
                 price=price,
-                status="Filled" if type == "MARKET" else "Pending",
+                status="Pending",
                 user=user,
             )
 
@@ -147,72 +147,51 @@ class DatabaseManager:
             # Get the client ID of the created order
             cl_ord_id = new_order.cl_ord_id
 
-            if side == "BUY":
-                # Buy logic
-                if type == "MARKET":
-                    # Update shares owned by the user for market order
-                    user_shares = (
+            if type == "LIMIT":
+                if side == "BUY":
+                    # Vzerify if the user has enough balance
+                    if user.balance < price * quantity:
+                        # Rollback the order if the user doesn't have enough balance
+                        self.session.delete(new_order)
+                        self.session.commit()
+                        return None
+                elif side == "SELL":
+                    # Verify if the user has enough shares
+                    share = (
                         self.session.query(Share)
                         .filter_by(owner=user, symbol=symbol)
                         .first()
                     )
+                    if not share or share.quantity < quantity:
+                        # Rollback the order if the user doesn't have enough shares
+                        self.session.delete(new_order)
+                        self.session.commit()
+                        return None
 
-                    if user_shares:
-                        user_shares.quantity += quantity
-                    else:
-                        new_share = Share(owner=user, symbol=symbol, quantity=quantity)
-                        self.session.add(new_share)
+            elif type == "MARKET":
+                if side == "BUY":
+                    # Can't reduce balance, price is unknown
+                    pass
 
-                    # Update user's balance
-                    user.balance -= price * quantity
-                else:
-                    # For non-market orders, buy logic remains the same
+                elif side == "SELL":
+                    # Reduce user's shares
                     share = (
                         self.session.query(Share)
                         .filter_by(owner=user, symbol=symbol)
                         .first()
                     )
 
-                    if share:
-                        share.quantity += quantity
-                    else:
-                        new_share = Share(owner=user, symbol=symbol, quantity=quantity)
-                        self.session.add(new_share)
+                    if not share or share.quantity <= quantity:
+                        # Rollback the order if the user doesn't have enough shares to sell
+                        self.session.delete(new_order)
+                        self.session.commit()
+                        return None
 
-                    user.balance -= price * quantity
-
-                # Update order status based on order type
-                new_order.status = "Filled" if type == "MARKET" else "Pending"
-                self.session.commit()
-                return cl_ord_id
-
-            elif side == "SELL":
-                # Sell logic
-                share = (
-                    self.session.query(Share)
-                    .filter_by(owner=user, symbol=symbol)
-                    .first()
-                )
-
-                if share and share.quantity >= quantity:
                     share.quantity -= quantity
-                    user.balance += price * quantity
 
-                    # Update order status based on order type
-                    new_order.status = "Filled" if type == "MARKET" else "Pending"
-                    self.session.commit()
-                    return cl_ord_id
-                else:
-                    # Rollback the order if the user doesn't have enough shares to sell
-                    self.session.delete(new_order)
-                    self.session.commit()
-                    return None
-
-            else:
-                # Invalid order side
-                self.session.delete(new_order)
                 self.session.commit()
-                return None
+
+            return cl_ord_id
 
         else:
             # User not found
@@ -235,14 +214,11 @@ class DatabaseManager:
             self.session.query(Order).filter_by(cl_ord_id=cl_ord_id, user=user).first()
         )
 
-        if user and order and order.status == "Pending":
-            order.quantity = shares_quantity
-            order.price = price
+        if order and order.status == "Pending":
+            order.status = "Editing"
             self.session.commit()
-            return order
-        else:
-            print("Cannot edit order")
-            return order
+
+        return order
 
     def get_order(self, username, cl_ord_id):
         user = self.session.query(User).filter_by(username=username).first()
@@ -268,42 +244,56 @@ class DatabaseManager:
     def order_filled_callback(self, execution_report: FilledExecutionReport):
         client_order_id = execution_report.client_order_id
         order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
-        if order:
-            order.status = "Filled"
-            if order.type == "MARKET":
-                if order.side == "BUY":
-                    order.user.balance -= execution_report.price * order.quantity
-                else:
-                    order.user.balance += execution_report.price * order.quantity
-            self.session.commit()
-            message = f"Order {client_order_id} filled successfully."
-            print(message)
-        else:
+        if not order:
             print(f"Order {client_order_id} not found in the database.")
+
+        order.status = "Filled"
+        order.order_id = execution_report.order_id
+
+        if order.type == "MARKET" and order.side == "BUY":
+            # Remove money now that the order is filled
+            order.user.balance -= execution_report.price * order.quantity
+            order.price = execution_report.price
+
+        if order.side == "BUY":
+            # Add shares to the user
+            share = (
+                self.session.query(Share)
+                .filter_by(owner=order.user, symbol=order.symbol)
+                .first()
+            )
+            if share:
+                share.quantity += order.quantity
+            else:
+                new_share = Share(
+                    owner=order.user, symbol=order.symbol, quantity=order.quantity
+                )
+                self.session.add(new_share)
+        elif order.side == "SELL":
+            # Add money to the user
+            order.user.balance += execution_report.price * order.quantity
+
+        self.session.commit()
+        message = f"Order {client_order_id} filled successfully."
+        print(message)
 
     def order_rejected_callback(self, report: RejectedExecutionReport):
         client_order_id = report.client_order_id
         order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
         if order:
             order.status = "Rejected"
+            order.order_id = report.order_id
             user = order.user
-            # Rollback
-            if order.side == "BUY":
-                user.balance += order.price * order.quantity
-                share = (
-                    self.session.query(Share)
-                    .filter_by(owner=user, symbol=order.symbol)
-                    .first()
-                )
-                share.quantity -= order.quantity
-            elif order.side == "SELL":
-                user.balance -= order.price * order.quantity
+
+            if order.type == "MARKET" and order.side == "SELL":
+                # Rollback
                 share = (
                     self.session.query(Share)
                     .filter_by(owner=user, symbol=order.symbol)
                     .first()
                 )
                 share.quantity += order.quantity
+
             self.session.commit()
             message = f"Order {client_order_id} rejected."
             print(message)
@@ -316,6 +306,20 @@ class DatabaseManager:
         if order:
             order.status = "Accepted"
             order.order_id = report.order_id
+
+            if order.type == "LIMIT":
+                if order.side == "BUY":
+                    # Reduce user's balance
+                    order.user.balance -= order.price * order.quantity
+                elif order.side == "SELL":
+                    # Reduce user's shares
+                    share = (
+                        self.session.query(Share)
+                        .filter_by(owner=order.user, symbol=order.symbol)
+                        .first()
+                    )
+                    share.quantity -= order.quantity
+
             self.session.commit()
             message = f"Order {client_order_id} accepted."
             print(message)
@@ -324,9 +328,24 @@ class DatabaseManager:
 
     def order_canceled_callback(self, report: CanceledOrderExecutionReport):
         client_order_id = report.client_order_id
-        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
+        order = (
+            self.session.query(Order).filter_by(client_order_id=client_order_id).first()
+        )
         if order:
             order.status = "Canceled"
+
+            if order.type == "LIMIT":
+                if order.side == "BUY":
+                    # Add user's balance
+                    order.user.balance += order.price * order.quantity
+                elif order.side == "SELL":
+                    # Add user's shares
+                    share = (
+                        self.session.query(Share)
+                        .filter_by(owner=order.user, symbol=order.symbol)
+                        .first()
+                    )
+                    share.quantity += order.quantity
             self.session.commit()
             message = f"Order {client_order_id} canceled."
             print(message)
@@ -335,14 +354,41 @@ class DatabaseManager:
 
     def order_replaced_callback(self, report: ReplacedOrderExecutionReport):
         client_order_id = report.client_order_id
-        order = self.session.query(Order).filter_by(cl_ord_id=client_order_id).first()
-        if order:
-            order.status = "Replaced"
+        original_order = (
+            self.session.query(Order).filter_by(client_order_id=client_order_id).first()
+        )
+        if original_order:
+            original_order.status = "Replaced"
+
+            if original_order.type == "LIMIT":
+                if original_order.side == "BUY":
+                    # Add user's balance
+                    original_order.user.balance += (
+                        original_order.price * original_order.quantity
+                        - report.price * report.leaves_quantity
+                    )
+                elif original_order.side == "SELL":
+                    # Add user's shares
+                    share = (
+                        self.session.query(Share)
+                        .filter_by(
+                            owner=original_order.user, symbol=original_order.symbol
+                        )
+                        .first()
+                    )
+                    share.quantity += original_order.quantity - report.leaves_quantity
+
+            original_order.price = report.price
+            original_order.quantity = report.leaves_quantity
+
             self.session.commit()
             message = f"Order {client_order_id} replaced."
             print(message)
         else:
-            print(f"Order {client_order_id} not found in the database.")
+            print(
+                f"Order {client_order_id} not found in the database,"
+                f"original order id {report.original_client_order_id}."
+            )
 
     def order_cancel_rejected_callback(self, reject: OrderCancelReject):
         client_order_id = reject.client_order_id
