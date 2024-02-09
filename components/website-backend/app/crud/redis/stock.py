@@ -37,5 +37,13 @@ class StockCRUD:
             ]
         )
 
+    async def delete(self, client: Redis, username: str, symbol: str) -> None:
+        await client.delete(self.build_stock_key(username, symbol))
+
+    async def delete_all(self, client: Redis, username: str) -> None:
+        keys: list[str] = await client.keys(f"{username}:[A-Z]*")
+        if keys:
+            await client.delete(*keys)
+
 
 crud_stock = StockCRUD()

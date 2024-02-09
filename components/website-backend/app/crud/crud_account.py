@@ -47,6 +47,7 @@ class CRUDAccount(
             # If enabled is now False, remove the account from redis
             else:
                 await crud_balance.delete(client, updated_account.username)
+                await crud_stock.delete_all(client, updated_account.username)
 
         return await self.complete_account(client, updated_account)
 
