@@ -93,17 +93,14 @@ class QuickfixEngineService:
         self.application.send(market_data_snapshot)
 
         data: Dict[str, float] = {}
-        try:
-            for symbol in symbols:
+        for symbol in symbols:
+            try:
                 key = self._build_key(req_id, symbol)
-                await asyncio.wait_for(self.market_data_events[key].wait(), timeout=1.0)
+                await asyncio.wait_for(self.market_data_events[key].wait(), timeout=5.0)
                 data[symbol] = self._extract_close_value(req_id, symbol)
                 self.market_data_events.pop(key)
-        except asyncio.TimeoutError as e:
-            raise HTTPException(
-                status_code=status.HTTP_504_GATEWAY_TIMEOUT,
-                detail="Request timeout",
-            ) from e
+            except asyncio.TimeoutError:
+                data[symbol] = 0.0
 
         return MarketData(market_data=data)
 
@@ -111,7 +108,7 @@ class QuickfixEngineService:
 class QuickfixServiceDependency:
     service: QuickfixEngineService
 
-    async def setup(self, timeout: float = 1) -> QuickfixEngineService:
+    async def setup(self, timeout: float = 2) -> QuickfixEngineService:
         self.service = QuickfixEngineService()
         started = await start_initiator_async(
             self.service.initiator, self.service.application, timeout
