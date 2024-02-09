@@ -10,13 +10,13 @@ Configuration:
 
   Loggers:
     Logger:
-      - name: seak
+      - name: io.seak
         level: debug
         additivity: false
         AppenderRef:
           - ref: LogToConsole
 
-      - name: seak.db
+      - name: io.seak.db
         level: debug
         additivity: false
         AppenderRef:
