@@ -36,7 +36,7 @@ class OrderWindow(Toplevel):
         # Widgets
         order_type_label = Label(self, text="Order Type:")
         order_type_frame = Frame(self)
-        for order_type in ["MARKET", "LIMIT", "STOP"]:
+        for order_type in ["MARKET", "LIMIT"]:
             Radiobutton(
                 order_type_frame,
                 text=order_type,
