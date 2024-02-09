@@ -84,7 +84,7 @@ $> cd components/website-frontend; cp .env.sample .env.production
 ```
 Then you need to fill the `.env.production` file with the correct values, especially the `NEXTAUTH_SECRET` which can be generated with the following command:
 ```shell
-$> openssl rand -base64 32
+$> openssl rand -hex 64
 ```
 
 - Website backend
@@ -94,7 +94,7 @@ $> cd components/website-backend; cp .env.sample .env
 Then you need to fill the `.env` file with the correct values. You **must** use the same `NEXTAUTH_SECRET` as the frontend for the `SECRET_KET`.
 Finnaly migrate the DB to create the tables and add the base accounts:
 ```shell
-$> cd components/website-backend; DB_TYPE=POSTGRES poetry run app/command.py init
+$> cd components/website-backend; ENVIRONMENT=production poetry run python app/command.py init
 ```
 
 ### Run the project
