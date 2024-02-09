@@ -1,0 +1,46 @@
+@startuml Order Integrity Check Service Flow Diagram
+
+start
+
+partition "Basic Order Integrity Check" {
+  :Check if User is Provided;
+  :Check if Symbol is Provided;
+  :Check if Quantity is Correct;
+  :Check if Symbol exists;
+}
+
+
+
+if (Determine Order Type:) then (Market)
+  partition "Market Order Integrity Check" {
+    if (Side) then (Buy)
+        :Not knowing the price we can't \ncheck if User has Enough Funds;
+      else (Sell)
+        :Check if User has Enough Stocks;
+        :Decrement Stock Quantity;
+    endif
+  }
+else (Limit)
+  partition "Limit Order Integrity Check" {
+    if (Side) then (Buy)
+        :Check if User has Enough Funds;
+        :Decrement User Funds;
+      else (Sell)
+        :Check if User has Enough Stocks;
+        :Decrement Stock Quantity;
+    endif
+  }
+endif
+
+
+
+
+if (Rejected?) then
+  :Log Rejection Reason;
+else
+  :Log Acceptance;
+endif
+
+stop
+
+@enduml

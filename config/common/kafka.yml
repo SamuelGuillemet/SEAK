@@ -13,6 +13,9 @@ kafka:
     order-book-request: order-book-request
     order-book-response: order-book-response
     order-book-rejected: order-book-rejected
+    market-data-request: market-data-request
+    market-data-response: market-data-response
+    market-data-rejected: market-data-rejected
   producers:
     default:
       value.serializer: io.confluent.kafka.serializers.KafkaAvroSerializer

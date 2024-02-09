@@ -1,0 +1,13 @@
+{
+  "namespace": "io.seak.avro",
+  "type": "enum",
+  "name": "MarketDataRejectedReason",
+  "symbols": [
+    "UNKNOWN_SYMBOL",
+    "DUPLICATE_MD_REQ_ID",
+    "UNSUPPORTED_SUBSCRIPTION_REQUEST_TYPE",
+    "UNSUPPORTED_MARKET_DEPTH",
+    "UNSUPPORTED_MD_UPDATE_TYPE",
+    "UNSUPPORTED_MD_ENTRY_TYPE"
+  ]
+}

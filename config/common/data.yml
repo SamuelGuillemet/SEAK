@@ -5,9 +5,9 @@ datasources:
     driver-class-name: org.postgresql.Driver
     username: ${DB_USER:postgres}
     password: ${DB_PASSWORD:postgres}
-    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:pfe_broker}
+    url: jdbc:postgresql://${DB_HOST:localhost}:${DB_PORT:5432}/${DB_NAME:seak}
 ---
 jpa:
   default:
     properties.hibernate.hbm2ddl.auto: update
-    entity-scan.packages: pfe_broker.models.domains
+    entity-scan.packages: io.seak.models.domains

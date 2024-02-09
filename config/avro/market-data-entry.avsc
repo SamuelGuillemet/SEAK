@@ -1,0 +1,6 @@
+{
+  "namespace": "io.seak.avro",
+  "type": "enum",
+  "name": "MarketDataEntry",
+  "symbols": ["LOW", "HIGH", "OPEN", "CLOSE"]
+}

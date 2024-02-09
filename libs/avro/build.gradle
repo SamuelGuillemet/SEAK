@@ -2,7 +2,7 @@ plugins {
   id 'java-library'
 }
 
-group = 'pfe_broker'
+group = 'io.seak'
 version = "${version}"
 sourceCompatibility = "${javaVersion}"
 
@@ -11,13 +11,16 @@ repositories {
 }
 
 dependencies {
-    testImplementation 'org.junit.jupiter:junit-jupiter:5.10.1'
     // Avro
-    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.3'
-    implementation group: 'org.apache.avro', name: 'avro-compiler', version: '1.11.3'
-    // QuickfixJ
-    implementation group: 'org.quickfixj', name: 'quickfixj-core', version: '2.3.1'
-    implementation group: 'org.quickfixj', name: 'quickfixj-messages-all', version: '2.3.1'
+    implementation libs.avro
+    implementation libs.avro.compiler
+
+    // QuickFixJ
+    implementation libs.quickfixj.core
+    implementation libs.quickfixj.messages.all
+
+    // Test dependencies
+    testImplementation libs.junit.jupiter
 }
 
 sourceSets {
@@ -35,5 +38,5 @@ tasks.named('test') {
 
 task generateAvro(type: JavaExec) {
     classpath = sourceSets.main.runtimeClasspath
-    mainClass = 'pfe_broker.avro.utils.GenerateAvro'
+    mainClass = 'io.seak.avro.utils.GenerateAvro'
 }

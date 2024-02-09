@@ -1,0 +1,130 @@
+import logging
+from typing import Annotated
+
+from fastapi import Depends, HTTPException, Security, security, status
+from jose import JWTError, jwt
+from redis.asyncio import Redis
+from sqlalchemy.ext.asyncio import AsyncSession
+
+from app.core.auth import check_scopes, oauth2_scheme
+from app.core.config import settings
+from app.core.translation import Translator
+from app.core.types import SecurityScopes
+from app.crud.crud_account import account as accounts
+from app.db.redis.redis import RedisDB
+from app.db.select_db import select_db
+from app.models.account import Account
+from app.schemas import token as token_schema
+from app.services.quickfix import QuickfixEngineService, QuickfixServiceDependency
+
+translator = Translator()
+logger = logging.getLogger("app.dependencies")
+
+
+# Create a database session (dependency injected)
+get_db = select_db()
+
+DBDependency = Annotated[AsyncSession, Depends(get_db)]
+
+# Create a redis client (dependency injected)
+get_redis = RedisDB()
+
+RedisDependency = Annotated[Redis, Depends(get_redis)]
+
+# Create quickfix engine (dependency injected)
+get_quickfix_engine = QuickfixServiceDependency()
+
+QuickfixEngineDependency = Annotated[
+    QuickfixEngineService, Depends(get_quickfix_engine)
+]
+
+
+async def get_current_account(
+    security_scopes: security.SecurityScopes,
+    db: AsyncSession = Depends(get_db),
+    token: str = Depends(oauth2_scheme),
+) -> Account:
+    """
+    Get the current account associated with the JWT token in the authorization header.
+
+    :param security_scopes: The security scopes
+    :param db: The database session (dependency injected)
+    :param token: The JWT token in the authorization header (dependency injected)
+
+    :return: The account associated with the JWT token if the token is valid
+    """
+    authenticate_value = f"Bearer scope={security_scopes.scope_str}"
+
+    # Create an exception to be raised if the token is invalid (i.e. invalid credentials)
+    credentials_exception = HTTPException(
+        status_code=status.HTTP_401_UNAUTHORIZED,
+        detail=translator.AUTHENTICATION_REQUIRED,
+        headers={"WWW-Authenticate": "Bearer"},
+    )
+
+    try:
+        # Decode the JWT token to get the payload
+        payload = jwt.decode(
+            token, settings.SECRET_KEY, algorithms=[settings.ALGORITHM]
+        )
+        # Get the id from the payload
+        token_id: str | None = payload.get("sub")
+        if token_id is None:
+            # Raise an exception if the id is not in the payload
+            logger.debug("Id not in payload")
+            raise credentials_exception
+
+        # Get the scopes from the payload
+        token_scopes = payload.get("scopes", [])
+        # Create a `TokenData`` object from the id
+        token_data = token_schema.TokenData(scopes=token_scopes, id=int(token_id))
+
+    except JWTError as e:
+        # Raise an exception if the token cannot be decoded
+        logger.debug(f"Token could not be parsed, {e}")
+        raise credentials_exception from e
+
+    # Get the account associated with the username
+    async with db as session:
+        async with session.begin():
+            account = await accounts.read(session, id=token_data.id)
+
+    if account is None:
+        # Raise an exception if the account does not exist
+        logger.debug("Account does not exist")
+        raise credentials_exception
+
+    if not token_scopes or not check_scopes(security_scopes, token_data.scopes):
+        if not token_scopes:
+            logger.debug("Token has no scopes")
+        else:
+            logger.debug("Token does not have the required scopes")
+        # Raise an exception if the token does not have the required scope
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=translator.INSUFFICIENT_PERMISSIONS,
+            headers={"WWW-Authenticate": authenticate_value},
+        )
+    # Return the account
+    return account
+
+
+async def get_current_active_account(
+    current_account: Account = Security(
+        get_current_account, scopes=[SecurityScopes.USER.value]
+    )
+) -> Account:
+    """
+    Get the current active account associated with the JWT token in the authorization header.
+
+    :param current_account: The account associated with the JWT token (dependency injected)
+
+    :return: The account associated with the JWT token if the token is valid and the account is active
+    """
+    if current_account.enabled is False:
+        logger.debug("Account is not enabled")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=translator.INACTIVE_ACCOUNT,
+        )
+    return current_account

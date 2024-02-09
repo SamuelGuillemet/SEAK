@@ -73,3 +73,25 @@ class OrderRejectReasonEnum(Enum):
 class CxlRejResponseToEnum(Enum):
     ORDER_CANCEL_REQUEST = "1"
     ORDER_CANCEL_REPLACE_REQUEST = "2"
+
+
+class MarketDataRejectReasonEnum(Enum):
+    UNKNOWN_SYMBOL = "0"
+    DUPLICATE_MD_REQ_ID = "1"
+    UNSUPPORTED_SUBSCRIPTION_REQUEST_TYPE = "4"
+    UNSUPPORTED_MARKET_DEPTH = "5"
+    UNSUPPORTED_MD_UPDATE_TYPE = "6"
+    UNSUPPORTED_MD_ENTRY_TYPE = "8"
+
+
+class MarketDataSubscriptionRequestTypeEnum(Enum):
+    SNAPSHOT = "0"
+    SUBSCRIBE = "1"
+    UNSUBSCRIBE = "2"
+
+
+class MarketDataEntryTypeEnum(Enum):
+    OPEN = "4"
+    CLOSE = "5"
+    HIGH = "7"
+    LOW = "8"

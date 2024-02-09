@@ -26,8 +26,6 @@ class AIOProducer:
     def on_delivery(self, err, msg):
         if err:
             logger.error(f"Message delivery failed: {err}")
-        else:
-            pass
 
     def produce(
         self, topic: str, value: Any, key: Any = None, partition: int = -1

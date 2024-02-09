@@ -1,0 +1,6 @@
+{
+  "namespace": "io.seak.avro",
+  "type": "enum",
+  "name": "MarketDataSubscriptionRequest",
+  "symbols": ["SNAPSHOT", "SUBSCRIBE", "UNSUBSCRIBE"]
+}

@@ -1,0 +1,33 @@
+@startuml Trade_Integrity_Check_Service_Flow_Diagram
+
+start
+
+if (Determine Order Type:) then (Market)
+  partition "Market Order Integrity Check" {
+    if (Side) then (Buy)
+        :Check if User has Enough Funds;
+        :Decrement User Funds;
+        :Increment Stock Quantity;
+    else (Sell)
+        :Increment User Funds;
+    endif
+  }
+else (Limit)
+  partition "Limit Order Integrity Check" {
+    if (Side) then (Buy)
+        :Increment Stock Quantity;
+    else (Sell)
+        :Increment User Funds;
+    endif
+  }
+endif
+
+if (Rejected?) then
+  :Log Rejection Reason;
+else
+  :Log Acceptance;
+endif
+
+stop
+
+@enduml

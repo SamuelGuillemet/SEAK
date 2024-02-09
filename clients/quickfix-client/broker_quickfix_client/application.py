@@ -1,5 +1,6 @@
 # pylint: disable=unused-argument,invalid-name,super-init-not-called
 
+import asyncio
 import logging
 from time import sleep
 
@@ -10,6 +11,8 @@ from quickfix import (
     MsgType,
     MsgType_ExecutionReport,
     MsgType_Logon,
+    MsgType_Logout,
+    MsgType_MarketDataRequestReject,
     MsgType_MarketDataSnapshotFullRefresh,
     MsgType_OrderCancelReject,
     Password,
@@ -20,6 +23,12 @@ from quickfix import (
 )
 
 from broker_quickfix_client.handlers.execution_report import ExecutionReportHandler
+from broker_quickfix_client.handlers.market_data_request_reject import (
+    MarketDataRequestRejectHandler,
+)
+from broker_quickfix_client.handlers.market_data_snapshot_full_refresh import (
+    MarketDataSnapshotFullRefreshHandler,
+)
 from broker_quickfix_client.handlers.order_cancel_reject import OrderCancelRejectHandler
 from broker_quickfix_client.utils.logger import setup_logs
 from broker_quickfix_client.utils.quickfix import log_quick_fix_message, set_settings
@@ -32,6 +41,8 @@ class ClientApplication(Application):
 
     execution_report_handler = ExecutionReportHandler()
     order_cancel_reject_handler = OrderCancelRejectHandler()
+    market_data_request_reject_handler = MarketDataRequestRejectHandler()
+    market_data_snapshot_full_refresh_handler = MarketDataSnapshotFullRefreshHandler()
 
     username: str | None = None
     password: str | None = None
@@ -45,6 +56,19 @@ class ClientApplication(Application):
         self, order_cancel_reject_handler: OrderCancelRejectHandler
     ):
         self.order_cancel_reject_handler = order_cancel_reject_handler
+
+    def set_market_data_request_reject_handler(
+        self, market_data_request_reject_handler: MarketDataRequestRejectHandler
+    ):
+        self.market_data_request_reject_handler = market_data_request_reject_handler
+
+    def set_market_data_snapshot_full_refresh_handler(
+        self,
+        market_data_snapshot_full_refresh_handler: MarketDataSnapshotFullRefreshHandler,
+    ):
+        self.market_data_snapshot_full_refresh_handler = (
+            market_data_snapshot_full_refresh_handler
+        )
 
     def onCreate(self, sessionId: SessionID):
         pass
@@ -62,13 +86,20 @@ class ClientApplication(Application):
             message.setField(Password(self.password))
 
     def toApp(self, message: Message, sessionId: SessionID):
-        log_quick_fix_message(message, "Sending", logging.INFO)
+        log_quick_fix_message(message, "Sending")
 
     def fromAdmin(self, message: Message, sessionId: SessionID):
         log_quick_fix_message(message, "Received")
+        msg_type = message.getHeader().getField(MsgType()).getString()
+
+        if msg_type == MsgType_Logout:
+            logger.warning("Received logout message")
+            self.session_id = None
+        elif msg_type == MsgType_Logon:
+            logger.info("User connected to the server")
 
     def fromApp(self, message: Message, sessionId: SessionID):
-        log_quick_fix_message(message, "Received", logging.INFO)
+        log_quick_fix_message(message, "Received")
 
         msg_type = message.getHeader().getField(MsgType()).getString()
 
@@ -77,7 +108,13 @@ class ClientApplication(Application):
         elif msg_type == MsgType_OrderCancelReject:
             self.order_cancel_reject_handler.handle_order_cancel_reject(message)
         elif msg_type == MsgType_MarketDataSnapshotFullRefresh:
-            logger.info("Market data snapshot full refresh received")
+            self.market_data_snapshot_full_refresh_handler.handle_market_data_snapshot_full_refresh(
+                message
+            )
+        elif msg_type == MsgType_MarketDataRequestReject:
+            self.market_data_request_reject_handler.handle_market_data_request_reject(
+                message
+            )
         else:
             logger.warning(f"Unknown message type: {msg_type}")
 
@@ -109,22 +146,35 @@ def start_initiator(initiator: SocketInitiator, application: ClientApplication):
         sleep(0.1)
 
 
-def setup(
-    username: str,
-    password: str,
-    execution_report_handler: ExecutionReportHandler | None = None,
-    order_cancel_reject_handler: OrderCancelRejectHandler | None = None,
+async def start_initiator_async(
+    initiator: SocketInitiator, application: ClientApplication, timeout: float = 1
 ):
-    setup_logs("client")
-    setup_logs("quickfix")
-    application = ClientApplication()
+    if not application.username or not application.password:
+        raise ValueError("Username and password must be set before starting initiator")
 
+    initiator.start()
+
+    try:
+        await asyncio.wait_for(wait_for_logon(application), timeout=timeout)
+    except asyncio.TimeoutError:
+        logger.error("Timeout waiting for logon")
+        initiator.stop()
+        return False
+
+    return True
+
+
+async def wait_for_logon(application: ClientApplication):
+    while not application.get_session_id():
+        await asyncio.sleep(0.1)
+
+
+def setup(username: str, password: str):
+    setup_logs("client")
+    setup_logs("quickfix", level=logging.INFO)
+    application = ClientApplication()
     application.set_credentials(username, password)
-    if execution_report_handler:
-        application.set_execution_report_handler(execution_report_handler)
-    if order_cancel_reject_handler:
-        application.set_order_cancel_reject_handler(order_cancel_reject_handler)
 
     initiator = build_initiator(username, application)
-    start_initiator(initiator, application)
+
     return application, initiator

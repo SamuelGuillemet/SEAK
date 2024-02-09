@@ -1,0 +1,12 @@
+micronaut:
+  metrics:
+    enabled: true
+    export:
+      prometheus:
+        enabled: true
+        step: PT1S
+        descriptions: true
+
+endpoints:
+  prometheus:
+    sensitive: false

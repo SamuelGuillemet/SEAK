@@ -3,7 +3,11 @@ plugins {
   id 'io.freefair.lombok'
 }
 
-group = 'pfe_broker'
+ext {
+    configFiles = "classpath:data.yml"
+}
+
+group = 'io.seak'
 version = "${version}"
 
 repositories {
@@ -11,23 +15,32 @@ repositories {
 }
 
 dependencies {
-    runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
+    // Micronaut
+    runtimeOnly libs.snakeyaml
 
     // Database dependencies
-    annotationProcessor group: 'io.micronaut.data', name: 'micronaut-data-processor', version: '4.4.1'
-    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.1'
-    implementation group: 'io.micronaut.sql', name: 'micronaut-jdbc-hikari', version: '5.4.0'
-    runtimeOnly group: 'org.postgresql', name: 'postgresql', version: '42.7.1'
+    annotationProcessor libs.micronaut.data.processor
+    implementation libs.micronaut.data.hibernate.jpa
+    implementation libs.micronaut.jdbc.hikari
+    runtimeOnly libs.postgresql
+
+    // Authentication dependencies
+    implementation libs.spring.security.crypto
 
     // Lombok
-    compileOnly group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
-    annotationProcessor group: 'org.projectlombok', name: 'lombok', version: '1.18.30'
+    compileOnly libs.lombok
+    annotationProcessor libs.lombok
+
+    // Log4j2
+    runtimeOnly libs.log4j.api
+    runtimeOnly libs.log4j.slf4j2.impl
+    runtimeOnly libs.jcl.over.slf4j
 
     // Test dependencies
-    testImplementation "io.micronaut.test:micronaut-test-junit5"
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.1'
-    testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
-    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
+    testImplementation libs.micronaut.test.junit5
+    testImplementation libs.assertj.core
+    testImplementation libs.testcontainers.postgresql
+    testImplementation libs.testcontainers.junit.jupiter
 }
 
 java {
@@ -47,6 +60,12 @@ micronaut {
   testRuntime("junit5")
   processing {
     incremental(true)
-    annotations("pfe_broker.models.*")
+    annotations("io.seak.models.*")
   }
+}
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+    systemProperty 'micronaut.config.files', configFiles
 }

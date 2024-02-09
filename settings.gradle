@@ -3,13 +3,13 @@ pluginManagement {
     id 'io.micronaut.minimal.library' version "${micronautVersion}"
     id 'io.micronaut.application' version "${micronautVersion}"
     id 'com.github.johnrengelman.shadow' version "${shadowVersion}"
-    id 'io.github.khalilou88.jnxplus' version "${jnxplusGradlePluginVersion}"
     id 'io.freefair.lombok' version "${lombokGradlePluginVersion}"
     id 'jacoco'
   }
 }
 
-rootProject.name = 'pfe-broker'
+rootProject.name = 'seak'
+
 include('components:order-book')
 include('components:quickfix-server')
 include('components:trade-stream')
@@ -19,3 +19,4 @@ include('libs:models')
 include('libs:log')
 include('libs:common')
 include('libs:avro')
+

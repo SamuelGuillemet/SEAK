@@ -77,9 +77,9 @@ def verify_day_extracted(day: str) -> bool:
 
 
 def main(
-    day: str,
-    skip_topic_creation: bool,
-    skip_schema_creation: bool,
+    day: str = "2022-04-05",
+    skip_topic_creation: bool = False,
+    skip_schema_creation: bool = False,
 ) -> None:
     """
     Main function to feed kafka with data from 2022-04-05

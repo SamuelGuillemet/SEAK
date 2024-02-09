@@ -1,0 +1,35 @@
+[tool.poetry]
+name = "quickfix-client-graphical-user-interface"
+version = "0.4.0"
+description = ""
+authors = ["Théo Joseph-Antoine <theo.joseph-antoine@telecom-sudparis.eu>"]
+readme = "README.md"
+packages = [{ include = "quickfix_client_gui" }]
+
+[tool.poetry.dependencies]
+python = ">=3.10"
+broker-quickfix-client = { path = "../quickfix-client", develop = true }
+pillow = "^10.2.0"
+sqlalchemy = "^2.0.25"
+mplfinance = "^0.12.10b0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.7.0"
+flake8 = "^6.0.0"
+isort = "^5.12.0"
+pre-commit = "^3.3.3"
+mypy = "^1.4.1"
+mypy-extensions = "^1.0.0"
+pylint = "^2.17.4"
+pytest = "^7.4.0"
+pytest-cov = "^4.1.0"
+types-pyyaml = "^6.0.12.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
+
+[tool.isort]
+profile = "black"
+known_first_party = "quickfix_client_gui"

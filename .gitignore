@@ -4,6 +4,7 @@
 dist
 tmp
 /out-tsc
+quickfix_client_database.db
 
 # dependencies
 node_modules
@@ -40,8 +41,6 @@ testem.log
 .DS_Store
 Thumbs.db
 
-.nx/cache
-
 # Gradle
 **/.gradle
 **/build/
@@ -53,3 +52,7 @@ Thumbs.db
 # Data
 data/*
 !data/.gitkeep
+
+# Monitoring
+monitoring/prometheus/data/
+.venv/

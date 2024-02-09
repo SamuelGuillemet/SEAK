@@ -11,9 +11,15 @@ fi
 
 num_clients=$1
 
+#  Read username password from users.txt file
+# format is username password
+
 for ((i = 0; i < num_clients; i++)); do
   # Start the client
-  poetry run python broker_quickfix_client/main.py --username user$i &
+  username=$(sed -n "$((i + 1))p" users.txt | awk '{print $1}')
+  password=$(sed -n "$((i + 1))p" users.txt | awk '{print $2}')
+  echo "Starting client $username"
+  poetry run python broker_quickfix_client/main.py --username $username --password $password &
 done
 
 # Wait for the clients to finish

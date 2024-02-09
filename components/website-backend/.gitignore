@@ -1,0 +1,10 @@
+__pycache__
+.venv
+**/*.db
+**/*_deprecated*
+.env
+coverage.xml
+.coverage
+openapi.json
+dump.json
+storage/

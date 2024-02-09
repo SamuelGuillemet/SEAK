@@ -1,0 +1,73 @@
+@startuml order
+
+hide empty members
+
+  enum OrderBookRequestType {
+    NEW
+    REPLACE
+    CANCEL
+  }
+
+  enum OrderRejectReason {
+    BROKER_EXCHANGE_OPTION
+    UNKNOWN_SYMBOL
+    EXCHANGE_CLOSED
+    ORDER_EXCEEDS_LIMIT
+    TOO_LATE_TO_ENTER
+    UNKNOWN_ORDER
+    DUPLICATE_ORDER
+    STALE_ORDER
+    INCORRECT_QUANTITY
+    UNKNOWN_ACCOUNT
+    PRICE_EXCEEDS_CURRENT_PRICE_BAND
+    OTHER
+  }
+
+  enum Side {
+    BUY
+    SELL
+  }
+
+  enum Type {
+    MARKET
+    LIMIT
+  }
+
+  class OrderBookRequest {
+    - type: OrderBookRequestType
+    - order: Order
+    - origClOrderID: string
+  }
+
+  class Order {
+    - username: string
+    - symbol: string
+    - quantity: int
+    - side: Side
+    - type: Type
+    - price: double
+    - clOrderID: string
+  }
+
+  class RejectedOrder {
+    - order: Order
+    - reason: OrderRejectReason
+  }
+
+  class Trade {
+    - order: Order
+    - symbol: string
+    - price: double
+    - quantity: int
+  }
+
+  OrderBookRequest --> OrderBookRequestType : type
+  OrderBookRequest --> Order : order
+  Order --> Side : side
+  Order --> Type : type
+  RejectedOrder --> Order : order
+  RejectedOrder --> OrderRejectReason : reason
+  Trade --> Order : order
+
+
+@enduml

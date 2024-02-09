@@ -4,6 +4,8 @@ from quickfix import (
     DataDictionary,
     Dictionary,
     FieldBase,
+    FieldMap,
+    Group,
     Message,
     MsgType,
     MsgType_Heartbeat,
@@ -18,6 +20,7 @@ from broker_quickfix_client.constant import (
     SERVER_PORT,
 )
 from broker_quickfix_client.decorators import default_return_value_decorator
+from broker_quickfix_client.utils.loader import get_config_file_path
 
 logger = logging.getLogger("quickfix.event")
 
@@ -44,9 +47,11 @@ def log_quick_fix_message(
         return
 
     message_parts = [
-        "=".join([get_field_name(split[0]), get_field_value(split[0], split[1])])
-        if len(split := s.split("=")) == 2
-        else s
+        (
+            "=".join([get_field_name(split[0]), get_field_value(split[0], split[1])])
+            if len(split := s.split("=")) == 2
+            else s
+        )
         for s in str(message).split("\x01")
     ]
 
@@ -59,10 +64,25 @@ def is_heartbeat(message: Message) -> bool:
 
 
 @default_return_value_decorator(None)
-def get_message_field(message: Message, field_type: type[FieldBase]) -> str:
+def get_message_field(message: FieldMap, field_type: type[FieldBase]) -> str:
     field = field_type()
     message.getField(field)
     return field.getString()
+
+
+def extract_group_field(
+    message: Message,
+    field_type: type[FieldBase],
+    group_type: type[FieldBase],
+    group_field: type[Group],
+) -> list[str]:
+    res = []
+    for i in range(int(get_message_field(message, group_type))):
+        group = group_field()
+        message.getGroup(i + 1, group)
+        res.append(get_message_field(group, field_type))
+
+    return res
 
 
 def set_settings(username: str):
@@ -87,7 +107,7 @@ def set_settings(username: str):
     session_dict.setString("ConnectionType", "initiator")
     session_dict.setString("SocketConnectHost", SERVER_IP)
     session_dict.setInt("SocketConnectPort", SERVER_PORT)
-    session_dict.setString("DataDictionary", "./config/FIX44.xml")
+    session_dict.setString("DataDictionary", get_config_file_path())
     session_dict.setString("StartTime", "00:00:00")
     session_dict.setString("EndTime", "00:00:00")
     session_dict.setInt("HeartBtInt", 30)

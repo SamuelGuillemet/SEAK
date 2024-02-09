@@ -1,13 +1,16 @@
 [tool.poetry]
 name = "pre-processing"
-version = "0.3.0"
-description = ""
+version = "0.4.0"
+description = "Pre-processing of data to send to kafka"
 authors = ["Samuel Guillemet <samuel.guillemet@telecom-sudparis.eu>"]
 readme = "README.md"
 packages = [{ include = "pre_processing" }]
 
+[tool.poetry.scripts]
+pre-processing = "pre_processing.main:main"
+
 [tool.poetry.dependencies]
-python = ">=3.11"
+python = ">=3.10"
 matplotlib = "^3.8.0"
 pandas = "^2.1.1"
 numpy = "^1.26.1"
@@ -34,9 +37,9 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.isort]
 profile = "black"
+known_first_party = "pre_processing"
 
 [tool.mypy]
-no_strict_optional = true
 ignore_missing_imports = true
 files = "^(pre_processing/|tests/)"
 
@@ -54,7 +57,7 @@ addopts = [
   "--cov-report=term-missing",
   "--cov-report=xml",
 ]
-log_cli = true
+log_cli = false
 log_cli_level = "INFO"
 filterwarnings = "ignore::DeprecationWarning"
 

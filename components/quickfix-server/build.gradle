@@ -5,11 +5,11 @@ plugins {
 }
 
 ext {
-    configFiles = "classpath:application.yml,classpath:kafka.yml,classpath:quickfix.yml,classpath:data.yml"
+    configFiles = "classpath:application.yml,classpath:kafka.yml,classpath:quickfix.yml,classpath:data.yml,classpath:monitoring.yml"
 }
 
 version = "${version}"
-group = "pfe_broker"
+group = "io.seak"
 
 repositories {
     mavenCentral()
@@ -22,34 +22,44 @@ dependencies {
     implementation project(":libs:models")
     implementation project(":libs:common")
 
-    runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
-    implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.2.0'
+    // Micronaut
+    runtimeOnly libs.snakeyaml
+    implementation libs.micronaut.kafka
+
+    // Micrometer
+    implementation libs.micronaut.micrometer.registry.prometheus
+    annotationProcessor libs.micronaut.micrometer.annotation
+    implementation libs.micronaut.http.client
+    implementation libs.micronaut.management
 
     // Database
-    implementation group: 'io.micronaut.data', name: 'micronaut-data-hibernate-jpa', version: '4.4.1'
+    implementation libs.micronaut.data.hibernate.jpa
 
-    // Log4J
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-core', version: '2.22.1'
-    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
-    runtimeOnly group: 'org.apache.logging.log4j', name: 'log4j-slf4j2-impl', version: '2.22.1'
-
-    // Avro
-    implementation group: 'io.confluent', name: 'kafka-avro-serializer', version: '7.5.1'
+    // Authentication dependencies
+    implementation libs.spring.security.crypto
 
     // QuickFixJ
-    implementation group: 'org.quickfixj', name: 'quickfixj-core', version: '2.3.1'
-    implementation group: 'org.quickfixj', name: 'quickfixj-messages-all', version: '2.3.1'
+    implementation libs.quickfixj.core
+    implementation libs.quickfixj.messages.all
 
-    // Test implementation
-    testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.25.1'
-    testImplementation group: 'org.testcontainers', name: 'postgresql', version: '1.19.3'
-    testImplementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
-    testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.2.0'
-    testImplementation group: 'org.mockito', name: 'mockito-core', version: '5.8.0'
+    // Avro
+    implementation libs.kafka.avro.serializer
+
+    // Log4J
+    implementation libs.log4j.core
+    runtimeOnly libs.log4j.api
+    runtimeOnly libs.log4j.slf4j2.impl
+    runtimeOnly libs.jcl.over.slf4j
+
+    // Test dependencies
+    testImplementation libs.awaitility
+    testImplementation libs.assertj.core
+    testImplementation libs.testcontainers.junit.jupiter
+    testImplementation libs.testcontainers.postgresql
 }
 
 application {
-    mainClass.set("pfe_broker.quickfix_server.Application")
+    mainClass.set("io.seak.quickfix_server.Application")
 }
 
 java {
@@ -82,10 +92,11 @@ sourceSets {
 graalvmNative.toolchainDetection = false
 
 micronaut {
+    runtime("netty")
     testRuntime("junit5")
     processing {
         incremental(true)
-        annotations("pfe_broker.quickfix_server.*")
+        annotations("io.seak.quickfix_server.*")
     }
 }
 

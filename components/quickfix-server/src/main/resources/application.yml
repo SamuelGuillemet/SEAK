@@ -1,3 +1,5 @@
 micronaut:
   application:
     name: QuickfixServer
+  server:
+    port: 10004

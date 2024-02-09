@@ -2,8 +2,9 @@ import argparse
 import faulthandler
 import logging
 
-from broker_quickfix_client.application import setup
+from broker_quickfix_client.application import setup, start_initiator
 from broker_quickfix_client.runners.latency import latency_test
+from broker_quickfix_client.runners.market_data import market_data_test
 from broker_quickfix_client.runners.order_book import order_book_test
 
 logger = logging.getLogger("client")
@@ -13,8 +14,10 @@ faulthandler.enable()
 
 def main(username: str, password: str):
     application, initiator = setup(username, password)
+    start_initiator(initiator, application)
     latency_test(username, application)
     order_book_test(application)
+    market_data_test(application)
     initiator.stop()
 
 

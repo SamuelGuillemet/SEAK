@@ -2,36 +2,54 @@ plugins {
     id "io.micronaut.minimal.library"
 }
 
+ext {
+    configFiles = "classpath:kafka.yml"
+}
+
 version = "${version}"
-group = "pfe_broker"
+group = "io.seak"
 
 repositories {
     mavenCentral()
+    maven { url confluentUrl }
 }
 
 dependencies {
     implementation project(":libs:log")
     implementation project(":libs:avro")
 
-    runtimeOnly group: 'org.yaml', name: 'snakeyaml', version: '2.2'
-    implementation group: 'io.micronaut.kafka', name: 'micronaut-kafka', version: '5.2.0'
-
-    implementation group: 'io.micronaut', name: 'micronaut-http-client-jdk', version: '4.2.3'
-    implementation group: 'io.micronaut.serde', name: 'micronaut-serde-jackson', version: '2.7.0'
-
-    implementation group: 'org.testcontainers', name: 'kafka', version: '1.19.3'
-    implementation group: 'org.testcontainers', name: 'testcontainers', version: '1.19.3'
-    implementation group: 'org.testcontainers', name: 'junit-jupiter', version: '1.19.3'
-
-    // Test dependencies
-    testImplementation "io.micronaut.test:micronaut-test-junit5"
-    testRuntimeOnly "org.junit.jupiter:junit-jupiter-engine"
-
-    // Log4J
-    implementation group: 'org.apache.logging.log4j', name: 'log4j-api', version: '2.22.1'
+    // Micronaut
+    runtimeOnly libs.snakeyaml
+    implementation libs.micronaut.kafka
+    implementation libs.micronaut.http.client.jdk
+    implementation libs.micronaut.serde.jackson
 
     // Avro
-    implementation group: 'org.apache.avro', name: 'avro', version: '1.11.3'
+    implementation libs.avro
+    implementation libs.kafka.avro.serializer
+
+    // Log4J
+    runtimeOnly libs.log4j.api
+    runtimeOnly libs.log4j.slf4j2.impl
+
+    // Test dependencies
+    testImplementation libs.awaitility
+    testImplementation libs.assertj.core
+    testImplementation libs.testcontainers.junit.jupiter
+    implementation libs.testcontainers.kafka
+    implementation libs.testcontainers.testcontainers
+    implementation libs.testcontainers.junit.jupiter
+}
+
+sourceSets {
+    test {
+        resources {
+            srcDirs = [
+                "src/test/resources",
+                project(":").file("config/common").path
+            ]
+        }
+    }
 }
 
 java {
@@ -43,6 +61,12 @@ micronaut {
   testRuntime("junit5")
   processing {
     incremental(true)
-    annotations("pfe_broker.common.*")
+    annotations("io.seak.common.*")
   }
+}
+
+test {
+    testLogging.showStandardStreams = true
+    testLogging.exceptionFormat = 'full'
+    systemProperty 'micronaut.config.files', configFiles
 }
