@@ -3,6 +3,8 @@ import asyncio
 import logging
 import sys
 
+from app.commands.add_user import add_n_users
+from app.commands.delete_user import delete_users
 from app.commands.dump_db import dump_db
 from app.commands.execute_sql import execute_sql_command
 from app.commands.init_db import init_db
@@ -114,6 +116,42 @@ execute_parser.add_argument(
     help="SQL command",
 )
 
+add_user_parser = subparsers.add_parser(
+    "add-users",
+    help="Add n users",
+)
+add_user_parser.add_argument(
+    "-n",
+    type=int,
+    help="Number of users",
+)
+add_user_parser.add_argument(
+    "-f",
+    "--file",
+    type=str,
+    help="File to save users",
+    default="users.txt",
+)
+add_user_parser.add_argument(
+    "--default-balance",
+    type=int,
+    help="Default balance",
+    default=10000,
+)
+
+delete_user_parser = subparsers.add_parser(
+    "delete-users",
+    help="Delete users",
+)
+delete_user_parser.add_argument(
+    "-f",
+    "--file",
+    type=str,
+    help="File with users",
+    default="users.txt",
+)
+
+
 PROMPT_MESSAGE = (
     "Are you sure you want to reset the database, this will delete all data? [y/N] "
 )
@@ -156,6 +194,10 @@ async def main(command: str) -> None:
             await load_db(args.input)
         case "execute":
             await execute_sql_command(args.command)
+        case "add-users":
+            await add_n_users(args.n, args.file, args.default_balance)
+        case "delete-users":
+            await delete_users(args.file)
 
 
 if __name__ == "__main__":  # pragma: no cover
