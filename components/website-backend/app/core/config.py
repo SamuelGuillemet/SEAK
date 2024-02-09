@@ -5,7 +5,7 @@ from functools import lru_cache
 from typing import ClassVar, Literal, Optional
 
 from pydantic import Field
-from pydantic_settings import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 logger = logging.getLogger("app.core.config")
 
@@ -151,6 +151,8 @@ class ConfigProduction(Settings):
 
     SERVICE_ACCOUNT_USERNAME: str = Field(...)
     SERVICE_ACCOUNT_PASSWORD: str = Field(...)
+
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8")
 
 
 class ConfigTest(Settings):
