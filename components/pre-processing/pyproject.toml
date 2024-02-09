@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pre-processing"
-version = "0.3.0"
+version = "0.4.0"
 description = "Pre-processing of data to send to kafka"
 authors = ["Samuel Guillemet <samuel.guillemet@telecom-sudparis.eu>"]
 readme = "README.md"

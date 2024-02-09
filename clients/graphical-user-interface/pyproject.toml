@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "quickfix-client-graphical-user-interface"
-version = "0.3.0"
+version = "0.4.0"
 description = ""
 authors = ["Théo Joseph-Antoine <theo.joseph-antoine@telecom-sudparis.eu>"]
 readme = "README.md"
