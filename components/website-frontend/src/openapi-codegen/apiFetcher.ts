@@ -126,7 +126,6 @@ export async function apiFetch<TData, TError, TBody extends {} | FormData | unde
       headers: requestHeaders
     });
   } catch (e) {
-    logger.error(e);
     throw {
       status: 0,
       payload: e instanceof Error ? `Network error (${e.message})` : 'Network error',

@@ -15,7 +15,8 @@ export default defineConfig({
       all: true
     },
     env: {
-      NEXT_PUBLIC_BACKEND_API_URL: 'http://localhost:8000'
+      NEXT_PUBLIC_BACKEND_URL: 'http://localhost:8001',
+      LOCAL_BACKEND_URL: 'http://localhost:8001'
     }
   }
 });
