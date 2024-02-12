@@ -16,7 +16,7 @@ spring-security-crypto = "6.2.1"
 awaitility = "4.2.0"
 assertj-core = "3.25.3"
 junit-jupiter = "5.10.2"
-testcontainers = "1.19.4"
+testcontainers = "1.19.5"
 
 plugin-lombok = "8.4"
 plugin-shadow = "8.1.1"
